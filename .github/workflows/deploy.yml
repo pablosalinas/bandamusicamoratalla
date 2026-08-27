@@ -41,3 +41,4 @@ jobs:
         remote_path: './bandamusicamoratalla'
         local_path: './'
         sftpArgs: '-o StrictHostKeyChecking=no'
+        args: '-avzrc'
