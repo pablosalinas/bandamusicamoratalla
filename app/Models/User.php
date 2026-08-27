@@ -35,6 +35,6 @@ class User extends Authenticatable
 
     public function instruments()
     {
-        return $this->belongsToMany(InstrumentCatalog::class, 'musician_instruments', 'user_id', 'instrument_catalog_id')->withTimestamps();
+        return $this->belongsToMany(InstrumentCatalog::class, 'musician_instruments', 'user_id', 'instrument_catalog_id')->withPivot('serial_number')->withTimestamps();
     }
 }

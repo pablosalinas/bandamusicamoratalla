@@ -24,6 +24,16 @@
             <x-input-error :messages="$errors->get('password')" class="mt-2" />
         </div>
 
+        <!-- Captcha -->
+        <div class="mt-4">
+            <x-input-label for="captcha" value="Captcha: ¿Cuánto es {{ $num1 ?? rand(1,9) }} + {{ $num2 ?? rand(1,9) }}?" />
+            <x-text-input id="captcha" class="block mt-1 w-full"
+                            type="number"
+                            name="captcha"
+                            required />
+            <x-input-error :messages="$errors->get('captcha')" class="mt-2" />
+        </div>
+
         <!-- Remember Me -->
         <div class="block mt-4">
             <label for="remember_me" class="inline-flex items-center">
