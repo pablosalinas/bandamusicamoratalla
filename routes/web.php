@@ -52,3 +52,13 @@ Route::get('/ejecutar-migraciones-secretas', function() {
         return 'Error: ' . $e->getMessage();
     }
 });
+
+Route::get('/debug-server', function() {
+    $storage = storage_path();
+    $isWritable = is_writable($storage) ? 'Si' : 'NO';
+    $sessions = storage_path('framework/sessions');
+    $sessionsWritable = is_writable($sessions) ? 'Si' : 'NO';
+    $logs = storage_path('logs');
+    $logsWritable = is_writable($logs) ? 'Si' : 'NO';
+    return 'Storage Writable: ' . $isWritable . '<br>Sessions Writable: ' . $sessionsWritable . '<br>Logs Writable: ' . $logsWritable;
+});
