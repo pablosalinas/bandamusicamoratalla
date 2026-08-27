@@ -55,6 +55,12 @@ require __DIR__.'/auth.php';
 
 Route::get('/ejecutar-migraciones-secretas', function() {
     try {
+        // Por precaución, borramos el archivo viejo si todavía existe en el servidor para que no intente ejecutarlo
+        $oldMigration = database_path('migrations/2026_08_27_220741_create_attendances_table.php');
+        if (file_exists($oldMigration)) {
+            @unlink($oldMigration);
+        }
+
         \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
         $output = \Illuminate\Support\Facades\Artisan::output();
         return 'Migraciones ejecutadas con éxito:<br><br>' . nl2br(htmlspecialchars($output));
