@@ -6,20 +6,19 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('sheet_music', function (Blueprint $table) {
             $table->id();
+            $table->string('title');
+            $table->string('composer')->nullable();
+            $table->string('arranger')->nullable();
+            $table->string('pdf_file_path')->nullable(); // General score
+            $table->string('cover_image_path')->nullable();
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('sheet_music');
