@@ -29,6 +29,9 @@ jobs:
         npm install
         npm run build
 
+    - name: Remove files excluded from deployment
+      run: rm -rf .git .github node_modules .env .env.example README.md phpunit.xml tests/
+
     - name: SFTP Deploy
       uses: wlixcc/SFTP-Deploy-Action@v1.2.4
       with:
@@ -38,4 +41,3 @@ jobs:
         remote_path: ${{ secrets.SFTP_REMOTE_PATH }}
         local_path: './'
         sftpArgs: '-o StrictHostKeyChecking=no'
-        exclude: '**.git*/**,**node_modules/**,.env,.env.example,README.md,phpunit.xml,tests/**'
