@@ -37,4 +37,4 @@ jobs:
         SSHPASS: ${{ secrets.SFTP_PASSWORD }}
       run: |
         sudo apt-get update && sudo apt-get install -y sshpass rsync
-        sshpass -e rsync -avzc -e "ssh -o StrictHostKeyChecking=no -p 22" ./ ${{ secrets.SFTP_USERNAME }}@${{ secrets.SFTP_SERVER }}:./bandamusicamoratalla
+        sshpass -e rsync -avzc --chmod=D755,F644 -e "ssh -o StrictHostKeyChecking=no -p 22" ./ ${{ secrets.SFTP_USERNAME }}@${{ secrets.SFTP_SERVER }}:./bandamusicamoratalla
