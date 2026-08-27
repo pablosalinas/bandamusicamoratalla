@@ -36,7 +36,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-20">
                 <div class="flex items-center">
-                    <span class="text-2xl font-extrabold tracking-tight text-gold">BM Moratalla</span>
+                    <span class="text-2xl font-extrabold tracking-tight text-gold">Banda de Música de Moratalla</span>
                 </div>
                 <div class="hidden md:flex items-center space-x-8">
                     <a href="#inicio" class="text-gray-300 hover:text-white transition-colors font-medium">Inicio</a>
@@ -142,7 +142,7 @@
     <footer class="border-t border-gray-800 bg-gray-950 pt-16 pb-8">
         <div class="max-w-7xl mx-auto px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center">
             <div class="mb-6 md:mb-0">
-                <span class="text-2xl font-extrabold text-gold">BM Moratalla</span>
+                <span class="text-2xl font-extrabold text-gold">Banda de Música de Moratalla</span>
                 <p class="text-gray-500 mt-2 text-sm">Cultura y tradición musical en el Noroeste Murciano.</p>
             </div>
             <div class="flex space-x-6">
