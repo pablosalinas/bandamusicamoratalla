@@ -35,7 +35,7 @@ jobs:
         server: ${{ secrets.SFTP_SERVER }}
         username: ${{ secrets.SFTP_USERNAME }}
         password: ${{ secrets.SFTP_PASSWORD }}
-        remote_path: '/bandamusicamoratalla/'
+        remote_path: ${{ secrets.SFTP_REMOTE_PATH }}
         local_path: './'
         sftpArgs: '-o StrictHostKeyChecking=no'
         exclude: '**.git*/**,**node_modules/**,.env,.env.example,README.md,phpunit.xml,tests/**'
