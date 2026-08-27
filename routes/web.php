@@ -115,6 +115,18 @@ Route::get('/crear-admin-secreto', function() {
     }
 });
 
+Route::get('/cargar-instrumentos', function() {
+    try {
+        \Illuminate\Support\Facades\Artisan::call('db:seed', [
+            '--class' => 'InstrumentSeeder',
+            '--force' => true
+        ]);
+        return 'Instrumentos cargados masivamente con éxito.';
+    } catch (\Exception $e) {
+        return 'Error al cargar instrumentos: ' . $e->getMessage();
+    }
+});
+
 Route::get('/debug-server', function() {
     $storage = storage_path();
     $isWritable = is_writable($storage) ? 'Si' : 'NO';
