@@ -32,13 +32,9 @@ jobs:
     - name: Remove files excluded from deployment
       run: rm -rf .git .github node_modules .env .env.example README.md phpunit.xml tests/
 
-    - name: SFTP Deploy
-      uses: wlixcc/SFTP-Deploy-Action@v1.2.4
-      with:
-        server: ${{ secrets.SFTP_SERVER }}
-        username: ${{ secrets.SFTP_USERNAME }}
-        password: ${{ secrets.SFTP_PASSWORD }}
-        remote_path: './bandamusicamoratalla'
-        local_path: './'
-        sftpArgs: '-o StrictHostKeyChecking=no'
-        args: '-avzrc'
+    - name: SFTP Deploy (Smart Sync)
+      env:
+        SSHPASS: ${{ secrets.SFTP_PASSWORD }}
+      run: |
+        sudo apt-get update && sudo apt-get install -y sshpass rsync
+        sshpass -e rsync -avzc -e "ssh -o StrictHostKeyChecking=no -p 22" ./ ${{ secrets.SFTP_USERNAME }}@${{ secrets.SFTP_SERVER }}:./bandamusicamoratalla
