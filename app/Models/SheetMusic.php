@@ -9,7 +9,7 @@ class SheetMusic extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['title', 'composer', 'arranger', 'pdf_file_path', 'cover_image_path', 'is_active'];
+    protected $fillable = ['title', 'composer', 'arranger', 'pdf_file_path', 'cover_image_path', 'is_active', 'leave_reason'];
 
     protected $casts = [
         'is_active' => 'boolean',

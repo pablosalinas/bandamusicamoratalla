@@ -19,7 +19,7 @@ class SheetMusicController extends Controller
 
     public function create()
     {
-        $instruments = InstrumentCatalog::orderBy('name')->get();
+        $instruments = InstrumentCatalog::where('is_active', true)->orderBy('name')->get();
         return view('admin.sheet-music.create', compact('instruments'));
     }
 
@@ -31,6 +31,7 @@ class SheetMusicController extends Controller
             'arranger' => ['nullable', 'string', 'max:255'],
             'pdf_file' => ['nullable', 'file', 'mimes:pdf', 'max:20480'], // Máximo 20MB
             'instruments' => ['nullable', 'array'],
+            'leave_reason' => ['nullable', 'string', 'max:255'],
         ]);
 
         $path = null;
@@ -44,6 +45,8 @@ class SheetMusicController extends Controller
             'composer' => $request->composer,
             'arranger' => $request->arranger,
             'pdf_file_path' => $path,
+            'is_active' => $request->has('is_active'),
+            'leave_reason' => $request->leave_reason,
         ]);
 
         // Sincronizar instrumentos asignados a la obra
@@ -68,9 +71,11 @@ class SheetMusicController extends Controller
             'arranger' => ['nullable', 'string', 'max:255'],
             'pdf_file' => ['nullable', 'file', 'mimes:pdf', 'max:20480'],
             'instruments' => ['nullable', 'array'],
+            'leave_reason' => ['nullable', 'string', 'max:255'],
         ]);
 
-        $data = $request->only(['title', 'composer', 'arranger']);
+        $data = $request->only(['title', 'composer', 'arranger', 'leave_reason']);
+        $data['is_active'] = $request->has('is_active');
 
         if ($request->hasFile('pdf_file')) {
             // Eliminamos el archivo antiguo si existe

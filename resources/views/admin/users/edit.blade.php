@@ -81,7 +81,15 @@
                     <div class="sm:col-span-3">
                         <label for="leave_reason" class="block text-sm font-medium leading-6 text-white">Motivo de Baja (Si está inactivo)</label>
                         <div class="mt-2">
-                            <input type="text" name="leave_reason" id="leave_reason" value="{{ old('leave_reason', $user->leave_reason) }}" class="block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6">
+                            <input list="user_leave_reasons" name="leave_reason" id="leave_reason" value="{{ old('leave_reason', $user->leave_reason) }}" placeholder="Selecciona o escribe un motivo..." class="block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6">
+                            <datalist id="user_leave_reasons">
+                                <option value="Falta de tiempo">
+                                <option value="Motivos de salud">
+                                <option value="Motivos personales">
+                                <option value="Cambio de residencia">
+                                <option value="Pérdida de interés">
+                                <option value="Expulsión">
+                            </datalist>
                         </div>
                         @error('leave_reason') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
                     </div>
@@ -116,6 +124,46 @@
                                 </div>
                             @endforeach
                         </div>
+                    </div>
+
+                    <div class="sm:col-span-6 border-t border-gray-800 pt-6 mt-2">
+                        <label class="block text-base font-semibold leading-6 text-white mb-4">Historial de Faltas de Asistencia</label>
+                        <p class="text-sm text-gray-400 mb-4">Registro de las faltas de asistencia (justificadas e injustificadas) del músico a los ensayos y actos.</p>
+                        
+                        @if($missedAttendances->count() > 0)
+                            <div class="overflow-hidden shadow ring-1 ring-white/10 sm:rounded-lg">
+                                <table class="min-w-full divide-y divide-gray-800">
+                                    <thead class="bg-gray-900">
+                                        <tr>
+                                            <th scope="col" class="py-3 pl-4 pr-3 text-left text-xs font-semibold text-white sm:pl-6">Fecha</th>
+                                            <th scope="col" class="px-3 py-3 text-left text-xs font-semibold text-white">Evento</th>
+                                            <th scope="col" class="px-3 py-3 text-left text-xs font-semibold text-white">Estado</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-800 bg-gray-950">
+                                        @foreach($missedAttendances as $attendance)
+                                            <tr>
+                                                <td class="whitespace-nowrap py-3 pl-4 pr-3 text-sm font-medium text-white sm:pl-6">
+                                                    {{ \Carbon\Carbon::parse($attendance->event->event_date)->format('d/m/Y') }}
+                                                </td>
+                                                <td class="whitespace-nowrap px-3 py-3 text-sm text-gray-400">
+                                                    {{ $attendance->event->name }} <span class="text-xs text-gray-500 capitalize ml-2">({{ $attendance->event->type }})</span>
+                                                </td>
+                                                <td class="whitespace-nowrap px-3 py-3 text-sm text-gray-400">
+                                                    @if($attendance->status === 'absent')
+                                                        <span class="inline-flex items-center rounded-md bg-red-400/10 px-2 py-1 text-xs font-medium text-red-400 ring-1 ring-inset ring-red-400/30">Falta Injustificada</span>
+                                                    @else
+                                                        <span class="inline-flex items-center rounded-md bg-yellow-400/10 px-2 py-1 text-xs font-medium text-yellow-400 ring-1 ring-inset ring-yellow-400/30">Falta Justificada</span>
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        @else
+                            <p class="text-sm text-gray-400 italic bg-gray-950 p-4 rounded-lg border border-gray-800">Este músico no tiene faltas de asistencia registradas.</p>
+                        @endif
                     </div>
 
                 </div>

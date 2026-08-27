@@ -23,10 +23,18 @@ class InstrumentController extends Controller
     {
         $request->validate([
             'name' => ['required', 'string', 'max:255', 'unique:instrument_catalogs,name'],
-            'family' => ['nullable', 'string', 'max:255'],
+            'type' => ['nullable', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
+            'leave_reason' => ['nullable', 'string', 'max:255'],
         ]);
 
-        InstrumentCatalog::create($request->only('name', 'family'));
+        InstrumentCatalog::create([
+            'name' => $request->name,
+            'type' => $request->type,
+            'description' => $request->description,
+            'is_active' => $request->has('is_active'),
+            'leave_reason' => $request->leave_reason,
+        ]);
 
         return redirect()->route('admin.instruments.index')->with('success', 'Instrumento añadido correctamente al catálogo.');
     }
@@ -40,10 +48,18 @@ class InstrumentController extends Controller
     {
         $request->validate([
             'name' => ['required', 'string', 'max:255', 'unique:instrument_catalogs,name,' . $instrument->id],
-            'family' => ['nullable', 'string', 'max:255'],
+            'type' => ['nullable', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
+            'leave_reason' => ['nullable', 'string', 'max:255'],
         ]);
 
-        $instrument->update($request->only('name', 'family'));
+        $instrument->update([
+            'name' => $request->name,
+            'type' => $request->type,
+            'description' => $request->description,
+            'is_active' => $request->has('is_active'),
+            'leave_reason' => $request->leave_reason,
+        ]);
 
         return redirect()->route('admin.instruments.index')->with('success', 'Instrumento actualizado correctamente.');
     }

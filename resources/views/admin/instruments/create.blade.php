@@ -28,11 +28,24 @@
                     </div>
 
                     <div>
-                        <label for="family" class="block text-sm font-medium leading-6 text-white">Familia (Opcional)</label>
+                        <label for="type" class="block text-sm font-medium leading-6 text-white">Familia / Tipo (Opcional)</label>
                         <div class="mt-2">
-                            <input type="text" name="family" id="family" value="{{ old('family') }}" placeholder="Ej: Viento Metal, Percusión, etc." class="block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6">
+                            <input type="text" name="type" id="type" value="{{ old('type') }}" placeholder="Ej: Viento Metal, Percusión, etc." class="block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6">
                         </div>
-                        @error('family') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
+                        @error('type') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label for="description" class="block text-sm font-medium leading-6 text-white">Descripción (Opcional)</label>
+                        <div class="mt-2">
+                            <textarea name="description" id="description" rows="3" class="block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6">{{ old('description') }}</textarea>
+                        </div>
+                        @error('description') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div class="flex items-center mt-4 border-t border-gray-800 pt-6">
+                        <input id="is_active" name="is_active" type="checkbox" value="1" {{ old('is_active', true) ? 'checked' : '' }} class="h-4 w-4 rounded border-gray-700 bg-gray-900 text-amber-600 focus:ring-amber-600 focus:ring-offset-gray-900">
+                        <label for="is_active" class="ml-3 block text-sm font-medium leading-6 text-white">Instrumento Activo (Asignable a músicos)</label>
                     </div>
 
                 </div>

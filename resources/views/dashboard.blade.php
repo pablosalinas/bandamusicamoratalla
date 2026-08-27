@@ -56,5 +56,43 @@
                 @endif
             </div>
         </div>
+
+        @if(isset($missedAttendances) && $missedAttendances->count() > 0)
+        <div class="bg-gray-900 border border-gray-800 shadow-sm sm:rounded-lg mt-8">
+            <div class="p-6 text-gray-300">
+                <h4 class="text-lg font-semibold mb-4 border-b border-gray-800 pb-2 text-white">Historial de Faltas de Asistencia</h4>
+                <div class="overflow-hidden shadow ring-1 ring-white/10 sm:rounded-lg">
+                    <table class="min-w-full divide-y divide-gray-800">
+                        <thead class="bg-gray-900">
+                            <tr>
+                                <th scope="col" class="py-3 pl-4 pr-3 text-left text-xs font-semibold text-white sm:pl-6">Fecha</th>
+                                <th scope="col" class="px-3 py-3 text-left text-xs font-semibold text-white">Evento</th>
+                                <th scope="col" class="px-3 py-3 text-left text-xs font-semibold text-white">Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-800 bg-gray-950">
+                            @foreach($missedAttendances as $attendance)
+                                <tr>
+                                    <td class="whitespace-nowrap py-3 pl-4 pr-3 text-sm font-medium text-white sm:pl-6">
+                                        {{ \Carbon\Carbon::parse($attendance->event->event_date)->format('d/m/Y') }}
+                                    </td>
+                                    <td class="whitespace-nowrap px-3 py-3 text-sm text-gray-400">
+                                        {{ $attendance->event->name }} <span class="text-xs text-gray-500 capitalize ml-2">({{ $attendance->event->type }})</span>
+                                    </td>
+                                    <td class="whitespace-nowrap px-3 py-3 text-sm text-gray-400">
+                                        @if($attendance->status === 'absent')
+                                            <span class="inline-flex items-center rounded-md bg-red-400/10 px-2 py-1 text-xs font-medium text-red-400 ring-1 ring-inset ring-red-400/30">Falta Injustificada</span>
+                                        @else
+                                            <span class="inline-flex items-center rounded-md bg-yellow-400/10 px-2 py-1 text-xs font-medium text-yellow-400 ring-1 ring-inset ring-yellow-400/30">Falta Justificada</span>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        @endif
     </div>
 </x-admin-layout>

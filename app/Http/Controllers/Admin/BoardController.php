@@ -42,7 +42,7 @@ class BoardController extends Controller
     public function show(\App\Models\Board $board)
     {
         $board->load('members.user');
-        $users = \App\Models\User::orderBy('name')->get(); // For adding new members
+        $users = \App\Models\User::where('is_active', true)->orderBy('name')->get(); // For adding new members
 
         return view('admin.boards.show', compact('board', 'users'));
     }

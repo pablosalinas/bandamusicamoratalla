@@ -18,11 +18,21 @@ class MusicianController extends Controller
 
         // Buscamos las partituras que tengan asignados esos instrumentos
         // Utilizamos whereHas para filtrar por la relación
-        $sheetMusics = SheetMusic::whereHas('instruments', function($query) use ($instrumentIds) {
-            $query->whereIn('instrument_catalog_id', $instrumentIds);
-        })->orderBy('title')->get();
+        $sheetMusics = SheetMusic::where('is_active', true)
+            ->whereHas('instruments', function($query) use ($instrumentIds) {
+                $query->whereIn('instrument_catalog_id', $instrumentIds);
+            })->orderBy('title')->get();
 
-        return view('dashboard', compact('sheetMusics', 'user'));
+        // Obtener historial de faltas
+        $missedAttendances = \App\Models\Attendance::with('event')
+            ->where('user_id', $user->id)
+            ->whereIn('status', ['absent', 'excused'])
+            ->get()
+            ->sortByDesc(function($attendance) {
+                return $attendance->event->event_date;
+            });
+
+        return view('dashboard', compact('sheetMusics', 'user', 'missedAttendances'));
     }
 
     // Método para descargar la partitura desde el panel del músico

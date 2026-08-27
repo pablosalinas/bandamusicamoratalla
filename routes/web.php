@@ -46,15 +46,32 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     Route::delete('boards/{board}/members/{member}', [\App\Http\Controllers\Admin\BoardController::class, 'removeMember'])->name('boards.members.remove');
     
     Route::resource('news', \App\Http\Controllers\Admin\NewsController::class);
+    
+    Route::resource('events', \App\Http\Controllers\Admin\EventController::class);
+    Route::get('events/{event}/attendance', [\App\Http\Controllers\Admin\EventController::class, 'attendance'])->name('events.attendance');
+    Route::post('events/{event}/attendance', [\App\Http\Controllers\Admin\EventController::class, 'storeAttendance'])->name('events.attendance.store');
 });
 require __DIR__.'/auth.php';
 
 Route::get('/ejecutar-migraciones-secretas', function() {
     try {
         \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
-        return 'Migraciones ejecutadas con exito: ' . \Illuminate\Support\Facades\Artisan::output();
+        $output = \Illuminate\Support\Facades\Artisan::output();
+        return 'Migraciones ejecutadas con éxito:<br><br>' . nl2br(htmlspecialchars($output));
     } catch (\Exception $e) {
-        return 'Error: ' . $e->getMessage();
+        return '<b>ERROR durante las migraciones:</b><br><br>' . nl2br(htmlspecialchars($e->getMessage()));
+    }
+});
+
+Route::get('/limpiar-cache', function() {
+    try {
+        \Illuminate\Support\Facades\Artisan::call('view:clear');
+        \Illuminate\Support\Facades\Artisan::call('cache:clear');
+        \Illuminate\Support\Facades\Artisan::call('config:clear');
+        \Illuminate\Support\Facades\Artisan::call('route:clear');
+        return 'Caché de vistas y de aplicación limpiada con éxito.';
+    } catch (\Exception $e) {
+        return 'Error al limpiar caché: ' . $e->getMessage();
     }
 });
 

@@ -24,6 +24,7 @@
                                 <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-white">Compositor / Arreglista</th>
                                 <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-white">Archivo PDF</th>
                                 <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-white">Instrumentos Vinculados</th>
+                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-white">Estado</th>
                                 <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
                                     <span class="sr-only">Acciones</span>
                                 </th>
@@ -57,6 +58,13 @@
                                         <span class="inline-flex items-center rounded-md bg-gray-800 px-2 py-1 text-xs font-medium text-gray-300 ring-1 ring-inset ring-gray-700">
                                             {{ $sheet->instruments->count() }} instrumentos
                                         </span>
+                                    </td>
+                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-400">
+                                        @if($sheet->is_active)
+                                            <span class="inline-flex items-center rounded-md bg-green-500/10 px-2 py-1 text-xs font-medium text-green-400 ring-1 ring-inset ring-green-500/20">Activa</span>
+                                        @else
+                                            <span class="inline-flex items-center rounded-md bg-gray-400/10 px-2 py-1 text-xs font-medium text-gray-400 ring-1 ring-inset ring-gray-400/20">Inactiva</span>
+                                        @endif
                                     </td>
                                     <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
                                         <a href="{{ route('admin.sheet-music.edit', $sheet) }}" class="text-amber-500 hover:text-amber-400 mr-4">Editar</a>

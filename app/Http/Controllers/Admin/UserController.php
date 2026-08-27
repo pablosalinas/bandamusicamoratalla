@@ -19,7 +19,7 @@ class UserController extends Controller
 
     public function create()
     {
-        $instruments = InstrumentCatalog::orderBy('name')->get();
+        $instruments = InstrumentCatalog::where('is_active', true)->orderBy('name')->get();
         return view('admin.users.create', compact('instruments'));
     }
 
@@ -58,7 +58,16 @@ class UserController extends Controller
     public function edit(User $user)
     {
         $instruments = InstrumentCatalog::orderBy('name')->get();
-        return view('admin.users.edit', compact('user', 'instruments'));
+        
+        $missedAttendances = \App\Models\Attendance::with('event')
+            ->where('user_id', $user->id)
+            ->whereIn('status', ['absent', 'excused'])
+            ->get()
+            ->sortByDesc(function($attendance) {
+                return $attendance->event->event_date;
+            });
+
+        return view('admin.users.edit', compact('user', 'instruments', 'missedAttendances'));
     }
 
     public function update(Request $request, User $user)

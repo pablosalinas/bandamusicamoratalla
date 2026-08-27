@@ -65,6 +65,27 @@
                         @error('pdf_file') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
                     </div>
 
+                    <div class="sm:col-span-6 flex flex-col border-t border-gray-800 pt-6 mt-2">
+                        <div class="flex items-center mb-4">
+                            <input id="is_active" name="is_active" type="checkbox" value="1" {{ old('is_active', $sheetMusic->is_active) ? 'checked' : '' }} class="h-4 w-4 rounded border-gray-700 bg-gray-900 text-blue-600 focus:ring-blue-600 focus:ring-offset-gray-900">
+                            <label for="is_active" class="ml-3 block text-sm font-medium leading-6 text-white">Obra Activa (Visible en el archivo general)</label>
+                        </div>
+                        
+                        <div>
+                            <label for="leave_reason" class="block text-sm font-medium leading-6 text-white">Motivo de Baja (Si está inactiva)</label>
+                            <div class="mt-2">
+                                <input list="sheet_leave_reasons" name="leave_reason" id="leave_reason" value="{{ old('leave_reason', $sheetMusic->leave_reason) }}" placeholder="Selecciona o escribe un motivo..." class="block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-blue-500 sm:text-sm sm:leading-6">
+                                <datalist id="sheet_leave_reasons">
+                                    <option value="Retirada del repertorio">
+                                    <option value="Partitura ilegible / Dañada">
+                                    <option value="Sustituida por nueva edición">
+                                    <option value="Error en la instrumentación">
+                                </datalist>
+                            </div>
+                            @error('leave_reason') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
+                        </div>
+                    </div>
+
                     <div class="sm:col-span-6 border-t border-gray-800 pt-6 mt-2">
                         <label class="block text-base font-semibold leading-6 text-white mb-4">Instrumentación de la Obra</label>
                         <p class="text-sm text-gray-400 mb-4">Marca los instrumentos que participan en esta obra. Los músicos que toquen estos instrumentos podrán ver la obra en su área privada.</p>
