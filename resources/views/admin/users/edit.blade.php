@@ -94,43 +94,87 @@
                         @error('leave_reason') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
                     </div>
 
-                    <div class="sm:col-span-6 border-t border-gray-800 pt-6 mt-2">
+                    <div class="sm:col-span-6 border-t border-gray-800 pt-6 mt-2" 
+                         x-data="{
+                            availableInstruments: {{ $instruments->map(fn($i) => ['id' => $i->id, 'name' => $i->name])->toJson() }},
+                            selectedInstruments: [
+                                @foreach($instruments as $instrument)
+                                    @php
+                                        $isChecked = in_array($instrument->id, old('instruments', $userInstruments ?? []));
+                                        $serialValue = old('serial_numbers.'.$instrument->id, isset($userInstrumentsData) && $userInstrumentsData->has($instrument->id) ? $userInstrumentsData[$instrument->id]->pivot->serial_number : '');
+                                    @endphp
+                                    @if($isChecked)
+                                    { id: {{ $instrument->id }}, name: '{{ $instrument->name }}', serial: '{{ $serialValue }}' },
+                                    @endif
+                                @endforeach
+                            ],
+                            selectedToAdd: '',
+                            addInstrument() {
+                                if (!this.selectedToAdd) return;
+                                const id = parseInt(this.selectedToAdd);
+                                if (!this.selectedInstruments.find(i => i.id === id)) {
+                                    const inst = this.availableInstruments.find(i => i.id === id);
+                                    if (inst) {
+                                        this.selectedInstruments.push({ id: inst.id, name: inst.name, serial: '' });
+                                    }
+                                }
+                                this.selectedToAdd = '';
+                            },
+                            removeInstrument(id) {
+                                this.selectedInstruments = this.selectedInstruments.filter(i => i.id !== id);
+                            }
+                         }">
+                         
                         <label class="block text-base font-semibold leading-6 text-white mb-4">Instrumentos Asignados</label>
                         <p class="text-sm text-gray-400 mb-4">Selecciona los instrumentos que toca este músico e indica su número de serie si dispone del instrumento físico de la banda.</p>
                         
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                            @php 
-                                $userInstruments = $user->instruments->pluck('id')->toArray(); 
-                                $userInstrumentsData = $user->instruments->keyBy('id');
-                            @endphp
-                            @foreach($instruments as $instrument)
-                                @php
-                                    $isChecked = in_array($instrument->id, old('instruments', $userInstruments));
-                                    $serialValue = old('serial_numbers.'.$instrument->id, $userInstrumentsData->has($instrument->id) ? $userInstrumentsData[$instrument->id]->pivot->serial_number : '');
-                                @endphp
-                                <div class="relative flex flex-col p-4 bg-gray-950 rounded-lg border border-gray-800" x-data="{ checked: {{ $isChecked ? 'true' : 'false' }} }">
-                                    <div class="flex items-start mb-3">
-                                        <div class="flex h-6 items-center">
-                                            <input id="instrument_{{ $instrument->id }}" name="instruments[]" type="checkbox" value="{{ $instrument->id }}" x-model="checked" class="h-4 w-4 rounded border-gray-700 bg-gray-900 text-amber-600 focus:ring-amber-600 focus:ring-offset-gray-900">
-                                        </div>
-                                        <div class="ml-3 text-sm leading-6">
-                                            <label for="instrument_{{ $instrument->id }}" class="font-medium text-gray-300">{{ $instrument->name }}</label>
-                                        </div>
+                        <div class="flex items-center gap-4 mb-6">
+                            <select x-model="selectedToAdd" class="block w-full sm:w-1/2 rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6 [&_*]:text-black">
+                                <option value="">-- Añadir instrumento --</option>
+                                <template x-for="inst in availableInstruments" :key="inst.id">
+                                    <option :value="inst.id" x-text="inst.name" x-show="!selectedInstruments.find(s => s.id === inst.id)"></option>
+                                </template>
+                            </select>
+                            <button type="button" @click="addInstrument" class="rounded-md bg-amber-600 px-3 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-amber-500">
+                                Añadir
+                            </button>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <template x-for="(inst, index) in selectedInstruments" :key="inst.id">
+                                <div class="flex items-center justify-between p-3 bg-gray-950 rounded-lg border border-gray-800">
+                                    <div class="flex-1 mr-4">
+                                        <p class="text-sm font-medium text-gray-200 mb-2" x-text="inst.name"></p>
+                                        <input type="hidden" name="instruments[]" :value="inst.id">
+                                        <input type="text" :name="'serial_numbers[' + inst.id + ']'" x-model="inst.serial" placeholder="Nº Serie (Opcional)" class="block w-full rounded-md border-0 bg-gray-800 py-1 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-xs">
                                     </div>
-                                    <div x-show="checked" class="mt-1">
-                                        <label for="serial_{{ $instrument->id }}" class="sr-only">Número de Serie</label>
-                                        <input type="text" name="serial_numbers[{{ $instrument->id }}]" id="serial_{{ $instrument->id }}" value="{{ $serialValue }}" placeholder="Nº Serie (Opcional)" class="block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-xs sm:leading-6">
-                                    </div>
+                                    <button type="button" @click="removeInstrument(inst.id)" class="text-red-500 hover:text-red-400 p-1">
+                                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                                        </svg>
+                                    </button>
                                 </div>
-                            @endforeach
+                            </template>
+                            <p x-show="selectedInstruments.length === 0" class="text-sm text-gray-500 italic col-span-full">No hay instrumentos asignados a este músico.</p>
                         </div>
                     </div>
 
                     <div class="sm:col-span-6 border-t border-gray-800 pt-6 mt-2">
-                        <label class="block text-base font-semibold leading-6 text-white mb-4">Historial de Faltas de Asistencia</label>
-                        <p class="text-sm text-gray-400 mb-4">Registro de las faltas de asistencia (justificadas e injustificadas) del músico a los ensayos y actos.</p>
+                        <div class="sm:flex sm:items-center sm:justify-between mb-4">
+                            <div>
+                                <label class="block text-base font-semibold leading-6 text-white">Historial de Asistencia</label>
+                                <p class="text-sm text-gray-400">Registro de asistencia del músico a los ensayos y actos.</p>
+                            </div>
+                            <div class="mt-3 sm:ml-4 sm:mt-0">
+                                <span class="isolate inline-flex rounded-md shadow-sm">
+                                    <button type="button" onclick="window.location.href='{{ route('admin.users.edit', ['user' => $user->id, 'attendance_filter' => 'absent']) }}'" class="relative inline-flex items-center rounded-l-md px-3 py-2 text-sm font-semibold {{ $filter === 'absent' ? 'bg-amber-600 text-white' : 'bg-gray-800 text-gray-300 hover:bg-gray-700' }} ring-1 ring-inset ring-gray-700 focus:z-10">Faltas Injustificadas</button>
+                                    <button type="button" onclick="window.location.href='{{ route('admin.users.edit', ['user' => $user->id, 'attendance_filter' => 'excused']) }}'" class="relative -ml-px inline-flex items-center px-3 py-2 text-sm font-semibold {{ $filter === 'excused' ? 'bg-amber-600 text-white' : 'bg-gray-800 text-gray-300 hover:bg-gray-700' }} ring-1 ring-inset ring-gray-700 focus:z-10">Faltas Justificadas</button>
+                                    <button type="button" onclick="window.location.href='{{ route('admin.users.edit', ['user' => $user->id, 'attendance_filter' => 'present']) }}'" class="relative -ml-px inline-flex items-center rounded-r-md px-3 py-2 text-sm font-semibold {{ $filter === 'present' ? 'bg-amber-600 text-white' : 'bg-gray-800 text-gray-300 hover:bg-gray-700' }} ring-1 ring-inset ring-gray-700 focus:z-10">Asistencias</button>
+                                </span>
+                            </div>
+                        </div>
                         
-                        @if($missedAttendances->count() > 0)
+                        @if($attendances->count() > 0)
                             <div class="overflow-hidden shadow ring-1 ring-white/10 sm:rounded-lg">
                                 <table class="min-w-full divide-y divide-gray-800">
                                     <thead class="bg-gray-900">
@@ -141,7 +185,7 @@
                                         </tr>
                                     </thead>
                                     <tbody class="divide-y divide-gray-800 bg-gray-950">
-                                        @foreach($missedAttendances as $attendance)
+                                        @foreach($attendances as $attendance)
                                             <tr>
                                                 <td class="whitespace-nowrap py-3 pl-4 pr-3 text-sm font-medium text-white sm:pl-6">
                                                     {{ \Carbon\Carbon::parse($attendance->event->event_date)->format('d/m/Y') }}
@@ -152,8 +196,10 @@
                                                 <td class="whitespace-nowrap px-3 py-3 text-sm text-gray-400">
                                                     @if($attendance->status === 'absent')
                                                         <span class="inline-flex items-center rounded-md bg-red-400/10 px-2 py-1 text-xs font-medium text-red-400 ring-1 ring-inset ring-red-400/30">Falta Injustificada</span>
-                                                    @else
+                                                    @elseif($attendance->status === 'excused')
                                                         <span class="inline-flex items-center rounded-md bg-yellow-400/10 px-2 py-1 text-xs font-medium text-yellow-400 ring-1 ring-inset ring-yellow-400/30">Falta Justificada</span>
+                                                    @else
+                                                        <span class="inline-flex items-center rounded-md bg-green-400/10 px-2 py-1 text-xs font-medium text-green-400 ring-1 ring-inset ring-green-400/30">Asiste</span>
                                                     @endif
                                                 </td>
                                             </tr>
@@ -162,7 +208,7 @@
                                 </table>
                             </div>
                         @else
-                            <p class="text-sm text-gray-400 italic bg-gray-950 p-4 rounded-lg border border-gray-800">Este músico no tiene faltas de asistencia registradas.</p>
+                            <p class="text-sm text-gray-400 italic bg-gray-950 p-4 rounded-lg border border-gray-800">No hay registros para este filtro.</p>
                         @endif
                     </div>
 

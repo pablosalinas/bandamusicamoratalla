@@ -35,6 +35,23 @@
                         @error('event_date') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
                     </div>
 
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label for="active_from" class="block text-sm font-medium leading-6 text-white">Visible desde (Opcional)</label>
+                            <div class="mt-2">
+                                <input type="date" name="active_from" id="active_from" value="{{ old('active_from') }}" class="block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6">
+                            </div>
+                            @error('active_from') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
+                        </div>
+                        <div>
+                            <label for="active_to" class="block text-sm font-medium leading-6 text-white">Visible hasta (Opcional)</label>
+                            <div class="mt-2">
+                                <input type="date" name="active_to" id="active_to" value="{{ old('active_to') }}" class="block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6">
+                            </div>
+                            @error('active_to') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
+                        </div>
+                    </div>
+
                     <div>
                         <label for="content" class="block text-sm font-medium leading-6 text-white">Contenido *</label>
                         <div class="mt-2">

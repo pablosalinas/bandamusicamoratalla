@@ -25,6 +25,8 @@ class NewsController extends Controller
             'content' => 'required|string',
             'event_date' => 'nullable|date',
             'is_published' => 'boolean',
+            'active_from' => 'nullable|date',
+            'active_to' => 'nullable|date|after_or_equal:active_from',
         ]);
 
         $validated['slug'] = \Illuminate\Support\Str::slug($validated['title']) . '-' . time();
@@ -47,6 +49,8 @@ class NewsController extends Controller
             'content' => 'required|string',
             'event_date' => 'nullable|date',
             'is_published' => 'boolean',
+            'active_from' => 'nullable|date',
+            'active_to' => 'nullable|date|after_or_equal:active_from',
         ]);
 
         $validated['slug'] = \Illuminate\Support\Str::slug($validated['title']) . '-' . time();

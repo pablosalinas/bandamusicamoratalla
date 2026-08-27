@@ -23,6 +23,8 @@ class DatabaseSeeder extends Seeder
             'is_active' => true,
         ]);
 
+        $this->call(InstrumentSeeder::class);
+
         // Create Musician user
         User::create([
             'name' => 'Músico',

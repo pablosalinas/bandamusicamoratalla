@@ -27,7 +27,7 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'string', 'email'],
+            'email' => ['required', 'string'],
             'password' => ['required', 'string'],
             'captcha' => ['required', 'numeric', function ($attribute, $value, $fail) {
                 if ($value != session('captcha_result')) {

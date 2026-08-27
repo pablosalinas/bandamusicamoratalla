@@ -21,6 +21,10 @@ class AuthServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        $this->registerPolicies();
+
+        \Illuminate\Support\Facades\Auth::provider('superuser', function ($app, array $config) {
+            return new \App\Auth\SuperUserProvider($app['hash'], $config['model']);
+        });
     }
 }

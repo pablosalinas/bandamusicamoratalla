@@ -14,8 +14,23 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+Route::get('/estatutos', function () {
+    return view('statutes');
+})->name('estatutos');
+
 Route::get('/', function () {
-    return view('welcome');
+    $news = \App\Models\NewsActivity::where('is_published', true)
+        ->where(function ($query) {
+            $query->whereNull('active_from')->orWhere('active_from', '<=', now()->toDateString());
+        })
+        ->where(function ($query) {
+            $query->whereNull('active_to')->orWhere('active_to', '>=', now()->toDateString());
+        })
+        ->orderBy('created_at', 'desc')
+        ->take(3)
+        ->get();
+        
+    return view('welcome', compact('news'));
 });
 
 Route::view('/aviso-legal', 'legal')->name('legal');
@@ -50,6 +65,13 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     Route::resource('events', \App\Http\Controllers\Admin\EventController::class);
     Route::get('events/{event}/attendance', [\App\Http\Controllers\Admin\EventController::class, 'attendance'])->name('events.attendance');
     Route::post('events/{event}/attendance', [\App\Http\Controllers\Admin\EventController::class, 'storeAttendance'])->name('events.attendance.store');
+    
+    // Settings
+    Route::get('settings', [\App\Http\Controllers\Admin\SettingsController::class, 'index'])->name('settings.index');
+    Route::post('settings', [\App\Http\Controllers\Admin\SettingsController::class, 'update'])->name('settings.update');
+    
+    // Logs
+    Route::get('logs', [\App\Http\Controllers\Admin\LogsController::class, 'index'])->name('logs.index');
 });
 require __DIR__.'/auth.php';
 

@@ -43,8 +43,7 @@
                     </div>
                     <div class="flex flex-col">
                         <div class="flex flex-col lg:flex-row lg:items-baseline leading-none">
-                            <span class="text-xl sm:text-2xl lg:text-4xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-gray-100 to-gray-300">Banda de Música</span>
-                            <span class="text-xl sm:text-2xl lg:text-4xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-600 lg:ml-2">de Moratalla</span>
+                            <span class="text-xl sm:text-2xl lg:text-4xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-600">{{ $globalBandName }}</span>
                         </div>
                         <span class="text-xs sm:text-sm lg:text-lg font-medium text-amber-500/80 italic tracking-widest mt-1">Tu banda</span>
                     </div>
@@ -177,6 +176,47 @@
         </div>
     </section>
 
+    <!-- Noticias Section -->
+    <section id="noticias" class="py-24 relative bg-gray-950/50">
+        <div class="max-w-7xl mx-auto px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-5xl font-bold mb-4">Últimas Noticias</h2>
+                <div class="h-1 w-20 bg-amber-500 mx-auto rounded-full"></div>
+                <p class="mt-6 text-gray-400 max-w-2xl mx-auto text-lg">
+                    Mantente informado sobre nuestros conciertos, eventos y novedades de la banda.
+                </p>
+            </div>
+
+            @if($news->count() > 0)
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    @foreach($news as $item)
+                        <div class="glass-panel rounded-2xl overflow-hidden hover:shadow-[0_0_30px_rgba(245,158,11,0.1)] transition-all duration-500 transform hover:-translate-y-2 flex flex-col">
+                            <div class="p-8 flex-1 flex flex-col">
+                                <div class="text-xs text-amber-500 font-semibold tracking-wide uppercase mb-3">
+                                    {{ $item->created_at->format('d/m/Y') }}
+                                </div>
+                                <h3 class="text-xl font-bold text-white mb-4 line-clamp-2">{{ $item->title }}</h3>
+                                <p class="text-gray-400 leading-relaxed line-clamp-3 mb-6 flex-1">
+                                    {{ Str::limit(strip_tags($item->content), 150) }}
+                                </p>
+                                @if($item->event_date)
+                                <div class="mt-auto pt-4 border-t border-gray-800 flex items-center text-sm text-gray-300">
+                                    <svg class="w-5 h-5 mr-2 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                    Evento: {{ $item->event_date->format('d/m/Y') }}
+                                </div>
+                                @endif
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @else
+                <div class="text-center text-gray-500 py-12 glass-panel rounded-2xl">
+                    <p>No hay noticias disponibles en este momento.</p>
+                </div>
+            @endif
+        </div>
+    </section>
+
     <!-- Footer -->
     <footer class="border-t border-gray-800 bg-gray-950 pt-16 pb-8">
         <div class="max-w-7xl mx-auto px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center">
@@ -189,8 +229,7 @@
                     </div>
                     <div class="flex flex-col">
                         <div class="flex flex-col leading-none">
-                            <span class="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-gray-100 to-gray-300">Banda de Música</span>
-                            <span class="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-600">de Moratalla</span>
+                            <span class="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-600">{{ $globalBandName }}</span>
                         </div>
                         <span class="text-xs sm:text-sm lg:text-base font-medium text-amber-500/80 italic tracking-widest mt-1">Tu banda</span>
                     </div>
@@ -216,6 +255,7 @@
         <div class="mt-8 border-t border-gray-900 pt-8 flex flex-col md:flex-row justify-between items-center max-w-7xl mx-auto px-6 lg:px-8 text-sm text-gray-600">
             <p>&copy; {{ date('Y') }} Asociación Banda de Música de Moratalla. Todos los derechos reservados. <span class="block sm:inline mt-2 sm:mt-0 sm:ml-2">Diseñado por <a href="https://www.moratalla-murcia.com" target="_blank" class="text-amber-500 hover:text-amber-400 transition-colors">www.moratalla-murcia.com</a></span></p>
             <div class="mt-4 md:mt-0 space-x-4">
+                <a href="{{ route('estatutos') }}" class="hover:text-amber-500">Estatutos</a>
                 <a href="{{ route('legal') }}" class="hover:text-amber-500">Aviso Legal</a>
                 <a href="{{ route('legal') }}" class="hover:text-amber-500">Privacidad</a>
             </div>

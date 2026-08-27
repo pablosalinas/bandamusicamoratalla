@@ -55,19 +55,28 @@ class UserController extends Controller
         return redirect()->route('admin.users.index')->with('success', 'Usuario creado correctamente.');
     }
 
-    public function edit(User $user)
+    public function edit(Request $request, User $user)
     {
         $instruments = InstrumentCatalog::orderBy('name')->get();
         
-        $missedAttendances = \App\Models\Attendance::with('event')
+        $filter = $request->query('attendance_filter', 'absent');
+        
+        $statusMap = [
+            'absent' => ['absent'],
+            'excused' => ['excused'],
+            'present' => ['present'],
+        ];
+        $statuses = $statusMap[$filter] ?? ['absent'];
+
+        $attendances = \App\Models\Attendance::with('event')
             ->where('user_id', $user->id)
-            ->whereIn('status', ['absent', 'excused'])
+            ->whereIn('status', $statuses)
             ->get()
             ->sortByDesc(function($attendance) {
                 return $attendance->event->event_date;
             });
 
-        return view('admin.users.edit', compact('user', 'instruments', 'missedAttendances'));
+        return view('admin.users.edit', compact('user', 'instruments', 'attendances', 'filter'));
     }
 
     public function update(Request $request, User $user)
