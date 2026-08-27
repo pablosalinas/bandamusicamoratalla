@@ -196,8 +196,12 @@
                     </div>
                 </div>
                 <p class="text-gray-500 mt-2 text-sm">Cultura y tradición musical en el Noroeste Murciano.</p>
+                <div class="mt-4 flex items-center gap-2 text-sm text-gray-400">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                    <a href="mailto:bandamusicademoratalla@gmail.com" class="hover:text-amber-500 transition-colors">bandamusicademoratalla@gmail.com</a>
+                </div>
             </div>
-            <div class="flex space-x-6">
+            <div class="flex space-x-6 mt-6 md:mt-0">
                 <!-- Social links placeholders -->
                 <a href="https://www.facebook.com/share/19TzkksMKa/" target="_blank" class="text-gray-400 hover:text-amber-500 transition-colors">
                     <span class="sr-only">Facebook</span>
@@ -212,8 +216,8 @@
         <div class="mt-8 border-t border-gray-900 pt-8 flex flex-col md:flex-row justify-between items-center max-w-7xl mx-auto px-6 lg:px-8 text-sm text-gray-600">
             <p>&copy; {{ date('Y') }} Asociación Banda de Música de Moratalla. Todos los derechos reservados. <span class="block sm:inline mt-2 sm:mt-0 sm:ml-2">Diseñado por <a href="https://www.moratalla-murcia.com" target="_blank" class="text-amber-500 hover:text-amber-400 transition-colors">www.moratalla-murcia.com</a></span></p>
             <div class="mt-4 md:mt-0 space-x-4">
-                <a href="#" class="hover:text-amber-500">Aviso Legal</a>
-                <a href="#" class="hover:text-amber-500">Privacidad</a>
+                <a href="{{ route('legal') }}" class="hover:text-amber-500">Aviso Legal</a>
+                <a href="{{ route('legal') }}" class="hover:text-amber-500">Privacidad</a>
             </div>
         </div>
     </footer>
