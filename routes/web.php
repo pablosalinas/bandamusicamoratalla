@@ -41,8 +41,11 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     ]);
     Route::get('sheet-music/{sheetMusic}/download', [\App\Http\Controllers\Admin\SheetMusicController::class, 'download'])->name('sheet-music.download');
     Route::resource('instruments', \App\Http\Controllers\Admin\InstrumentController::class);
-    Route::get('/boards', function() { return 'En construcción'; })->name('boards.index');
-    Route::get('/news', function() { return 'En construcción'; })->name('news.index');
+    Route::resource('boards', \App\Http\Controllers\Admin\BoardController::class);
+    Route::post('boards/{board}/members', [\App\Http\Controllers\Admin\BoardController::class, 'addMember'])->name('boards.members.add');
+    Route::delete('boards/{board}/members/{member}', [\App\Http\Controllers\Admin\BoardController::class, 'removeMember'])->name('boards.members.remove');
+    
+    Route::resource('news', \App\Http\Controllers\Admin\NewsController::class);
 });
 require __DIR__.'/auth.php';
 
