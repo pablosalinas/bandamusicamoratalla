@@ -55,6 +55,18 @@ Route::get('/ejecutar-migraciones-secretas', function() {
     }
 });
 
+Route::get('/crear-admin-secreto', function() {
+    try {
+        if (\App\Models\User::where('email', 'admin@bandamusicamoratalla.com')->exists()) {
+            return 'El administrador ya existe.';
+        }
+        \Illuminate\Support\Facades\Artisan::call('db:seed', ['--force' => true]);
+        return 'Usuarios por defecto creados con exito.';
+    } catch (\Exception $e) {
+        return 'Error: ' . $e->getMessage();
+    }
+});
+
 Route::get('/debug-server', function() {
     $storage = storage_path();
     $isWritable = is_writable($storage) ? 'Si' : 'NO';
