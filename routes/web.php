@@ -43,3 +43,12 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     Route::get('/news', function() { return 'En construcción'; })->name('news.index');
 });
 require __DIR__.'/auth.php';
+
+Route::get('/ejecutar-migraciones-secretas', function() {
+    try {
+        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+        return 'Migraciones ejecutadas con exito: ' . \Illuminate\Support\Facades\Artisan::output();
+    } catch (\Exception $e) {
+        return 'Error: ' . $e->getMessage();
+    }
+});
