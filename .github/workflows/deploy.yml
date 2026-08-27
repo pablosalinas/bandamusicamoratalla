@@ -38,6 +38,6 @@ jobs:
         server: ${{ secrets.SFTP_SERVER }}
         username: ${{ secrets.SFTP_USERNAME }}
         password: ${{ secrets.SFTP_PASSWORD }}
-        remote_path: ${{ secrets.SFTP_REMOTE_PATH }}
+        remote_path: '/moratalla-murcia.com/bandamusicamoratalla'
         local_path: './'
         sftpArgs: '-o StrictHostKeyChecking=no'
