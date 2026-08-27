@@ -9,7 +9,11 @@ class InstrumentCatalog extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'type', 'description'];
+    protected $fillable = ['name', 'type', 'description', 'is_active'];
+
+    protected $casts = [
+        'is_active' => 'boolean',
+    ];
 
     public function musicians()
     {

@@ -77,6 +77,7 @@ class UserController extends Controller
             'email' => $request->email,
             'role' => $request->role,
             'is_active' => $request->has('is_active'),
+            'leave_reason' => $request->has('is_active') ? null : $request->leave_reason,
             'birth_date' => $request->birth_date,
         ]);
 

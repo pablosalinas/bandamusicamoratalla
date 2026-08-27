@@ -71,9 +71,19 @@
                         @error('role') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
                     </div>
 
-                    <div class="sm:col-span-3 flex items-center mt-8">
-                        <input id="is_active" name="is_active" type="checkbox" value="1" {{ old('is_active', $user->is_active) ? 'checked' : '' }} class="h-4 w-4 rounded border-gray-700 bg-gray-900 text-amber-600 focus:ring-amber-600 focus:ring-offset-gray-900">
-                        <label for="is_active" class="ml-3 block text-sm font-medium leading-6 text-white">Usuario Activo en la Banda</label>
+                    <div class="sm:col-span-3 flex flex-col justify-center mt-4">
+                        <div class="flex items-center">
+                            <input id="is_active" name="is_active" type="checkbox" value="1" {{ old('is_active', $user->is_active) ? 'checked' : '' }} class="h-4 w-4 rounded border-gray-700 bg-gray-900 text-amber-600 focus:ring-amber-600 focus:ring-offset-gray-900">
+                            <label for="is_active" class="ml-3 block text-sm font-medium leading-6 text-white">Usuario Activo en la Banda</label>
+                        </div>
+                    </div>
+
+                    <div class="sm:col-span-3">
+                        <label for="leave_reason" class="block text-sm font-medium leading-6 text-white">Motivo de Baja (Si está inactivo)</label>
+                        <div class="mt-2">
+                            <input type="text" name="leave_reason" id="leave_reason" value="{{ old('leave_reason', $user->leave_reason) }}" class="block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6">
+                        </div>
+                        @error('leave_reason') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
                     </div>
 
                     <div class="sm:col-span-6 border-t border-gray-800 pt-6 mt-2">

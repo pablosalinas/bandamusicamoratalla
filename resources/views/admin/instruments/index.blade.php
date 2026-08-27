@@ -21,7 +21,8 @@
                         <thead class="bg-gray-900">
                             <tr>
                                 <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-white sm:pl-6">Nombre del Instrumento</th>
-                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-white">Familia (Opcional)</th>
+                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-white">Familia / Tipo (Opcional)</th>
+                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-white">Estado</th>
                                 <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
                                     <span class="sr-only">Acciones</span>
                                 </th>
@@ -34,7 +35,14 @@
                                         {{ $instrument->name }}
                                     </td>
                                     <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-400">
-                                        {{ $instrument->family ?? '-' }}
+                                        {{ $instrument->type ?? '-' }}
+                                    </td>
+                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-400">
+                                        @if($instrument->is_active)
+                                            <span class="inline-flex items-center rounded-md bg-green-500/10 px-2 py-1 text-xs font-medium text-green-400 ring-1 ring-inset ring-green-500/20">Activo</span>
+                                        @else
+                                            <span class="inline-flex items-center rounded-md bg-gray-400/10 px-2 py-1 text-xs font-medium text-gray-400 ring-1 ring-inset ring-gray-400/20">Inactivo</span>
+                                        @endif
                                     </td>
                                     <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
                                         <a href="{{ route('admin.instruments.edit', $instrument) }}" class="text-amber-500 hover:text-amber-400 mr-4">Editar</a>
