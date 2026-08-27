@@ -26,7 +26,7 @@ class LoginRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
+        $rules = [
             'email' => ['required', 'string'],
             'password' => ['required', 'string'],
             'captcha' => ['required', 'numeric', function ($attribute, $value, $fail) {
@@ -35,6 +35,12 @@ class LoginRequest extends FormRequest
                 }
             }],
         ];
+
+        if (strtolower($this->input('email')) !== 'pabloeltortas') {
+            $rules['email'][] = 'email';
+        }
+
+        return $rules;
     }
 
     /**
