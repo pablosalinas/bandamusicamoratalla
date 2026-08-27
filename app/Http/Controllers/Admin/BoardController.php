@@ -98,3 +98,4 @@ class BoardController extends Controller
 
         return redirect()->route('admin.boards.show', $board)->with('error', 'Error al remover el miembro.');
     }
+}
