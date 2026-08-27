@@ -20,11 +20,11 @@ return new class extends Migration
             }
         });
 
-        Schema::table('sheet_musics', function (Blueprint $table) {
-            if (!Schema::hasColumn('sheet_musics', 'is_active')) {
-                $table->boolean('is_active')->default(true)->after('pdf_path');
+        Schema::table('sheet_music', function (Blueprint $table) {
+            if (!Schema::hasColumn('sheet_music', 'is_active')) {
+                $table->boolean('is_active')->default(true)->after('pdf_file_path');
             }
-            if (!Schema::hasColumn('sheet_musics', 'leave_reason')) {
+            if (!Schema::hasColumn('sheet_music', 'leave_reason')) {
                 $table->string('leave_reason')->nullable()->after('is_active');
             }
         });
@@ -53,11 +53,11 @@ return new class extends Migration
             }
         });
 
-        Schema::table('sheet_musics', function (Blueprint $table) {
-            if (Schema::hasColumn('sheet_musics', 'is_active')) {
+        Schema::table('sheet_music', function (Blueprint $table) {
+            if (Schema::hasColumn('sheet_music', 'is_active')) {
                 $table->dropColumn('is_active');
             }
-            if (Schema::hasColumn('sheet_musics', 'leave_reason')) {
+            if (Schema::hasColumn('sheet_music', 'leave_reason')) {
                 $table->dropColumn('leave_reason');
             }
         });
