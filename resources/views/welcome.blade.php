@@ -71,8 +71,10 @@
         <div class="absolute inset-0 bg-gradient-to-r from-amber-900/20 to-transparent mix-blend-overlay"></div>
 
         <div class="relative z-10 text-center max-w-4xl px-6 mt-10">
-            <div class="inline-flex items-center justify-center px-4 py-1.5 mb-6 rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-400 text-sm font-semibold tracking-wide uppercase shadow-[0_0_10px_rgba(245,158,11,0.1)]">
-                Tradición y Cultura Musical
+            <div class="inline-flex flex-col sm:flex-row items-center justify-center px-5 py-2 mb-6 rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-400 text-sm font-semibold tracking-wide uppercase shadow-[0_0_10px_rgba(245,158,11,0.1)] gap-2">
+                <span>Desde 1854</span>
+                <span class="hidden sm:inline text-amber-500/50">•</span>
+                <span>{{ date('Y') - 1854 + 1 }} años de historia</span>
             </div>
             
             <h1 class="text-5xl md:text-7xl font-extrabold mb-6 tracking-tight">
@@ -171,7 +173,7 @@
             </div>
             <div class="flex space-x-6">
                 <!-- Social links placeholders -->
-                <a href="#" class="text-gray-400 hover:text-amber-500 transition-colors">
+                <a href="https://www.facebook.com/share/19TzkksMKa/" target="_blank" class="text-gray-400 hover:text-amber-500 transition-colors">
                     <span class="sr-only">Facebook</span>
                     <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" clip-rule="evenodd" /></svg>
                 </a>
