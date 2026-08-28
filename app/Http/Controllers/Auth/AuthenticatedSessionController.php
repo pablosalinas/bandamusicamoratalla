@@ -34,10 +34,10 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerate();
 
         if (in_array($request->user()->role, ['admin', 'treasurer'])) {
-            return redirect()->intended(route('admin.dashboard'));
+            return redirect()->route('admin.dashboard');
         }
 
-        return redirect()->intended(route('dashboard'));
+        return redirect()->route('dashboard');
     }
 
     /**

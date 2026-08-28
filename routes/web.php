@@ -50,6 +50,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard/sheet-music/{sheetMusic}/download', [\App\Http\Controllers\MusicianController::class, 'download'])->name('musician.sheet-music.download');
 });
 
+Route::get('/test-redirect', function () {
+    return [
+        'login' => route('login'),
+        'dashboard' => route('dashboard'),
+        'admin' => route('admin.dashboard'),
+        'base' => url('/'),
+    ];
+});
+
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
