@@ -30,18 +30,18 @@
 
                     <div class="sm:col-span-6">
                         <label for="statutes" class="block text-sm font-medium leading-6 text-white">Estatutos</label>
-                        <div class="mt-2 text-black bg-white rounded-md p-1">
-                            <input id="statutes" type="hidden" name="statutes" value="{{ old('statutes', $settings['statutes'] ?? '') }}">
-                            <trix-editor input="statutes" class="trix-content min-h-[300px]"></trix-editor>
+                        <p class="text-sm text-gray-400 mb-2">Texto de los estatutos. Los usuarios podrán leerlos y descargarlos en PDF.</p>
+                        <div class="mt-2 text-black">
+                            <textarea id="statutes" name="statutes" rows="10">{{ old('statutes', $settings['statutes'] ?? '') }}</textarea>
                         </div>
                         @error('statutes') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
                     </div>
 
                     <div class="sm:col-span-6">
                         <label for="band_history" class="block text-sm font-medium leading-6 text-white">Historia de la Banda</label>
-                        <div class="mt-2 text-black bg-white rounded-md p-1">
-                            <input id="band_history" type="hidden" name="band_history" value="{{ old('band_history', $settings['band_history'] ?? '') }}">
-                            <trix-editor input="band_history" class="trix-content min-h-[300px]"></trix-editor>
+                        <p class="text-sm text-gray-400 mb-2">Descripción de la historia de la banda de música que se mostrará en la página principal.</p>
+                        <div class="mt-2 text-black">
+                            <textarea id="band_history" name="band_history" rows="10">{{ old('band_history', $settings['band_history'] ?? '') }}</textarea>
                         </div>
                         @error('band_history') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
                     </div>
@@ -57,11 +57,22 @@
         </form>
     </div>
 
-    <!-- Trix Editor -->
-    <link rel="stylesheet" type="text/css" href="https://unpkg.com/trix@2.0.8/dist/trix.css">
-    <script type="text/javascript" src="https://unpkg.com/trix@2.0.8/dist/trix.umd.min.js"></script>
+    <!-- CKEditor 5 -->
+    <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
+    <script>
+        ClassicEditor
+            .create( document.querySelector( '#statutes' ), {
+                toolbar: [ 'heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', 'blockQuote', '|', 'undo', 'redo' ]
+            } )
+            .catch( error => { console.error( error ); } );
+            
+        ClassicEditor
+            .create( document.querySelector( '#band_history' ), {
+                toolbar: [ 'heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', 'blockQuote', '|', 'undo', 'redo' ]
+            } )
+            .catch( error => { console.error( error ); } );
+    </script>
     <style>
-        trix-editor { min-height: 250px; background: white; }
-        trix-toolbar [data-trix-button-group="file-tools"] { display: none; }
+        .ck-editor__editable { min-height: 250px; background-color: white !important; color: black !important; }
     </style>
 </x-admin-layout>
