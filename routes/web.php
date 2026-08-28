@@ -30,7 +30,17 @@ Route::get('/', function () {
         ->take(3)
         ->get();
         
-    return view('welcome', compact('news'));
+    $band_history = \App\Models\SiteSetting::getSetting('band_history', '');
+    
+    // Visit counter logic
+    $visit_count = (int) \App\Models\SiteSetting::getSetting('visit_count', 0);
+    $visit_count++;
+    \App\Models\SiteSetting::updateOrCreate(
+        ['key' => 'visit_count'],
+        ['value' => $visit_count, 'type' => 'integer']
+    );
+
+    return view('welcome', compact('news', 'band_history', 'visit_count'));
 });
 
 Route::view('/aviso-legal', 'legal')->name('legal');

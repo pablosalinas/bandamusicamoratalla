@@ -129,48 +129,21 @@
         </div>
     </section>
 
-    <!-- Junta Directiva / Features Section -->
+    <!-- Historia Section -->
     <section id="historia" class="py-24 relative">
         <div class="max-w-7xl mx-auto px-6 lg:px-8">
             <div class="text-center mb-16">
-                <h2 class="text-3xl md:text-5xl font-bold mb-4">Nuestra Institución</h2>
+                <h2 class="text-3xl md:text-5xl font-bold mb-4">Historia de la Banda</h2>
                 <div class="h-1 w-20 bg-amber-500 mx-auto rounded-full"></div>
-                <p class="mt-6 text-gray-400 max-w-2xl mx-auto text-lg">
-                    Dirigidos por una junta directiva comprometida con la excelencia y apoyados por decenas de músicos locales.
-                </p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <!-- Card 1 -->
-                <div class="glass-panel p-8 rounded-2xl hover:shadow-[0_0_30px_rgba(245,158,11,0.1)] transition-all duration-500 transform hover:-translate-y-2 group">
-                    <div class="w-14 h-14 bg-amber-500/10 rounded-xl flex items-center justify-center mb-6 group-hover:bg-amber-500/20 transition-colors">
-                        <svg class="w-7 h-7 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-                    </div>
-                    <h3 class="text-xl font-bold text-white mb-3">La Junta Directiva</h3>
-                    <p class="text-gray-400 leading-relaxed">
-                        Un equipo de apasionados que vela por el buen funcionamiento, la financiación y el futuro de nuestra banda.
-                    </p>
-                </div>
-                <!-- Card 2 -->
-                <div class="glass-panel p-8 rounded-2xl hover:shadow-[0_0_30px_rgba(245,158,11,0.1)] transition-all duration-500 transform hover:-translate-y-2 group relative overflow-hidden">
-                    <div class="absolute -right-10 -top-10 w-32 h-32 bg-amber-500/5 rounded-full blur-2xl"></div>
-                    <div class="w-14 h-14 bg-amber-500/10 rounded-xl flex items-center justify-center mb-6 group-hover:bg-amber-500/20 transition-colors">
-                        <svg class="w-7 h-7 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path></svg>
-                    </div>
-                    <h3 class="text-xl font-bold text-white mb-3">El Archivo Musical</h3>
-                    <p class="text-gray-400 leading-relaxed">
-                        Contamos con un extenso archivo de partituras gestionado digitalmente para que nuestros músicos tengan siempre sus papeles al día.
-                    </p>
-                </div>
-                <!-- Card 3 -->
-                <div class="glass-panel p-8 rounded-2xl hover:shadow-[0_0_30px_rgba(245,158,11,0.1)] transition-all duration-500 transform hover:-translate-y-2 group">
-                    <div class="w-14 h-14 bg-amber-500/10 rounded-xl flex items-center justify-center mb-6 group-hover:bg-amber-500/20 transition-colors">
-                        <svg class="w-7 h-7 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path></svg>
-                    </div>
-                    <h3 class="text-xl font-bold text-white mb-3">Últimas Noticias</h3>
-                    <p class="text-gray-400 leading-relaxed">
-                        Mantente informado de nuestros próximos conciertos, pasacalles, procesiones y nuevas incorporaciones a la banda.
-                    </p>
+            <div class="glass-panel p-8 rounded-2xl">
+                <div class="prose prose-invert prose-amber max-w-none text-gray-300 leading-relaxed">
+                    @if(empty($band_history))
+                        <p class="text-gray-400 italic text-center">La historia de la banda aún no ha sido publicada.</p>
+                    @else
+                        {!! $band_history !!}
+                    @endif
                 </div>
             </div>
         </div>
@@ -254,7 +227,8 @@
         </div>
         <div class="mt-8 border-t border-gray-900 pt-8 flex flex-col md:flex-row justify-between items-center max-w-7xl mx-auto px-6 lg:px-8 text-sm text-gray-600">
             <p>&copy; {{ date('Y') }} Asociación Banda de Música de Moratalla. Todos los derechos reservados. <span class="block sm:inline mt-2 sm:mt-0 sm:ml-2">Diseñado por <a href="https://www.moratalla-murcia.com" target="_blank" class="text-amber-500 hover:text-amber-400 transition-colors">www.moratalla-murcia.com</a></span></p>
-            <div class="mt-4 md:mt-0 space-x-4">
+            <div class="mt-4 md:mt-0 space-x-4 flex items-center">
+                <span class="text-gray-700 text-xs mr-2" title="Visitas">{{ number_format($visit_count ?? 0) }}</span>
                 <a href="{{ route('estatutos') }}" class="hover:text-amber-500">Estatutos</a>
                 <a href="{{ route('legal') }}" class="hover:text-amber-500">Aviso Legal</a>
                 <a href="{{ route('legal') }}" class="hover:text-amber-500">Privacidad</a>

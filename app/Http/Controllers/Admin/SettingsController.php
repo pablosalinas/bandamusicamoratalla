@@ -13,6 +13,7 @@ class SettingsController extends Controller
             'band_name' => \App\Models\SiteSetting::getSetting('band_name', 'Banda de Música de Moratalla'),
             'session_timeout' => \App\Models\SiteSetting::getSetting('session_timeout', 120),
             'statutes' => \App\Models\SiteSetting::getSetting('statutes', ''),
+            'band_history' => \App\Models\SiteSetting::getSetting('band_history', ''),
         ];
         
         return view('admin.settings.index', compact('settings'));
@@ -24,6 +25,7 @@ class SettingsController extends Controller
             'band_name' => 'required|string|max:255',
             'session_timeout' => 'required|integer|min:1',
             'statutes' => 'nullable|string',
+            'band_history' => 'nullable|string',
         ]);
 
         foreach ($validated as $key => $value) {

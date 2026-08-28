@@ -43,7 +43,7 @@
                 @if(empty($globalStatutes))
                     <p class="text-gray-400 italic">Los estatutos aún no han sido publicados.</p>
                 @else
-                    {!! nl2br(e($globalStatutes)) !!}
+                    {!! $globalStatutes !!}
                 @endif
             </div>
         </div>
