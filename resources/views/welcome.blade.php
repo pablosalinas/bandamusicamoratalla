@@ -53,7 +53,7 @@
                     <a href="#historia" class="text-gray-300 hover:text-white transition-colors font-medium">Historia</a>
                     <a href="#noticias" class="text-gray-300 hover:text-white transition-colors font-medium">Noticias</a>
                     @auth
-                        <a href="{{ url('/dashboard') }}" class="text-amber-500 hover:text-amber-400 font-semibold transition-colors">Mi Panel</a>
+                        <a href="{{ route('dashboard') }}" class="text-amber-500 hover:text-amber-400 font-semibold transition-colors">Mi Panel</a>
                     @else
                         <a href="{{ route('login') }}" class="px-5 py-2 rounded-full border border-amber-500/50 text-amber-500 hover:bg-amber-500 hover:text-gray-900 transition-all font-semibold shadow-[0_0_15px_rgba(245,158,11,0.2)] hover:shadow-[0_0_20px_rgba(245,158,11,0.4)] whitespace-nowrap">Acceso Músicos</a>
                     @endauth
@@ -80,7 +80,7 @@
                 <a href="#historia" @click="mobileMenuOpen = false" class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-800">Historia</a>
                 <a href="#noticias" @click="mobileMenuOpen = false" class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-800">Noticias</a>
                 @auth
-                    <a href="{{ url('/dashboard') }}" class="block px-3 py-2 rounded-md text-base font-medium text-amber-500 hover:text-amber-400 hover:bg-gray-800">Mi Panel</a>
+                    <a href="{{ route('dashboard') }}" class="block px-3 py-2 rounded-md text-base font-medium text-amber-500 hover:text-amber-400 hover:bg-gray-800">Mi Panel</a>
                 @else
                     <a href="{{ route('login') }}" class="block px-3 py-2 rounded-md text-base font-medium text-amber-500 hover:text-amber-400 hover:bg-gray-800">Acceso Músicos</a>
                 @endauth
