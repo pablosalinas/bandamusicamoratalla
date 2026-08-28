@@ -29,19 +29,19 @@
                     </div>
 
                     <div class="sm:col-span-6">
-                        <label for="statutes" class="block text-sm font-medium leading-6 text-white">Estatutos de la Banda</label>
-                        <p class="text-sm text-gray-400 mb-2">Texto de los estatutos. Los usuarios podrán leerlos y descargarlos en PDF.</p>
-                        <div class="mt-2 text-black">
-                            <textarea id="statutes" name="statutes" rows="10" class="tinymce block w-full rounded-md border-0 bg-white py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6">{{ old('statutes', $settings['statutes']) }}</textarea>
+                        <label for="statutes" class="block text-sm font-medium leading-6 text-white">Estatutos</label>
+                        <div class="mt-2 text-black bg-white rounded-md p-1">
+                            <input id="statutes" type="hidden" name="statutes" value="{{ old('statutes', $settings['statutes'] ?? '') }}">
+                            <trix-editor input="statutes" class="trix-content min-h-[300px]"></trix-editor>
                         </div>
                         @error('statutes') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
                     </div>
 
                     <div class="sm:col-span-6">
                         <label for="band_history" class="block text-sm font-medium leading-6 text-white">Historia de la Banda</label>
-                        <p class="text-sm text-gray-400 mb-2">Descripción de la historia de la banda de música que se mostrará en la página principal.</p>
-                        <div class="mt-2 text-black">
-                            <textarea id="band_history" name="band_history" rows="10" class="tinymce block w-full rounded-md border-0 bg-white py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6">{{ old('band_history', $settings['band_history'] ?? '') }}</textarea>
+                        <div class="mt-2 text-black bg-white rounded-md p-1">
+                            <input id="band_history" type="hidden" name="band_history" value="{{ old('band_history', $settings['band_history'] ?? '') }}">
+                            <trix-editor input="band_history" class="trix-content min-h-[300px]"></trix-editor>
                         </div>
                         @error('band_history') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
                     </div>
@@ -57,16 +57,11 @@
         </form>
     </div>
 
-    <!-- TinyMCE Editor -->
-    <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
-    <script>
-        tinymce.init({
-            selector: 'textarea.tinymce',
-            plugins: 'lists link image table code help wordcount',
-            toolbar: 'undo redo | blocks | bold italic forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help',
-            menubar: false,
-            language: 'es',
-            content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:16px }'
-        });
-    </script>
+    <!-- Trix Editor -->
+    <link rel="stylesheet" type="text/css" href="https://unpkg.com/trix@2.0.8/dist/trix.css">
+    <script type="text/javascript" src="https://unpkg.com/trix@2.0.8/dist/trix.umd.min.js"></script>
+    <style>
+        trix-editor { min-height: 250px; background: white; }
+        trix-toolbar [data-trix-button-group="file-tools"] { display: none; }
+    </style>
 </x-admin-layout>
