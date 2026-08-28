@@ -41,12 +41,19 @@
                         <div class="mt-2">
                             <select id="type" name="type" required class="block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6">
                                 <option value="ensayo" {{ old('type', $event->type) == 'ensayo' ? 'selected' : '' }}>Ensayo</option>
-                                <option value="concierto" {{ old('type', $event->type) == 'concierto' ? 'selected' : '' }}>Concierto</option>
-                                <option value="oficial" {{ old('type', $event->type) == 'oficial' ? 'selected' : '' }}>Acto Oficial (Procesión, Pasacalles, etc.)</option>
+                                <option value="contratada" {{ old('type', $event->type) == 'contratada' ? 'selected' : '' }}>Contratada</option>
+                                <option value="convenio" {{ old('type', $event->type) == 'convenio' ? 'selected' : '' }}>Convenio</option>
+                                <option value="propias" {{ old('type', $event->type) == 'propias' ? 'selected' : '' }}>Propias</option>
+                                <option value="salida" {{ old('type', $event->type) == 'salida' ? 'selected' : '' }}>Salida</option>
                                 <option value="otro" {{ old('type', $event->type) == 'otro' ? 'selected' : '' }}>Otro</option>
                             </select>
                         </div>
                         @error('type') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div class="flex items-center">
+                        <input id="is_active" name="is_active" type="checkbox" value="1" {{ old('is_active', $event->is_active) ? 'checked' : '' }} class="h-4 w-4 rounded border-gray-700 bg-gray-900 text-amber-600 focus:ring-amber-600 focus:ring-offset-gray-900">
+                        <label for="is_active" class="ml-3 block text-sm font-medium leading-6 text-white">Evento Activo (Mostrar en Planning)</label>
                     </div>
 
                 </div>

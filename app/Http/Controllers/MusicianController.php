@@ -50,4 +50,30 @@ class MusicianController extends Controller
 
         return Storage::disk('local')->download($sheetMusic->pdf_file_path, $sheetMusic->title . '.pdf');
     }
+
+    public function planning()
+    {
+        $events = \App\Models\Event::where('is_active', true)
+            ->whereDate('event_date', '>=', now()->toDateString())
+            ->orderBy('event_date', 'asc')
+            ->get()
+            ->groupBy(function($val) {
+                return \Carbon\Carbon::parse($val->event_date)->translatedFormat('F Y');
+            });
+
+        return view('musician.planning', compact('events'));
+    }
+
+    public function planningPdf()
+    {
+        $events = \App\Models\Event::where('is_active', true)
+            ->whereDate('event_date', '>=', now()->toDateString())
+            ->orderBy('event_date', 'asc')
+            ->get()
+            ->groupBy(function($val) {
+                return \Carbon\Carbon::parse($val->event_date)->translatedFormat('F Y');
+            });
+
+        return view('musician.planning_pdf', compact('events'));
+    }
 }

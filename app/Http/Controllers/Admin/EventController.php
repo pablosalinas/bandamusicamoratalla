@@ -28,7 +28,10 @@ class EventController extends Controller
             'name' => 'required|string|max:255',
             'event_date' => 'required|date',
             'type' => 'required|string|max:255',
+            'is_active' => 'nullable|boolean',
         ]);
+
+        $validated['is_active'] = $request->has('is_active');
 
         $event = Event::create($validated);
 
@@ -51,7 +54,10 @@ class EventController extends Controller
             'name' => 'required|string|max:255',
             'event_date' => 'required|date',
             'type' => 'required|string|max:255',
+            'is_active' => 'nullable|boolean',
         ]);
+
+        $validated['is_active'] = $request->has('is_active');
 
         $event->update($validated);
 

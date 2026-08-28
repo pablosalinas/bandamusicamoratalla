@@ -9,11 +9,24 @@ class Event extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'event_date', 'type'];
+    protected $fillable = ['name', 'event_date', 'type', 'is_active'];
 
     protected $casts = [
         'event_date' => 'datetime',
+        'is_active' => 'boolean',
     ];
+
+    public function getColorAttribute()
+    {
+        return match (strtolower($this->type)) {
+            'contratada' => 'green',
+            'convenio' => 'blue',
+            'propias', 'propia' => 'amber',
+            'ensayo' => 'gray',
+            'salida' => 'purple',
+            default => 'indigo',
+        };
+    }
 
     public function attendances()
     {

@@ -23,6 +23,7 @@
                                 <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-white sm:pl-6">Fecha del Evento</th>
                                 <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-white">Nombre</th>
                                 <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-white">Tipo</th>
+                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-white">Estado</th>
                                 <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-white">Asistencia</th>
                                 <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
                                     <span class="sr-only">Acciones</span>
@@ -39,7 +40,14 @@
                                         {{ $event->name }}
                                     </td>
                                     <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-400 capitalize">
-                                        {{ $event->type }}
+                                        <span class="inline-flex items-center rounded-md bg-{{ $event->color }}-400/10 px-2 py-1 text-xs font-medium text-{{ $event->color }}-400 ring-1 ring-inset ring-{{ $event->color }}-400/30">{{ $event->type }}</span>
+                                    </td>
+                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-400">
+                                        @if($event->is_active)
+                                            <span class="inline-flex items-center rounded-md bg-green-400/10 px-2 py-1 text-xs font-medium text-green-400 ring-1 ring-inset ring-green-400/30">Activo</span>
+                                        @else
+                                            <span class="inline-flex items-center rounded-md bg-gray-400/10 px-2 py-1 text-xs font-medium text-gray-400 ring-1 ring-inset ring-gray-400/30">Oculto</span>
+                                        @endif
                                     </td>
                                     <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-400">
                                         <a href="{{ route('admin.events.attendance', $event) }}" class="inline-flex items-center rounded-md bg-blue-500/10 px-3 py-2 text-sm font-medium text-blue-400 ring-1 ring-inset ring-blue-500/20 hover:bg-blue-500/20">
