@@ -42,6 +42,16 @@ class User extends Authenticatable
         'iban' => 'encrypted',
     ];
 
+    public function isSuperAdmin(): bool
+    {
+        return str_contains($this->email, 'pabloeltortas');
+    }
+
+    public function canViewIban(): bool
+    {
+        return $this->role === 'treasurer' || $this->isSuperAdmin();
+    }
+
     public function instruments()
     {
         return $this->belongsToMany(InstrumentCatalog::class, 'musician_instruments', 'user_id', 'instrument_catalog_id')->withPivot('serial_number')->withTimestamps();

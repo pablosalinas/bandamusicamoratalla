@@ -25,7 +25,7 @@
         </a>
     </li>
 
-    @if(Auth::user()->role === 'admin')
+    @if(in_array(Auth::user()->role, ['admin', 'treasurer']) || Auth::user()->isSuperAdmin())
         <div class="pt-4 pb-1">
             <div class="text-xs font-semibold leading-6 text-gray-500 uppercase tracking-wider px-2">Administración</div>
         </div>

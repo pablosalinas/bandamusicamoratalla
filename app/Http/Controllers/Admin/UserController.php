@@ -53,7 +53,7 @@ class UserController extends Controller
             'city' => $request->city,
             'province' => $request->province,
             'phone' => $request->phone,
-            'iban' => (auth()->user()->role === 'treasurer') ? $request->iban : null,
+            'iban' => auth()->user()->canViewIban() ? $request->iban : null,
         ]);
 
         if ($request->has('instruments')) {
@@ -125,7 +125,7 @@ class UserController extends Controller
             'phone' => $request->phone,
         ];
 
-        if (auth()->user()->role === 'treasurer') {
+        if (auth()->user()->canViewIban()) {
             $data['iban'] = $request->iban;
         }
 

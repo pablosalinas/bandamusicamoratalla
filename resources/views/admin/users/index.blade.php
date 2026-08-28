@@ -23,6 +23,9 @@
                                 <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-white sm:pl-6">Nombre</th>
                                 <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-white">Rol / Estado</th>
                                 <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-white">Instrumentos</th>
+                                @if(auth()->user()->canViewIban())
+                                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-white">IBAN</th>
+                                @endif
                                 <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
                                     <span class="sr-only">Acciones</span>
                                 </th>
@@ -66,6 +69,11 @@
                                             <span class="text-gray-600 italic">Ninguno asignado</span>
                                         @endif
                                     </td>
+                                    @if(auth()->user()->canViewIban())
+                                    <td class="px-3 py-4 text-sm text-gray-300 whitespace-nowrap font-mono">
+                                        {{ $user->iban ?: '-' }}
+                                    </td>
+                                    @endif
                                     <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
                                         <a href="{{ route('admin.users.edit', $user) }}" class="text-amber-500 hover:text-amber-400 mr-4">Editar</a>
                                         <form action="{{ route('admin.users.destroy', $user) }}" method="POST" class="inline-block" onsubmit="return confirm('¿Seguro que deseas eliminar este usuario?');">
