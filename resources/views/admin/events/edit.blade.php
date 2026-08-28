@@ -39,7 +39,7 @@
                     <div>
                         <label for="type" class="block text-sm font-medium leading-6 text-white">Tipo de Evento *</label>
                         <div class="mt-2">
-                            <select id="type" name="type" required class="block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6 [&_*]:text-black">
+                            <select id="type" name="type" required class="block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6">
                                 <option value="ensayo" {{ old('type', $event->type) == 'ensayo' ? 'selected' : '' }}>Ensayo</option>
                                 <option value="concierto" {{ old('type', $event->type) == 'concierto' ? 'selected' : '' }}>Concierto</option>
                                 <option value="oficial" {{ old('type', $event->type) == 'oficial' ? 'selected' : '' }}>Acto Oficial (Procesión, Pasacalles, etc.)</option>
