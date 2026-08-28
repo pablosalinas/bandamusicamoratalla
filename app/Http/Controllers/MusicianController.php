@@ -53,6 +53,7 @@ class MusicianController extends Controller
 
     public function planning()
     {
+        \Carbon\Carbon::setLocale('es');
         $events = \App\Models\Event::where('is_active', true)
             ->whereDate('event_date', '>=', now()->toDateString())
             ->orderBy('event_date', 'asc')
@@ -66,6 +67,7 @@ class MusicianController extends Controller
 
     public function planningPdf()
     {
+        \Carbon\Carbon::setLocale('es');
         $events = \App\Models\Event::where('is_active', true)
             ->whereDate('event_date', '>=', now()->toDateString())
             ->orderBy('event_date', 'asc')

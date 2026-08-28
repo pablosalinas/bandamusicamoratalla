@@ -24,7 +24,7 @@
     <style>
         body { font-family: 'Outfit', sans-serif; background: white; color: black; }
         @media print {
-            body { padding: 0; margin: 0; }
+            body { padding: 0; margin: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .no-print { display: none !important; }
             .print-container { padding: 1cm; }
             .page-break { page-break-before: always; }
@@ -47,30 +47,63 @@
             </div>
         </div>
 
+        @php
+            \Carbon\Carbon::setLocale('es');
+            $legend = [
+                'ensayo' => ['bg' => '#F3F4F6', 'text' => '#374151', 'label' => 'Ensayo'],           // Gray
+                'contratada' => ['bg' => '#DCFCE7', 'text' => '#166534', 'label' => 'Contratada'],   // Green
+                'convenio' => ['bg' => '#DBEAFE', 'text' => '#1E40AF', 'label' => 'Convenio'],       // Blue
+                'propias' => ['bg' => '#FEF3C7', 'text' => '#92400E', 'label' => 'Propias'],         // Amber
+                'salida' => ['bg' => '#F3E8FF', 'text' => '#6B21A8', 'label' => 'Salida'],           // Purple
+                'otros' => ['bg' => '#E0E7FF', 'text' => '#3730A3', 'label' => 'Otros']              // Indigo (Default)
+            ];
+            
+            $getColor = function($type) use ($legend) {
+                $type = strtolower($type);
+                if (in_array($type, ['propias', 'propia'])) return $legend['propias'];
+                return $legend[$type] ?? $legend['otros'];
+            };
+        @endphp
+
+        <!-- Leyenda -->
+        <div class="mb-6 p-4 bg-gray-50 border border-gray-200 rounded-lg text-sm">
+            <p class="font-bold mb-2 text-gray-800">Leyenda de Tipos de Actividad:</p>
+            <div class="flex flex-wrap gap-4">
+                @foreach($legend as $key => $colors)
+                    <div class="flex items-center gap-2">
+                        <span class="inline-block w-4 h-4 rounded-full" style="background-color: {{ $colors['bg'] }}; border: 1px solid {{ $colors['text'] }}; -webkit-print-color-adjust: exact; print-color-adjust: exact;"></span>
+                        <span class="capitalize font-semibold text-gray-700">{{ $colors['label'] }}</span>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+
         @forelse($events as $month => $monthEvents)
             <div class="mb-10" style="break-inside: avoid;">
-                <h2 class="text-2xl font-bold text-gray-800 border-b border-gray-300 pb-2 mb-4 capitalize">{{ $month }}</h2>
+                <h2 class="text-xl font-bold text-gray-800 border-b-2 border-gray-900 pb-1 mb-3 capitalize">{{ \Carbon\Carbon::parse($monthEvents->first()->event_date)->translatedFormat('F Y') }}</h2>
                 
-                <table class="w-full text-left border-collapse">
+                <table class="w-full text-left border-collapse text-sm">
                     <thead>
                         <tr class="bg-gray-100 border-b-2 border-gray-200">
-                            <th class="py-3 px-4 font-semibold text-gray-700 w-1/3">Fecha</th>
-                            <th class="py-3 px-4 font-semibold text-gray-700 w-1/2">Actividad</th>
-                            <th class="py-3 px-4 font-semibold text-gray-700 text-center w-1/6">Tipo</th>
+                            <th class="py-2 px-3 font-semibold text-gray-700 w-1/4">Fecha y Hora</th>
+                            <th class="py-2 px-3 font-semibold text-gray-700 w-auto">Actividad</th>
+                            <th class="py-2 px-3 font-semibold text-gray-700 text-center w-32">Tipo</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200">
                         @foreach($monthEvents as $event)
                             <tr>
-                                <td class="py-3 px-4 text-sm font-medium text-gray-800">
-                                    {{ \Carbon\Carbon::parse($event->event_date)->translatedFormat('l, d/m/Y') }} <br>
-                                    <span class="text-gray-500 text-xs">{{ \Carbon\Carbon::parse($event->event_date)->format('H:i') }}</span>
+                                <td class="py-2 px-3 font-medium text-gray-800 whitespace-nowrap">
+                                    {{ \Carbon\Carbon::parse($event->event_date)->translatedFormat('l, d/m/Y') }} <span class="text-gray-500 ml-1">({{ \Carbon\Carbon::parse($event->event_date)->format('H:i') }})</span>
                                 </td>
-                                <td class="py-3 px-4 font-semibold text-gray-900">
+                                <td class="py-2 px-3 font-semibold text-gray-900 truncate">
                                     {{ $event->name }}
                                 </td>
-                                <td class="py-3 px-4 text-center">
-                                    <span class="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-{{ $event->color }}-100 text-{{ $event->color }}-800">
+                                <td class="py-2 px-3 text-center">
+                                    @php
+                                        $c = $getColor($event->type);
+                                    @endphp
+                                    <span class="inline-block px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider whitespace-nowrap" style="background-color: {{ $c['bg'] }}; color: {{ $c['text'] }};">
                                         {{ $event->type }}
                                     </span>
                                 </td>

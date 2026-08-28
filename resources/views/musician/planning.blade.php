@@ -42,8 +42,19 @@
                                     </div>
                                     <div class="flex items-center gap-x-4">
                                         <div class="hidden sm:flex sm:flex-col sm:items-end">
+                                            @php
+                                                $badges = [
+                                                    'gray' => 'bg-gray-400/10 text-gray-400 ring-gray-400/30',
+                                                    'green' => 'bg-green-400/10 text-green-400 ring-green-400/30',
+                                                    'blue' => 'bg-blue-400/10 text-blue-400 ring-blue-400/30',
+                                                    'amber' => 'bg-amber-400/10 text-amber-400 ring-amber-400/30',
+                                                    'purple' => 'bg-purple-400/10 text-purple-400 ring-purple-400/30',
+                                                    'indigo' => 'bg-indigo-400/10 text-indigo-400 ring-indigo-400/30',
+                                                ];
+                                                $badgeClass = $badges[$event->color] ?? $badges['indigo'];
+                                            @endphp
                                             <p class="text-sm leading-6 text-white capitalize">
-                                                <span class="inline-flex items-center rounded-md bg-{{ $event->color }}-400/10 px-2.5 py-1 text-xs font-medium text-{{ $event->color }}-400 ring-1 ring-inset ring-{{ $event->color }}-400/30">
+                                                <span class="inline-flex items-center rounded-md px-2.5 py-1 text-xs font-medium ring-1 ring-inset {{ $badgeClass }}">
                                                     {{ $event->type }}
                                                 </span>
                                             </p>
