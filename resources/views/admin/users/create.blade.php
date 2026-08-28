@@ -82,6 +82,24 @@
                             <input type="text" name="address" id="address" value="{{ old('address') }}" class="mt-2 block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6">
                             @error('address') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
                         </div>
+
+                        <div>
+                            <label for="postal_code" class="block text-sm font-medium leading-6 text-white">Código Postal</label>
+                            <input type="text" name="postal_code" id="postal_code" value="{{ old('postal_code') }}" class="mt-2 block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6">
+                            @error('postal_code') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
+                        </div>
+
+                        <div>
+                            <label for="city" class="block text-sm font-medium leading-6 text-white">Población</label>
+                            <input type="text" name="city" id="city" value="{{ old('city') }}" class="mt-2 block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6">
+                            @error('city') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
+                        </div>
+
+                        <div>
+                            <label for="province" class="block text-sm font-medium leading-6 text-white">Provincia</label>
+                            <input type="text" name="province" id="province" value="{{ old('province') }}" class="mt-2 block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6">
+                            @error('province') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
+                        </div>
                         
                         <div>
                             <label for="phone" class="block text-sm font-medium leading-6 text-white">Teléfono</label>

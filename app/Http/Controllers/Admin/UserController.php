@@ -33,6 +33,9 @@ class UserController extends Controller
             'role' => ['required', 'in:admin,treasurer,musician'],
             'instruments' => ['nullable', 'array'],
             'address' => ['nullable', 'string', 'max:255'],
+            'postal_code' => ['nullable', 'string', 'max:10'],
+            'city' => ['nullable', 'string', 'max:100'],
+            'province' => ['nullable', 'string', 'max:100'],
             'phone' => ['nullable', 'string', 'max:50'],
             'iban' => ['nullable', 'string', 'max:50'],
         ]);
@@ -46,6 +49,9 @@ class UserController extends Controller
             'is_active' => $request->has('is_active'),
             'birth_date' => $request->birth_date,
             'address' => $request->address,
+            'postal_code' => $request->postal_code,
+            'city' => $request->city,
+            'province' => $request->province,
             'phone' => $request->phone,
             'iban' => (auth()->user()->role === 'treasurer') ? $request->iban : null,
         ]);
@@ -82,7 +88,10 @@ class UserController extends Controller
                 return $attendance->event->event_date;
             });
 
-        return view('admin.users.edit', compact('user', 'instruments', 'attendances', 'filter'));
+        $userInstruments = $user->instruments->pluck('id')->toArray();
+        $userInstrumentsData = $user->instruments->keyBy('id');
+
+        return view('admin.users.edit', compact('user', 'instruments', 'attendances', 'filter', 'userInstruments', 'userInstrumentsData'));
     }
 
     public function update(Request $request, User $user)
@@ -94,6 +103,9 @@ class UserController extends Controller
             'role' => ['required', 'in:admin,treasurer,musician'],
             'instruments' => ['nullable', 'array'],
             'address' => ['nullable', 'string', 'max:255'],
+            'postal_code' => ['nullable', 'string', 'max:10'],
+            'city' => ['nullable', 'string', 'max:100'],
+            'province' => ['nullable', 'string', 'max:100'],
             'phone' => ['nullable', 'string', 'max:50'],
             'iban' => ['nullable', 'string', 'max:50'],
         ]);
@@ -107,6 +119,9 @@ class UserController extends Controller
             'leave_reason' => $request->has('is_active') ? null : $request->leave_reason,
             'birth_date' => $request->birth_date,
             'address' => $request->address,
+            'postal_code' => $request->postal_code,
+            'city' => $request->city,
+            'province' => $request->province,
             'phone' => $request->phone,
         ];
 
