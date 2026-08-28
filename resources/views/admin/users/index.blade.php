@@ -47,6 +47,10 @@
                                     <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
                                         @if($user->role === 'admin')
                                             <span class="inline-flex items-center rounded-md bg-purple-400/10 px-2 py-1 text-xs font-medium text-purple-400 ring-1 ring-inset ring-purple-400/30">Administrador</span>
+                                        @elseif($user->role === 'treasurer')
+                                            <span class="inline-flex items-center rounded-md bg-green-400/10 px-2 py-1 text-xs font-medium text-green-400 ring-1 ring-inset ring-green-400/30">Tesorero</span>
+                                        @elseif($user->role === 'external')
+                                            <span class="inline-flex items-center rounded-md bg-gray-400/10 px-2 py-1 text-xs font-medium text-gray-400 ring-1 ring-inset ring-gray-400/30">Externo</span>
                                         @else
                                             <span class="inline-flex items-center rounded-md bg-blue-400/10 px-2 py-1 text-xs font-medium text-blue-400 ring-1 ring-inset ring-blue-400/30">Músico</span>
                                         @endif
