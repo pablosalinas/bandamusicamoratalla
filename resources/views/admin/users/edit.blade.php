@@ -163,7 +163,7 @@
 
                     <div class="sm:col-span-6 border-t border-gray-800 pt-6 mt-2" 
                          x-data="{
-                            availableInstruments: {{ $instruments->map(fn($i) => ['id' => $i->id, 'name' => $i->name])->toJson() }},
+                            availableInstruments: {!! $instruments->map(fn($i) => ['id' => $i->id, 'name' => $i->name])->toJson() !!},
                             selectedInstruments: [
                                 @foreach($instruments as $instrument)
                                     @php
