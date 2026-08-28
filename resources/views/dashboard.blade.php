@@ -8,6 +8,29 @@
     <div class="mt-8 flow-root">
         <div class="bg-gray-900 border border-gray-800 shadow-sm sm:rounded-lg">
             <div class="p-6 text-gray-300">
+                @if(!$user->photo_path)
+                    <div class="mb-8 rounded-md bg-amber-900/40 border border-amber-600/50 p-4 shadow-sm">
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0 mt-0.5">
+                                <svg class="h-6 w-6 text-amber-500" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2.25m0 4.5.01-.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <div class="ml-3 flex-1">
+                                <h3 class="text-sm font-medium text-amber-500">Foto de perfil no configurada</h3>
+                                <div class="mt-1 text-sm text-amber-200/80">
+                                    <p>Aún no has subido tu foto de perfil. Por favor, ve a tu perfil y sube una para tener tu ficha completada.</p>
+                                </div>
+                                <div class="mt-3">
+                                    <a href="{{ route('profile.edit') }}" class="text-sm font-semibold text-amber-400 hover:text-amber-300">
+                                        Subir foto ahora <span aria-hidden="true">&rarr;</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
                 <h3 class="text-xl font-bold mb-4 text-white">¡Hola, {{ $user->name }}!</h3>
                 
                 @if($user->instruments->count() > 0)

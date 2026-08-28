@@ -20,6 +20,10 @@ class User extends Authenticatable
         'role',
         'is_active',
         'leave_reason',
+        'address',
+        'phone',
+        'iban',
+        'photo_path',
     ];
 
     protected $hidden = [
@@ -32,10 +36,22 @@ class User extends Authenticatable
         'password' => 'hashed',
         'birth_date' => 'date',
         'is_active' => 'boolean',
+        'iban' => 'encrypted',
     ];
 
     public function instruments()
     {
         return $this->belongsToMany(InstrumentCatalog::class, 'musician_instruments', 'user_id', 'instrument_catalog_id')->withPivot('serial_number')->withTimestamps();
+    }
+
+    public function getPhotoUrlAttribute()
+    {
+        if ($this->photo_path) {
+            return asset('storage/' . $this->photo_path);
+        }
+        
+        // Default avatar based on name
+        $name = urlencode($this->name . ' ' . $this->last_name);
+        return "https://ui-avatars.com/api/?name={$name}&color=7F9CF5&background=EBF4FF";
     }
 }

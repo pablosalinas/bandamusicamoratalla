@@ -64,6 +64,7 @@
                         <div class="mt-2">
                             <select id="role" name="role" class="block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6">
                                 <option value="musician" {{ old('role') == 'musician' ? 'selected' : '' }}>Músico / Componente / Externo</option>
+                                <option value="treasurer" {{ old('role') == 'treasurer' ? 'selected' : '' }}>Tesorero</option>
                                 <option value="admin" {{ old('role') == 'admin' ? 'selected' : '' }}>Administrador</option>
                             </select>
                         </div>
@@ -73,6 +74,32 @@
                     <div class="sm:col-span-3 flex items-center mt-8">
                         <input id="is_active" name="is_active" type="checkbox" value="1" {{ old('is_active', true) ? 'checked' : '' }} class="h-4 w-4 rounded border-gray-700 bg-gray-900 text-amber-600 focus:ring-amber-600 focus:ring-offset-gray-900">
                         <label for="is_active" class="ml-3 block text-sm font-medium leading-6 text-white">Usuario Activo en la Banda</label>
+                    </div>
+
+                    <div class="sm:col-span-6 grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 border-t border-gray-800 pt-6">
+                        <div>
+                            <label for="address" class="block text-sm font-medium leading-6 text-white">Dirección Postal</label>
+                            <input type="text" name="address" id="address" value="{{ old('address') }}" class="mt-2 block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6">
+                            @error('address') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
+                        </div>
+                        
+                        <div>
+                            <label for="phone" class="block text-sm font-medium leading-6 text-white">Teléfono</label>
+                            <input type="text" name="phone" id="phone" value="{{ old('phone') }}" class="mt-2 block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6">
+                            @error('phone') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
+                        </div>
+
+                        @if(auth()->user()->role === 'treasurer')
+                        <div class="md:col-span-2 mt-4 p-4 bg-gray-950 rounded-lg border border-amber-500/30 relative overflow-hidden">
+                            <div class="absolute top-0 right-0 p-2 opacity-10">
+                                <svg class="w-24 h-24 text-amber-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
+                            </div>
+                            <label for="iban" class="block text-sm font-medium leading-6 text-amber-500 relative z-10">Cuenta Bancaria (IBAN)</label>
+                            <input type="text" name="iban" id="iban" value="{{ old('iban') }}" class="mt-2 block w-full rounded-md border-0 bg-gray-900 py-1.5 text-amber-100 shadow-sm ring-1 ring-inset ring-amber-500/50 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6 relative z-10" placeholder="ES00 0000 0000 0000 0000 0000">
+                            <p class="text-xs text-gray-400 mt-2 relative z-10">Este campo se guarda <strong>encriptado</strong> en la base de datos y sólo es visible para el rol de Tesorero.</p>
+                            @error('iban') <p class="mt-2 text-sm text-red-400 relative z-10">{{ $message }}</p> @enderror
+                        </div>
+                        @endif
                     </div>
 
                     <div class="sm:col-span-6 border-t border-gray-800 pt-6 mt-2"

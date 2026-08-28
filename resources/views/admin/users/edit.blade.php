@@ -65,6 +65,7 @@
                         <div class="mt-2">
                             <select id="role" name="role" class="block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6">
                                 <option value="musician" {{ old('role', $user->role) == 'musician' ? 'selected' : '' }}>Músico / Componente / Externo</option>
+                                <option value="treasurer" {{ old('role', $user->role) == 'treasurer' ? 'selected' : '' }}>Tesorero</option>
                                 <option value="admin" {{ old('role', $user->role) == 'admin' ? 'selected' : '' }}>Administrador</option>
                             </select>
                         </div>
@@ -92,6 +93,54 @@
                             </datalist>
                         </div>
                         @error('leave_reason') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div class="sm:col-span-6 grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 border-t border-gray-800 pt-6">
+                        @if($user->photo_path)
+                        <div class="md:col-span-2 flex items-center gap-4 mb-4">
+                            <img src="{{ $user->photo_url }}" alt="Foto de {{ $user->name }}" class="h-16 w-16 rounded-full object-cover border-2 border-amber-500">
+                            <div>
+                                <h3 class="text-sm font-medium text-white">Foto de Perfil</h3>
+                                <p class="text-xs text-gray-400">El usuario ha subido su fotografía.</p>
+                            </div>
+                        </div>
+                        @else
+                        <div class="md:col-span-2 flex items-center gap-4 mb-4">
+                            <div class="h-16 w-16 rounded-full bg-gray-800 flex items-center justify-center border-2 border-gray-700 text-gray-500">
+                                <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-medium text-white">Sin foto de perfil</h3>
+                                <p class="text-xs text-gray-400">El usuario aún no ha subido una fotografía.</p>
+                            </div>
+                        </div>
+                        @endif
+
+                        <div>
+                            <label for="address" class="block text-sm font-medium leading-6 text-white">Dirección Postal</label>
+                            <input type="text" name="address" id="address" value="{{ old('address', $user->address) }}" class="mt-2 block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6">
+                            @error('address') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
+                        </div>
+                        
+                        <div>
+                            <label for="phone" class="block text-sm font-medium leading-6 text-white">Teléfono</label>
+                            <input type="text" name="phone" id="phone" value="{{ old('phone', $user->phone) }}" class="mt-2 block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6">
+                            @error('phone') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
+                        </div>
+
+                        @if(auth()->user()->role === 'treasurer')
+                        <div class="md:col-span-2 mt-4 p-4 bg-gray-950 rounded-lg border border-amber-500/30 relative overflow-hidden">
+                            <div class="absolute top-0 right-0 p-2 opacity-10">
+                                <svg class="w-24 h-24 text-amber-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
+                            </div>
+                            <label for="iban" class="block text-sm font-medium leading-6 text-amber-500 relative z-10">Cuenta Bancaria (IBAN)</label>
+                            <input type="text" name="iban" id="iban" value="{{ old('iban', $user->iban) }}" class="mt-2 block w-full rounded-md border-0 bg-gray-900 py-1.5 text-amber-100 shadow-sm ring-1 ring-inset ring-amber-500/50 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6 relative z-10" placeholder="ES00 0000 0000 0000 0000 0000">
+                            <p class="text-xs text-gray-400 mt-2 relative z-10">Este campo se guarda <strong>encriptado</strong> en la base de datos y sólo es visible para el rol de Tesorero.</p>
+                            @error('iban') <p class="mt-2 text-sm text-red-400 relative z-10">{{ $message }}</p> @enderror
+                        </div>
+                        @endif
                     </div>
 
                     <div class="sm:col-span-6 border-t border-gray-800 pt-6 mt-2" 

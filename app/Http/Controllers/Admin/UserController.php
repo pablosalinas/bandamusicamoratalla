@@ -30,8 +30,11 @@ class UserController extends Controller
             'last_name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', Rules\Password::defaults()],
-            'role' => ['required', 'in:admin,musician'],
+            'role' => ['required', 'in:admin,treasurer,musician'],
             'instruments' => ['nullable', 'array'],
+            'address' => ['nullable', 'string', 'max:255'],
+            'phone' => ['nullable', 'string', 'max:50'],
+            'iban' => ['nullable', 'string', 'max:50'],
         ]);
 
         $user = User::create([
@@ -42,6 +45,9 @@ class UserController extends Controller
             'role' => $request->role,
             'is_active' => $request->has('is_active'),
             'birth_date' => $request->birth_date,
+            'address' => $request->address,
+            'phone' => $request->phone,
+            'iban' => (auth()->user()->role === 'treasurer') ? $request->iban : null,
         ]);
 
         if ($request->has('instruments')) {
@@ -85,11 +91,14 @@ class UserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'last_name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:'.User::class.',email,'.$user->id],
-            'role' => ['required', 'in:admin,musician'],
+            'role' => ['required', 'in:admin,treasurer,musician'],
             'instruments' => ['nullable', 'array'],
+            'address' => ['nullable', 'string', 'max:255'],
+            'phone' => ['nullable', 'string', 'max:50'],
+            'iban' => ['nullable', 'string', 'max:50'],
         ]);
 
-        $user->update([
+        $data = [
             'name' => $request->name,
             'last_name' => $request->last_name,
             'email' => $request->email,
@@ -97,7 +106,15 @@ class UserController extends Controller
             'is_active' => $request->has('is_active'),
             'leave_reason' => $request->has('is_active') ? null : $request->leave_reason,
             'birth_date' => $request->birth_date,
-        ]);
+            'address' => $request->address,
+            'phone' => $request->phone,
+        ];
+
+        if (auth()->user()->role === 'treasurer') {
+            $data['iban'] = $request->iban;
+        }
+
+        $user->update($data);
 
         if ($request->filled('password')) {
             $user->update(['password' => Hash::make($request->password)]);
