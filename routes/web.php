@@ -50,6 +50,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard/sheet-music/{sheetMusic}/download', [\App\Http\Controllers\MusicianController::class, 'download'])->name('musician.sheet-music.download');
     Route::get('/planning', [\App\Http\Controllers\MusicianController::class, 'planning'])->name('musician.planning');
     Route::get('/planning/pdf', [\App\Http\Controllers\MusicianController::class, 'planningPdf'])->name('musician.planning.pdf');
+    Route::view('/manual', 'musician.manual')->name('musician.manual');
 });
 
 Route::get('/test-redirect', function () {
@@ -69,6 +70,7 @@ Route::middleware('auth')->group(function () {
 
 Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
+    Route::view('/manual', 'admin.manual')->name('manual');
     
     // Placeholder para futuras rutas
     Route::resource('users', \App\Http\Controllers\Admin\UserController::class);
