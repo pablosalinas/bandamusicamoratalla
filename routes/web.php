@@ -20,10 +20,31 @@ Route::get('/estatutos', function () {
 
 Route::get('/migrate-db-secret', function() {
     try {
+        // Ejecutamos migraciones
         \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
-        return 'Migraciones ejecutadas con éxito en producción. Resultado: ' . \Illuminate\Support\Facades\Artisan::output();
+        $output = "Migraciones: " . \Illuminate\Support\Facades\Artisan::output() . "<br>";
+        
+        // Ejecutamos storage:link (si falla porque existe la carpeta public/storage que no es link, la borramos)
+        $publicStorage = public_path('storage');
+        if (file_exists($publicStorage) && !is_link($publicStorage)) {
+            // Eliminar carpeta recursivamente
+            $files = new \RecursiveIteratorIterator(
+                new \RecursiveDirectoryIterator($publicStorage, \RecursiveDirectoryIterator::SKIP_DOTS),
+                \RecursiveIteratorIterator::CHILD_FIRST
+            );
+            foreach ($files as $fileinfo) {
+                $todo = ($fileinfo->isDir() ? 'rmdir' : 'unlink');
+                $todo($fileinfo->getRealPath());
+            }
+            rmdir($publicStorage);
+        }
+        
+        \Illuminate\Support\Facades\Artisan::call('storage:link');
+        $output .= "Storage Link: " . \Illuminate\Support\Facades\Artisan::output();
+        
+        return 'Ejecutado con éxito en producción.<br><br>Resultados:<br>' . $output;
     } catch (\Exception $e) {
-        return 'Error al migrar: ' . $e->getMessage();
+        return 'Error: ' . $e->getMessage();
     }
 });
 
