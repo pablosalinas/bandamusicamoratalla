@@ -33,8 +33,52 @@
 
                 <h3 class="text-xl font-bold mb-4 text-white">¡Hola, {{ $user->name }}!</h3>
                 
+                <div class="mb-8 bg-gray-950 p-6 rounded-lg border border-gray-800">
+                    <h4 class="text-lg font-semibold mb-4 border-b border-gray-800 pb-2 text-white">Tus Datos Personales</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                        <div><span class="text-gray-500 block">Nombre Completo:</span> <span class="text-white">{{ $user->name }} {{ $user->last_name }}</span></div>
+                        <div><span class="text-gray-500 block">Email:</span> <span class="text-white">{{ $user->email }}</span></div>
+                        <div><span class="text-gray-500 block">Teléfono:</span> <span class="text-white">{{ $user->phone ?: '-' }}</span></div>
+                        <div><span class="text-gray-500 block">DNI / NIF:</span> <span class="text-white">{{ $user->dni ?: '-' }}</span></div>
+                        <div><span class="text-gray-500 block">Dirección:</span> <span class="text-white">{{ $user->address ?: '-' }}, {{ $user->postal_code ?: '-' }} {{ $user->city ?: '-' }} ({{ $user->province ?: '-' }})</span></div>
+                        <div><span class="text-gray-500 block">Fecha de Nacimiento:</span> <span class="text-white">{{ $user->birth_date ? $user->birth_date->format('d/m/Y') : '-' }}</span></div>
+                        
+                        @if($user->canViewIban())
+                            <div class="md:col-span-2 mt-2 pt-2 border-t border-gray-800">
+                                <span class="text-amber-500 block">Cuenta Bancaria (IBAN):</span> 
+                                <span class="text-white">{{ $user->iban ?: 'No registrada' }}</span>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+                
                 @if($user->instruments->count() > 0)
-                    <p class="mb-6">Tus instrumentos registrados son: <strong class="text-amber-400">{{ $user->instruments->pluck('name')->implode(', ') }}</strong></p>
+                    <div class="mb-8 bg-gray-950 p-6 rounded-lg border border-gray-800">
+                        <h4 class="text-lg font-semibold mb-4 border-b border-gray-800 pb-2 text-white">Tus Instrumentos</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            @foreach($user->instruments as $instrument)
+                                <div class="bg-gray-900 border border-gray-800 rounded-lg p-4 shadow-sm">
+                                    <div class="flex justify-between items-start mb-2">
+                                        <h5 class="font-bold text-amber-500">{{ $instrument->name }}</h5>
+                                        @if($instrument->pivot->is_active)
+                                            <span class="inline-flex items-center rounded-md bg-green-400/10 px-2 py-1 text-xs font-medium text-green-400 ring-1 ring-inset ring-green-400/20">Activo</span>
+                                        @else
+                                            <span class="inline-flex items-center rounded-md bg-red-400/10 px-2 py-1 text-xs font-medium text-red-400 ring-1 ring-inset ring-red-400/20">Inactivo</span>
+                                        @endif
+                                    </div>
+                                    <ul class="text-xs text-gray-400 space-y-1">
+                                        @php
+                                            $brand = $instrument->pivot->instrument_brand_id ? \App\Models\InstrumentBrand::find($instrument->pivot->instrument_brand_id) : null;
+                                        @endphp
+                                        <li><strong class="text-gray-300">Marca/Modelo:</strong> {{ $brand ? $brand->name : '-' }} {{ $instrument->pivot->modelo ? ' / ' . $instrument->pivot->modelo : '' }}</li>
+                                        <li><strong class="text-gray-300">Nº Serie:</strong> {{ $instrument->pivot->serial_number ?: '-' }}</li>
+                                        <li><strong class="text-gray-300">Propiedad:</strong> <span class="capitalize">{{ $instrument->pivot->propiedad ?: '-' }}</span></li>
+                                        <li><strong class="text-gray-300">Partitura:</strong> {{ $instrument->pivot->tipo_partitura ?: '-' }}</li>
+                                    </ul>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
                     
                     <h4 class="text-lg font-semibold mb-4 border-b border-gray-800 pb-2 text-white">Tus Partituras Disponibles</h4>
                     

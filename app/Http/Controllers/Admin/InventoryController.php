@@ -12,7 +12,7 @@ class InventoryController extends Controller
     public function index(Request $request)
     {
         $query = User::with(['instruments' => function($q) {
-            $q->withPivot('id', 'serial_number', 'tipo_partitura', 'propiedad', 'is_active');
+            $q->withPivot('id', 'serial_number', 'tipo_partitura', 'propiedad', 'is_active', 'instrument_brand_id', 'modelo');
         }]);
 
         // Filters
@@ -40,12 +40,15 @@ class InventoryController extends Controller
                 }
 
                 $photos = \App\Models\InstrumentPhoto::where('musician_instrument_id', $instrument->pivot->id)->get();
+                $brand = $instrument->pivot->instrument_brand_id ? \App\Models\InstrumentBrand::find($instrument->pivot->instrument_brand_id) : null;
 
                 $inventory->push((object)[
                     'musician' => $user,
                     'instrument' => $instrument,
                     'pivot' => $instrument->pivot,
-                    'photos' => $photos
+                    'photos' => $photos,
+                    'brand' => $brand,
+                    'modelo' => $instrument->pivot->modelo
                 ]);
             }
         }

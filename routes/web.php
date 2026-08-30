@@ -83,7 +83,7 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     Route::get('sheet-music/{sheetMusic}/download', [\App\Http\Controllers\Admin\SheetMusicController::class, 'download'])->name('sheet-music.download');
     
     // Instrument Catalog
-    Route::resource('instruments', \App\Http\Controllers\Admin\InstrumentCatalogController::class)->except(['show']);
+    Route::resource('instruments', \App\Http\Controllers\Admin\InstrumentController::class)->except(['show']);
     Route::resource('instrument-brands', \App\Http\Controllers\Admin\InstrumentBrandController::class)->only(['index', 'store', 'destroy']);
     
     // Inventory
