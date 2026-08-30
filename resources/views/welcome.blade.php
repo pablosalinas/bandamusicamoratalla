@@ -88,50 +88,9 @@
         </div>
     </nav>
 
-    <!-- Hero Section -->
-    <section id="inicio" class="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
-        <!-- Background Image & Gradient overlay -->
-        <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1511192336575-5a79af67a629?q=80&w=2000&auto=format&fit=crop')] bg-cover bg-center opacity-30 transform scale-105 animate-[pulse_10s_ease-in-out_infinite_alternate]"></div>
-        <div class="absolute inset-0 bg-gradient-to-b from-gray-950/40 via-gray-950/80 to-gray-950"></div>
-        <div class="absolute inset-0 bg-gradient-to-r from-amber-900/20 to-transparent mix-blend-overlay"></div>
-
-        <div class="relative z-10 text-center max-w-4xl px-6 mt-10">
-            <div class="inline-flex flex-col sm:flex-row items-center justify-center px-5 py-2 mb-6 rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-400 text-sm font-semibold tracking-wide uppercase shadow-[0_0_10px_rgba(245,158,11,0.1)] gap-2">
-                <span>Desde 1854</span>
-                <span class="hidden sm:inline text-amber-500/50">•</span>
-                <span>{{ date('Y') - 1854 + 1 }} años de historia</span>
-            </div>
-            
-            <h1 class="text-5xl md:text-7xl font-extrabold mb-6 tracking-tight">
-                El Alma Sonora de <br/>
-                <span class="text-gold">Moratalla</span>
-            </h1>
-            
-            <p class="text-lg md:text-2xl text-gray-300 mb-10 leading-relaxed font-light max-w-2xl mx-auto">
-                Acompañamos cada momento especial de nuestro pueblo con pasión, dedicación y excelencia musical.
-            </p>
-
-            <div class="flex flex-col sm:flex-row gap-5 justify-center">
-                <a href="#historia" class="inline-flex items-center justify-center px-8 py-4 text-base font-bold rounded-full text-gray-950 bg-gradient-to-r from-amber-400 to-amber-600 hover:from-amber-300 hover:to-amber-500 transition-all transform hover:scale-105 hover:-translate-y-1 shadow-[0_10px_30px_rgba(245,158,11,0.3)]">
-                    Descubre nuestra historia
-                </a>
-                <a href="#contacto" class="inline-flex items-center justify-center px-8 py-4 text-base font-bold rounded-full text-white glass-panel hover:bg-gray-800 transition-all transform hover:-translate-y-1">
-                    Únete a la banda
-                </a>
-            </div>
-        </div>
-        
-        <!-- Scroll indicator -->
-        <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce">
-            <svg class="w-6 h-6 text-amber-500/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
-            </svg>
-        </div>
-    </section>
-
     <!-- Carrusel Section -->
     @if(isset($carouselMedia) && $carouselMedia->count() > 0)
-    <section id="carrusel" class="w-full bg-gray-950 border-t border-b border-gray-900 relative"
+    <section id="carrusel" class="w-full bg-gray-950 border-b border-gray-900 relative pt-24 pb-8"
         x-data="{
             slides: [
                 @foreach($carouselMedia as $media)
@@ -215,7 +174,8 @@
         }">
         
         <!-- Carrusel Principal -->
-        <div class="relative w-full h-64 sm:h-96 md:h-[500px] overflow-hidden group cursor-pointer" @click="openLightbox">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="relative w-full h-56 sm:h-80 md:h-[450px] overflow-hidden group cursor-pointer sm:rounded-2xl shadow-2xl ring-1 ring-white/10" @click="openLightbox">
             <template x-for="(slide, index) in slides" :key="slide.id">
                 <div x-show="currentIndex === index"
                      x-transition:enter="transition ease-out duration-700"
@@ -307,6 +267,48 @@
         </div>
     </section>
     @endif
+
+    <!-- Hero Section -->
+    <section id="inicio" class="relative min-h-[70vh] flex items-center justify-center overflow-hidden pt-10">
+        <!-- Background Image & Gradient overlay -->
+        <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1511192336575-5a79af67a629?q=80&w=2000&auto=format&fit=crop')] bg-cover bg-center opacity-30 transform scale-105 animate-[pulse_10s_ease-in-out_infinite_alternate]"></div>
+        <div class="absolute inset-0 bg-gradient-to-b from-gray-950/40 via-gray-950/80 to-gray-950"></div>
+        <div class="absolute inset-0 bg-gradient-to-r from-amber-900/20 to-transparent mix-blend-overlay"></div>
+
+        <div class="relative z-10 text-center max-w-4xl px-6 mt-10">
+            <div class="inline-flex flex-col sm:flex-row items-center justify-center px-5 py-2 mb-6 rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-400 text-sm font-semibold tracking-wide uppercase shadow-[0_0_10px_rgba(245,158,11,0.1)] gap-2">
+                <span>Desde 1854</span>
+                <span class="hidden sm:inline text-amber-500/50">•</span>
+                <span>{{ date('Y') - 1854 + 1 }} años de historia</span>
+            </div>
+            
+            <h1 class="text-5xl md:text-7xl font-extrabold mb-6 tracking-tight">
+                El Alma Sonora de <br/>
+                <span class="text-gold">Moratalla</span>
+            </h1>
+            
+            <p class="text-lg md:text-2xl text-gray-300 mb-10 leading-relaxed font-light max-w-2xl mx-auto">
+                Acompañamos cada momento especial de nuestro pueblo con pasión, dedicación y excelencia musical.
+            </p>
+
+            <div class="flex flex-col sm:flex-row gap-5 justify-center">
+                <a href="#historia" class="inline-flex items-center justify-center px-8 py-4 text-base font-bold rounded-full text-gray-950 bg-gradient-to-r from-amber-400 to-amber-600 hover:from-amber-300 hover:to-amber-500 transition-all transform hover:scale-105 hover:-translate-y-1 shadow-[0_10px_30px_rgba(245,158,11,0.3)]">
+                    Descubre nuestra historia
+                </a>
+                <a href="#contacto" class="inline-flex items-center justify-center px-8 py-4 text-base font-bold rounded-full text-white glass-panel hover:bg-gray-800 transition-all transform hover:-translate-y-1">
+                    Únete a la banda
+                </a>
+            </div>
+        </div>
+        
+        <!-- Scroll indicator -->
+        <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce">
+            <svg class="w-6 h-6 text-amber-500/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+            </svg>
+        </div>
+    </section>
+
 
     <!-- Historia Section -->
     <section id="historia" class="py-24 relative">
