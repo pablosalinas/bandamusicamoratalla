@@ -97,8 +97,8 @@
                                     @if($instrumentPhotos->count() > 0)
                                         <div class="mt-3 pt-3 border-t border-gray-800 flex gap-2 overflow-x-auto pb-1">
                                             @foreach($instrumentPhotos as $photo)
-                                                <a href="{{ asset('storage/' . $photo->photo_path) }}" target="_blank" class="flex-shrink-0">
-                                                    <img src="{{ asset('storage/' . $photo->photo_path) }}" class="h-14 w-14 rounded object-cover border border-gray-700 hover:border-amber-500 transition-colors" alt="Foto instrumento">
+                                                <a href="{{ asset('storage/' . $photo->photo_path) }}" target="_blank" class="flex-shrink-0" title="{{ $photo->description ?: 'Foto del instrumento' }}">
+                                                    <img src="{{ asset('storage/' . $photo->photo_path) }}" class="h-14 w-14 rounded object-cover border border-gray-700 hover:border-amber-500 transition-colors" alt="{{ $photo->description ?: 'Foto instrumento' }}">
                                                 </a>
                                             @endforeach
                                         </div>

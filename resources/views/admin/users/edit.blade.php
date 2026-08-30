@@ -174,6 +174,18 @@
                                         $brandValue = old('instrument_brand_id.'.$instrument->id, isset($userInstrumentsData) && $userInstrumentsData->has($instrument->id) ? $userInstrumentsData[$instrument->id]->pivot->instrument_brand_id : '');
                                         $modeloValue = old('modelo.'.$instrument->id, isset($userInstrumentsData) && $userInstrumentsData->has($instrument->id) ? $userInstrumentsData[$instrument->id]->pivot->modelo : '');
                                         $isActiveValue = old('is_active_instrument.'.$instrument->id, isset($userInstrumentsData) && $userInstrumentsData->has($instrument->id) ? $userInstrumentsData[$instrument->id]->pivot->is_active : true);
+                                        
+                                        $photosData = [];
+                                        if (isset($userInstrumentsData) && $userInstrumentsData->has($instrument->id)) {
+                                            $pivotId = $userInstrumentsData[$instrument->id]->pivot->id;
+                                            $photosData = \App\Models\InstrumentPhoto::where('musician_instrument_id', $pivotId)->get()->map(function($p) {
+                                                return [
+                                                    'id' => $p->id,
+                                                    'url' => asset('storage/' . $p->photo_path),
+                                                    'description' => $p->description ?? ''
+                                                ];
+                                            })->toArray();
+                                        }
                                     @endphp
                                     @if($isChecked)
                                     { 
@@ -184,7 +196,8 @@
                                         propiedad: {{ json_encode($propiedadValue) }}, 
                                         brand_id: {{ json_encode($brandValue) }}, 
                                         modelo: {{ json_encode($modeloValue) }}, 
-                                        active: {{ $isActiveValue ? 'true' : 'false' }} 
+                                        active: {{ $isActiveValue ? 'true' : 'false' }},
+                                        photos: @json($photosData)
                                     },
                                     @endif
                                 @endforeach
@@ -197,7 +210,7 @@
                                 if (!this.selectedInstruments.find(i => i.id === id)) {
                                     const inst = this.availableInstruments.find(i => i.id === id);
                                     if (inst) {
-                                        this.selectedInstruments.push({ id: inst.id, name: inst.name, serial: '', tipo: '', propiedad: '', brand_id: '', modelo: '', active: true });
+                                        this.selectedInstruments.push({ id: inst.id, name: inst.name, serial: '', tipo: '', propiedad: '', brand_id: '', modelo: '', active: true, photos: [] });
                                     }
                                 }
                                 this.selectedToAdd = '';
@@ -285,8 +298,41 @@
                                             <label class="block text-xs font-medium text-gray-400">Subir Fotos (Múltiples)</label>
                                             <input type="file" :name="'photos[' + inst.id + '][]'" multiple accept="image/*" class="mt-1 block w-full text-sm text-gray-400 file:mr-4 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-gray-800 file:text-amber-500 hover:file:bg-gray-700">
                                         </div>
+
+                                        <!-- Photo Gallery -->
+                                        <template x-if="inst.photos && inst.photos.length > 0">
+                                            <div class="col-span-full mt-4 bg-gray-900 rounded p-4 border border-gray-700">
+                                                <h4 class="text-sm font-semibold text-white mb-3">Fotos guardadas</h4>
+                                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                    <template x-for="photo in inst.photos" :key="photo.id">
+                                                        <div class="flex flex-col sm:flex-row items-center gap-3 bg-gray-950 p-2 rounded border border-gray-800">
+                                                            <a :href="photo.url" target="_blank" class="flex-shrink-0">
+                                                                <img :src="photo.url" class="h-16 w-16 object-cover rounded border border-gray-700" alt="Foto">
+                                                            </a>
+                                                            <div class="flex-1 w-full">
+                                                                <form method="POST" :action="'{{ url('admin/instrument-photos') }}/' + photo.id" class="flex gap-2">
+                                                                    @csrf @method('PUT')
+                                                                    <input type="text" name="description" :value="photo.description" placeholder="Descripción de la foto..." class="block w-full rounded-md border-0 bg-gray-800 py-1 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-xs">
+                                                                    <button type="submit" class="bg-amber-600 hover:bg-amber-500 text-white rounded px-2 py-1 text-xs font-semibold">Guardar</button>
+                                                                </form>
+                                                            </div>
+                                                            <div class="flex-shrink-0">
+                                                                <form method="POST" :action="'{{ url('admin/instrument-photos') }}/' + photo.id" onsubmit="return confirm('¿Seguro que quieres borrar esta foto?');">
+                                                                    @csrf @method('DELETE')
+                                                                    <button type="submit" class="text-red-500 hover:text-red-400 p-1">
+                                                                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                                                            <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                                                                        </svg>
+                                                                    </button>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    </template>
+                                                </div>
+                                            </div>
+                                        </template>
                                         
-                                        <div class="col-span-full flex items-center mt-2">
+                                        <div class="col-span-full flex items-center mt-4">
                                             <input type="checkbox" :name="'is_active_instrument[' + inst.id + ']'" x-model="inst.active" value="1" class="h-4 w-4 rounded border-gray-700 bg-gray-900 text-amber-600 focus:ring-amber-600 focus:ring-offset-gray-900">
                                             <label class="ml-2 block text-xs font-medium text-gray-300">Instrumento Activo</label>
                                         </div>

@@ -115,6 +115,8 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     // Instrument Catalog
     Route::resource('instruments', \App\Http\Controllers\Admin\InstrumentController::class)->except(['show']);
     Route::resource('instrument-brands', \App\Http\Controllers\Admin\InstrumentBrandController::class)->only(['index', 'store', 'destroy']);
+    Route::put('instrument-photos/{photo}', [\App\Http\Controllers\Admin\InstrumentPhotoController::class, 'update'])->name('instrument-photos.update');
+    Route::delete('instrument-photos/{photo}', [\App\Http\Controllers\Admin\InstrumentPhotoController::class, 'destroy'])->name('instrument-photos.destroy');
     
     // Inventory
     Route::get('inventory', [\App\Http\Controllers\Admin\InventoryController::class, 'index'])->name('inventory.index');

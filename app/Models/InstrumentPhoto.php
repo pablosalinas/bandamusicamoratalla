@@ -9,7 +9,7 @@ class InstrumentPhoto extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['musician_instrument_id', 'photo_path'];
+    protected $fillable = ['musician_instrument_id', 'photo_path', 'description'];
 
     public function musicianInstrument()
     {
