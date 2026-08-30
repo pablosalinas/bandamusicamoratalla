@@ -32,10 +32,45 @@
         <div class="bg-gray-900 shadow ring-1 ring-white/10 sm:rounded-lg p-6">
             <h3 class="text-lg font-semibold leading-6 text-white mb-4">Secciones más visitadas</h3>
             <ul role="list" class="divide-y divide-gray-800">
+                @php
+                    $friendlyNames = [
+                        '/' => '🏠 Inicio (Portada)',
+                        'login' => '🔐 Acceso Usuarios',
+                        'estatutos' => '📜 Estatutos',
+                        'dashboard' => '🎵 Panel de Músico',
+                        'planning' => '📅 Planning Músicos',
+                        'profile' => '👤 Perfil de Músico',
+                        'admin' => '⚙️ Admin: Dashboard',
+                        'admin/users' => '👥 Admin: Músicos',
+                        'admin/inventory' => '🎺 Admin: Inventario',
+                        'admin/instruments' => '📖 Admin: Catálogo',
+                        'admin/sheet-music' => '🎼 Admin: Archivo Musical',
+                        'admin/events' => '📆 Admin: Eventos',
+                        'admin/boards' => '🏛️ Admin: Juntas',
+                        'admin/news' => '📰 Admin: Noticias',
+                        'admin/analytics' => '📊 Admin: Estadísticas',
+                        'admin/logs' => '📝 Admin: Registros',
+                        'manual' => '📚 Manual de Ayuda',
+                        'admin/manual' => '📚 Manual Admin',
+                    ];
+                @endphp
                 @foreach($topPaths as $path)
-                <li class="py-3 flex justify-between">
-                    <span class="text-sm font-medium text-gray-300">/{{ $path->path ?: ' (inicio)' }}</span>
-                    <span class="text-sm text-gray-500">{{ $path->count }} visitas</span>
+                @php
+                    $rawPath = $path->path == '' ? '/' : $path->path;
+                    $friendlyName = $friendlyNames[$rawPath] ?? ('/' . $rawPath);
+                    // Fallback to make it slightly prettier if not in array
+                    if (!isset($friendlyNames[$rawPath]) && $rawPath !== '/') {
+                        $friendlyName = '🔹 /' . $rawPath;
+                    }
+                @endphp
+                <li class="py-3 flex justify-between items-center">
+                    <div>
+                        <span class="text-sm font-medium text-gray-200 block">{{ $friendlyName }}</span>
+                        @if(isset($friendlyNames[$rawPath]))
+                            <span class="text-xs text-gray-500 block">/{{ $rawPath == '/' ? '' : $rawPath }}</span>
+                        @endif
+                    </div>
+                    <span class="text-sm text-amber-500 font-semibold">{{ $path->count }} <span class="text-gray-500 font-normal">visitas</span></span>
                 </li>
                 @endforeach
             </ul>
