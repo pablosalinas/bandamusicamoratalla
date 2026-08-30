@@ -9,5 +9,5 @@ class Visit extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['ip_address', 'user_agent', 'path', 'visited_at'];
+    protected $fillable = ['ip_address', 'user_agent', 'path', 'visited_at', 'country', 'city', 'browser', 'device_type'];
 }

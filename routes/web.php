@@ -139,7 +139,8 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     Route::put('settings/carousel/{media}', [\App\Http\Controllers\Admin\SettingsController::class, 'updateCarouselMedia'])->name('settings.carousel.update');
     Route::delete('settings/carousel/{media}', [\App\Http\Controllers\Admin\SettingsController::class, 'destroyCarouselMedia'])->name('settings.carousel.destroy');
     
-    // Logs
+    // Analytics & Logs
+    Route::get('analytics', [\App\Http\Controllers\Admin\AnalyticsController::class, 'index'])->name('analytics.index');
     Route::get('logs', [\App\Http\Controllers\Admin\LogsController::class, 'index'])->name('logs.index');
 });
 require __DIR__.'/auth.php';
