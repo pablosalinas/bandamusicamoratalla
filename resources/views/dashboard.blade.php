@@ -35,20 +35,36 @@
                 
                 <div class="mb-8 bg-gray-950 p-6 rounded-lg border border-gray-800">
                     <h4 class="text-lg font-semibold mb-4 border-b border-gray-800 pb-2 text-white">Tus Datos Personales</h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                        <div><span class="text-gray-500 block">Nombre Completo:</span> <span class="text-white">{{ $user->name }} {{ $user->last_name }}</span></div>
-                        <div><span class="text-gray-500 block">Email:</span> <span class="text-white">{{ $user->email }}</span></div>
-                        <div><span class="text-gray-500 block">Teléfono:</span> <span class="text-white">{{ $user->phone ?: '-' }}</span></div>
-                        <div><span class="text-gray-500 block">DNI / NIF:</span> <span class="text-white">{{ $user->dni ?: '-' }}</span></div>
-                        <div><span class="text-gray-500 block">Dirección:</span> <span class="text-white">{{ $user->address ?: '-' }}, {{ $user->postal_code ?: '-' }} {{ $user->city ?: '-' }} ({{ $user->province ?: '-' }})</span></div>
-                        <div><span class="text-gray-500 block">Fecha de Nacimiento:</span> <span class="text-white">{{ $user->birth_date ? $user->birth_date->format('d/m/Y') : '-' }}</span></div>
+                    <div class="flex flex-col md:flex-row gap-6">
+                        <!-- Foto de perfil -->
+                        <div class="flex-shrink-0">
+                            @if($user->photo_path)
+                                <img src="{{ $user->photo_url }}" alt="Foto de {{ $user->name }}" class="w-28 h-28 rounded-lg object-cover border border-gray-700 shadow-md">
+                            @else
+                                <div class="w-28 h-28 rounded-lg bg-gray-800 border border-gray-700 flex items-center justify-center text-gray-500 shadow-md">
+                                    <svg class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                                    </svg>
+                                </div>
+                            @endif
+                        </div>
                         
-                        @if($user->canViewIban())
-                            <div class="md:col-span-2 mt-2 pt-2 border-t border-gray-800">
-                                <span class="text-amber-500 block">Cuenta Bancaria (IBAN):</span> 
-                                <span class="text-white">{{ $user->iban ?: 'No registrada' }}</span>
-                            </div>
-                        @endif
+                        <!-- Datos -->
+                        <div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                            <div><span class="text-gray-500 block">Nombre Completo:</span> <span class="text-white">{{ $user->name }} {{ $user->last_name }}</span></div>
+                            <div><span class="text-gray-500 block">Email:</span> <span class="text-white">{{ $user->email }}</span></div>
+                            <div><span class="text-gray-500 block">Teléfono:</span> <span class="text-white">{{ $user->phone ?: '-' }}</span></div>
+                            <div><span class="text-gray-500 block">DNI / NIF:</span> <span class="text-white">{{ $user->dni ?: '-' }}</span></div>
+                            <div><span class="text-gray-500 block">Dirección:</span> <span class="text-white">{{ $user->address ?: '-' }}, {{ $user->postal_code ?: '-' }} {{ $user->city ?: '-' }} ({{ $user->province ?: '-' }})</span></div>
+                            <div><span class="text-gray-500 block">Fecha de Nacimiento:</span> <span class="text-white">{{ $user->birth_date ? $user->birth_date->format('d/m/Y') : '-' }}</span></div>
+                            
+                            @if($user->canViewIban())
+                                <div class="md:col-span-2 mt-2 pt-2 border-t border-gray-800">
+                                    <span class="text-amber-500 block">Cuenta Bancaria (IBAN):</span> 
+                                    <span class="text-white">{{ $user->iban ?: 'No registrada' }}</span>
+                                </div>
+                            @endif
+                        </div>
                     </div>
                 </div>
                 
@@ -75,6 +91,18 @@
                                         <li><strong class="text-gray-300">Propiedad:</strong> <span class="capitalize">{{ $instrument->pivot->propiedad ?: '-' }}</span></li>
                                         <li><strong class="text-gray-300">Partitura:</strong> {{ $instrument->pivot->tipo_partitura ?: '-' }}</li>
                                     </ul>
+                                    @php
+                                        $instrumentPhotos = \App\Models\InstrumentPhoto::where('musician_instrument_id', $instrument->pivot->id)->get();
+                                    @endphp
+                                    @if($instrumentPhotos->count() > 0)
+                                        <div class="mt-3 pt-3 border-t border-gray-800 flex gap-2 overflow-x-auto pb-1">
+                                            @foreach($instrumentPhotos as $photo)
+                                                <a href="{{ asset('storage/' . $photo->photo_path) }}" target="_blank" class="flex-shrink-0">
+                                                    <img src="{{ asset('storage/' . $photo->photo_path) }}" class="h-14 w-14 rounded object-cover border border-gray-700 hover:border-amber-500 transition-colors" alt="Foto instrumento">
+                                                </a>
+                                            @endforeach
+                                        </div>
+                                    @endif
                                 </div>
                             @endforeach
                         </div>
