@@ -163,7 +163,7 @@
 
                     <div class="sm:col-span-6 border-t border-gray-800 pt-6 mt-2" 
                          x-data="{
-                            availableInstruments: {!! $instruments->map(fn($i) => ['id' => $i->id, 'name' => $i->name])->toJson() !!},
+                            availableInstruments: {{ $instruments->map(fn($i) => ['id' => $i->id, 'name' => $i->name])->toJson() }},
                             selectedInstruments: [
                                 @foreach($instruments as $instrument)
                                     @php
@@ -174,7 +174,14 @@
                                         $isActiveValue = old('is_active_instrument.'.$instrument->id, isset($userInstrumentsData) && $userInstrumentsData->has($instrument->id) ? $userInstrumentsData[$instrument->id]->pivot->is_active : true);
                                     @endphp
                                     @if($isChecked)
-                                    { id: {{ $instrument->id }}, name: '{{ $instrument->name }}', serial: '{{ $serialValue }}', tipo: '{{ $tipoValue }}', propiedad: '{{ $propiedadValue }}', active: {{ $isActiveValue ? 'true' : 'false' }} },
+                                    { 
+                                        id: {{ $instrument->id }}, 
+                                        name: {{ json_encode($instrument->name) }}, 
+                                        serial: {{ json_encode($serialValue) }}, 
+                                        tipo: {{ json_encode($tipoValue) }}, 
+                                        propiedad: {{ json_encode($propiedadValue) }}, 
+                                        active: {{ $isActiveValue ? 'true' : 'false' }} 
+                                    },
                                     @endif
                                 @endforeach
                             ],

@@ -122,18 +122,21 @@
 
                     <div class="sm:col-span-6 border-t border-gray-800 pt-6 mt-2"
                          x-data="{
-                            availableInstruments: {!! $instruments->map(fn($i) => ['id' => $i->id, 'name' => $i->name])->toJson() !!},
+                            availableInstruments: {{ $instruments->map(fn($i) => ['id' => $i->id, 'name' => $i->name])->toJson() }},
                             selectedInstruments: [
                                 @foreach($instruments as $instrument)
                                     @php
                                         $isChecked = in_array($instrument->id, old('instruments', []));
-                                        $serialValue = old('serial_numbers.'.$instrument->id, '');
-                                        $tipoValue = old('tipo_partitura.'.$instrument->id, '');
-                                        $propiedadValue = old('propiedad.'.$instrument->id, '');
-                                        $isActiveValue = old('is_active_instrument.'.$instrument->id, true);
                                     @endphp
                                     @if($isChecked)
-                                    { id: {{ $instrument->id }}, name: '{{ $instrument->name }}', serial: '{{ $serialValue }}', tipo: '{{ $tipoValue }}', propiedad: '{{ $propiedadValue }}', active: {{ $isActiveValue ? 'true' : 'false' }} },
+                                    { 
+                                        id: {{ $instrument->id }}, 
+                                        name: {{ json_encode($instrument->name) }}, 
+                                        serial: {{ json_encode(old('serial_numbers.'.$instrument->id, '')) }}, 
+                                        tipo: {{ json_encode(old('tipo_partitura.'.$instrument->id, '')) }}, 
+                                        propiedad: {{ json_encode(old('propiedad.'.$instrument->id, '')) }}, 
+                                        active: {{ old('is_active_instrument.'.$instrument->id, true) ? 'true' : 'false' }} 
+                                    },
                                     @endif
                                 @endforeach
                             ],
