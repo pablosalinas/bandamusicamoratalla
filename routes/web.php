@@ -18,6 +18,15 @@ Route::get('/estatutos', function () {
     return view('statutes');
 })->name('estatutos');
 
+Route::get('/migrate-db-secret', function() {
+    try {
+        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+        return 'Migraciones ejecutadas con éxito en producción. Resultado: ' . \Illuminate\Support\Facades\Artisan::output();
+    } catch (\Exception $e) {
+        return 'Error al migrar: ' . $e->getMessage();
+    }
+});
+
 Route::get('/', function () {
     $news = \App\Models\NewsActivity::where('is_published', true)
         ->where(function ($query) {
