@@ -197,7 +197,7 @@
                                         brand_id: {{ json_encode($brandValue) }}, 
                                         modelo: {{ json_encode($modeloValue) }}, 
                                         active: {{ $isActiveValue ? 'true' : 'false' }},
-                                        photos: @json($photosData)
+                                        photos: {{ json_encode($photosData) }}
                                     },
                                     @endif
                                 @endforeach
