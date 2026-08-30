@@ -37,9 +37,7 @@
                                     <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
                                         <div class="flex items-center">
                                             <div class="h-10 w-10 flex-shrink-0">
-                                                <div class="h-10 w-10 rounded-full bg-gray-800 flex items-center justify-center border border-gray-700">
-                                                    <span class="text-sm font-medium leading-none text-white">{{ substr($user->name, 0, 1) }}</span>
-                                                </div>
+                                                <img class="h-10 w-10 rounded-full bg-gray-800 object-cover border border-gray-700" src="{{ $user->photo_url }}" alt="Foto de {{ $user->name }}">
                                             </div>
                                             <div class="ml-4">
                                                 <div class="font-medium text-white">{{ $user->name }} {{ $user->last_name }}</div>
