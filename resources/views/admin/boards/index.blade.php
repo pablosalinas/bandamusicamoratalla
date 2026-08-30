@@ -43,6 +43,7 @@
                                         @endif
                                     </td>
                                     <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                                        <a href="{{ route('admin.boards.minutes.index', $board) }}" class="text-emerald-400 hover:text-emerald-300 mr-4">Actas</a>
                                         <a href="{{ route('admin.boards.show', $board) }}" class="text-indigo-400 hover:text-indigo-300 mr-4">Gestionar Miembros</a>
                                         <a href="{{ route('admin.boards.edit', $board) }}" class="text-amber-500 hover:text-amber-400 mr-4">Editar</a>
                                         <form action="{{ route('admin.boards.destroy', $board) }}" method="POST" class="inline-block" onsubmit="return confirm('¿Seguro que deseas eliminar esta legislatura? Se perderá el historial de miembros.');">

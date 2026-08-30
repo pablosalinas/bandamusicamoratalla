@@ -54,7 +54,10 @@ class User extends Authenticatable
 
     public function instruments()
     {
-        return $this->belongsToMany(InstrumentCatalog::class, 'musician_instruments', 'user_id', 'instrument_catalog_id')->withPivot('serial_number')->withTimestamps();
+        return $this->belongsToMany(InstrumentCatalog::class, 'musician_instruments', 'user_id', 'instrument_catalog_id')
+                    ->using(MusicianInstrument::class)
+                    ->withPivot('id', 'serial_number', 'tipo_partitura', 'is_active', 'propiedad')
+                    ->withTimestamps();
     }
 
     public function getPhotoUrlAttribute()

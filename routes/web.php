@@ -40,7 +40,10 @@ Route::get('/', function () {
         ['value' => $visit_count, 'type' => 'integer']
     );
 
-    return view('welcome', compact('news', 'band_history', 'visit_count'));
+    $carouselMedia = \App\Models\CarouselMedia::orderBy('sort_order')->get();
+    $carouselSpeed = (int) \App\Models\SiteSetting::getSetting('carousel_speed', 4);
+
+    return view('welcome', compact('news', 'band_history', 'visit_count', 'carouselMedia', 'carouselSpeed'));
 });
 
 Route::view('/aviso-legal', 'legal')->name('legal');
@@ -79,9 +82,13 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     ]);
     Route::get('sheet-music/{sheetMusic}/download', [\App\Http\Controllers\Admin\SheetMusicController::class, 'download'])->name('sheet-music.download');
     Route::resource('instruments', \App\Http\Controllers\Admin\InstrumentController::class);
+    Route::get('inventory', [\App\Http\Controllers\Admin\InventoryController::class, 'index'])->name('inventory.index');
     Route::resource('boards', \App\Http\Controllers\Admin\BoardController::class);
     Route::post('boards/{board}/members', [\App\Http\Controllers\Admin\BoardController::class, 'addMember'])->name('boards.members.add');
     Route::delete('boards/{board}/members/{member}', [\App\Http\Controllers\Admin\BoardController::class, 'removeMember'])->name('boards.members.remove');
+    
+    Route::resource('boards.minutes', \App\Http\Controllers\Admin\BoardMinuteController::class);
+    Route::get('boards/{board}/minutes/{minute}/pdf', [\App\Http\Controllers\Admin\BoardMinuteController::class, 'downloadPdf'])->name('boards.minutes.pdf');
     
     Route::resource('news', \App\Http\Controllers\Admin\NewsController::class);
     
@@ -92,6 +99,8 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     // Settings
     Route::get('settings', [\App\Http\Controllers\Admin\SettingsController::class, 'index'])->name('settings.index');
     Route::post('settings', [\App\Http\Controllers\Admin\SettingsController::class, 'update'])->name('settings.update');
+    Route::post('settings/carousel', [\App\Http\Controllers\Admin\SettingsController::class, 'storeCarouselMedia'])->name('settings.carousel.store');
+    Route::delete('settings/carousel/{media}', [\App\Http\Controllers\Admin\SettingsController::class, 'destroyCarouselMedia'])->name('settings.carousel.destroy');
     
     // Logs
     Route::get('logs', [\App\Http\Controllers\Admin\LogsController::class, 'index'])->name('logs.index');

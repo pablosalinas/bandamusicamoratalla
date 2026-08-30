@@ -26,4 +26,9 @@ class Board extends Model
     {
         return $this->hasMany(BoardAction::class);
     }
+
+    public function minutes()
+    {
+        return $this->hasMany(BoardMinute::class);
+    }
 }

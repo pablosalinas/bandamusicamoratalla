@@ -13,7 +13,7 @@
     </x-slot>
 
     <div class="mt-8 max-w-3xl">
-        <form action="{{ route('admin.users.store') }}" method="POST" class="bg-gray-900 shadow-sm ring-1 ring-gray-800 sm:rounded-xl">
+        <form action="{{ route('admin.users.store') }}" method="POST" enctype="multipart/form-data" class="bg-gray-900 shadow-sm ring-1 ring-gray-800 sm:rounded-xl">
             @csrf
             
             <div class="px-4 py-6 sm:p-8">
@@ -128,9 +128,12 @@
                                     @php
                                         $isChecked = in_array($instrument->id, old('instruments', []));
                                         $serialValue = old('serial_numbers.'.$instrument->id, '');
+                                        $tipoValue = old('tipo_partitura.'.$instrument->id, '');
+                                        $propiedadValue = old('propiedad.'.$instrument->id, '');
+                                        $isActiveValue = old('is_active_instrument.'.$instrument->id, true);
                                     @endphp
                                     @if($isChecked)
-                                    { id: {{ $instrument->id }}, name: '{{ $instrument->name }}', serial: '{{ $serialValue }}' },
+                                    { id: {{ $instrument->id }}, name: '{{ $instrument->name }}', serial: '{{ $serialValue }}', tipo: '{{ $tipoValue }}', propiedad: '{{ $propiedadValue }}', active: {{ $isActiveValue ? 'true' : 'false' }} },
                                     @endif
                                 @endforeach
                             ],
@@ -141,7 +144,7 @@
                                 if (!this.selectedInstruments.find(i => i.id === id)) {
                                     const inst = this.availableInstruments.find(i => i.id === id);
                                     if (inst) {
-                                        this.selectedInstruments.push({ id: inst.id, name: inst.name, serial: '' });
+                                        this.selectedInstruments.push({ id: inst.id, name: inst.name, serial: '', tipo: '', propiedad: '', active: true });
                                     }
                                 }
                                 this.selectedToAdd = '';
@@ -152,7 +155,7 @@
                          }">
                          
                         <label class="block text-base font-semibold leading-6 text-white mb-4">Instrumentos Asignados</label>
-                        <p class="text-sm text-gray-400 mb-4">Selecciona los instrumentos que toca este músico e indica su número de serie si dispone del instrumento físico de la banda.</p>
+                        <p class="text-sm text-gray-400 mb-4">Selecciona los instrumentos que toca este músico e indica sus detalles adicionales.</p>
                         
                         <div class="flex items-center gap-4 mb-6">
                             <select x-model="selectedToAdd" class="block w-full sm:w-1/2 rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6">
@@ -166,22 +169,63 @@
                             </button>
                         </div>
 
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="flex flex-col gap-4">
                             <template x-for="(inst, index) in selectedInstruments" :key="inst.id">
-                                <div class="flex items-center justify-between p-3 bg-gray-950 rounded-lg border border-gray-800">
-                                    <div class="flex-1 mr-4">
-                                        <p class="text-sm font-medium text-gray-200 mb-2" x-text="inst.name"></p>
-                                        <input type="hidden" name="instruments[]" :value="inst.id">
-                                        <input type="text" :name="'serial_numbers[' + inst.id + ']'" x-model="inst.serial" placeholder="Nº Serie (Opcional)" class="block w-full rounded-md border-0 bg-gray-800 py-1 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-xs">
-                                    </div>
-                                    <button type="button" @click="removeInstrument(inst.id)" class="text-red-500 hover:text-red-400 p-1">
+                                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-gray-950 rounded-lg border border-gray-800 gap-4 relative">
+                                    <button type="button" @click="removeInstrument(inst.id)" class="absolute top-2 right-2 text-red-500 hover:text-red-400 p-1">
                                         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
                                         </svg>
                                     </button>
+                                    
+                                    <div class="flex-1 w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4 sm:mt-0">
+                                        <div class="col-span-full">
+                                            <p class="text-lg font-bold text-amber-500 mb-2" x-text="inst.name"></p>
+                                            <input type="hidden" name="instruments[]" :value="inst.id">
+                                        </div>
+                                        
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-400">Tipo de Partitura</label>
+                                            <select :name="'tipo_partitura[' + inst.id + ']'" x-model="inst.tipo" class="mt-1 block w-full rounded-md border-0 bg-gray-800 py-1 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-xs">
+                                                <option value="">Selecciona...</option>
+                                                <option value="1º">1º</option>
+                                                <option value="2º">2º</option>
+                                                <option value="3º">3º</option>
+                                                <option value="PRINCIPAL">PRINCIPAL</option>
+                                                <option value="TODOS">TODOS</option>
+                                            </select>
+                                        </div>
+
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-400">Propiedad</label>
+                                            <select :name="'propiedad[' + inst.id + ']'" x-model="inst.propiedad" class="mt-1 block w-full rounded-md border-0 bg-gray-800 py-1 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-xs">
+                                                <option value="">Selecciona...</option>
+                                                <option value="Propio">Propio</option>
+                                                <option value="De la banda">De la banda</option>
+                                                <option value="Prestado">Prestado</option>
+                                                <option value="Reliquia">Reliquia</option>
+                                                <option value="Alquilado">Alquilado</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-400">Nº Serie (Opcional)</label>
+                                            <input type="text" :name="'serial_numbers[' + inst.id + ']'" x-model="inst.serial" class="mt-1 block w-full rounded-md border-0 bg-gray-800 py-1 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-xs">
+                                        </div>
+                                        
+                                        <div class="col-span-full">
+                                            <label class="block text-xs font-medium text-gray-400">Subir Fotos (Múltiples)</label>
+                                            <input type="file" :name="'photos[' + inst.id + '][]'" multiple accept="image/*" class="mt-1 block w-full text-sm text-gray-400 file:mr-4 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-gray-800 file:text-amber-500 hover:file:bg-gray-700">
+                                        </div>
+                                        
+                                        <div class="col-span-full flex items-center mt-2">
+                                            <input type="checkbox" :name="'is_active_instrument[' + inst.id + ']'" x-model="inst.active" value="1" class="h-4 w-4 rounded border-gray-700 bg-gray-900 text-amber-600 focus:ring-amber-600 focus:ring-offset-gray-900">
+                                            <label class="ml-2 block text-xs font-medium text-gray-300">Instrumento Activo</label>
+                                        </div>
+                                    </div>
                                 </div>
                             </template>
-                            <p x-show="selectedInstruments.length === 0" class="text-sm text-gray-500 italic col-span-full">No hay instrumentos asignados a este músico.</p>
+                            <p x-show="selectedInstruments.length === 0" class="text-sm text-gray-500 italic">No hay instrumentos asignados a este músico.</p>
                         </div>
                     </div>
 

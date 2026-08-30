@@ -129,6 +129,168 @@
         </div>
     </section>
 
+    <!-- Carrusel Section -->
+    @if(isset($carouselMedia) && $carouselMedia->count() > 0)
+    <section id="carrusel" class="w-full bg-gray-950 border-t border-b border-gray-900 relative"
+        x-data="{
+            slides: [
+                @foreach($carouselMedia as $media)
+                {
+                    id: {{ $media->id }},
+                    type: '{{ $media->type }}',
+                    src: '{{ asset('storage/' . $media->file_path) }}'
+                },
+                @endforeach
+            ],
+            currentIndex: 0,
+            autoplayInterval: null,
+            speed: {{ ($carouselSpeed ?? 4) * 1000 }},
+            lightboxOpen: false,
+            
+            init() {
+                this.startAutoplay();
+            },
+            
+            startAutoplay() {
+                this.stopAutoplay();
+                
+                let currentSlide = this.slides[this.currentIndex];
+                if (currentSlide.type === 'video') {
+                    // Wait for video to end
+                    this.$nextTick(() => {
+                        let videoEl = document.getElementById('carousel-video-' + this.currentIndex);
+                        if(videoEl) {
+                            videoEl.play().catch(e => console.log('Autoplay prevented'));
+                            videoEl.onended = () => {
+                                this.next();
+                            };
+                        } else {
+                            this.scheduleNext();
+                        }
+                    });
+                } else {
+                    this.scheduleNext();
+                }
+            },
+            
+            scheduleNext() {
+                this.autoplayInterval = setTimeout(() => {
+                    this.next();
+                }, this.speed);
+            },
+            
+            stopAutoplay() {
+                if (this.autoplayInterval) {
+                    clearTimeout(this.autoplayInterval);
+                }
+                // Pause all videos
+                document.querySelectorAll('.carousel-video').forEach(v => {
+                    v.pause();
+                    v.onended = null;
+                });
+            },
+            
+            next() {
+                this.currentIndex = (this.currentIndex + 1) % this.slides.length;
+                this.startAutoplay();
+            },
+            
+            prev() {
+                this.currentIndex = (this.currentIndex - 1 + this.slides.length) % this.slides.length;
+                this.startAutoplay();
+            },
+            
+            openLightbox() {
+                this.lightboxOpen = true;
+                document.body.style.overflow = 'hidden';
+                // Stop the main carousel autoplay, but start it in the lightbox if needed, or just let it play.
+                // We will keep startAutoplay running so it passes automatically in lightbox too.
+            },
+            
+            closeLightbox() {
+                this.lightboxOpen = false;
+                document.body.style.overflow = '';
+            }
+        }">
+        
+        <!-- Carrusel Principal -->
+        <div class="relative w-full h-64 sm:h-96 md:h-[500px] overflow-hidden group cursor-pointer" @click="openLightbox">
+            <template x-for="(slide, index) in slides" :key="slide.id">
+                <div x-show="currentIndex === index"
+                     x-transition:enter="transition ease-out duration-700"
+                     x-transition:enter-start="opacity-0 scale-95"
+                     x-transition:enter-end="opacity-100 scale-100"
+                     x-transition:leave="transition ease-in duration-500"
+                     x-transition:leave-start="opacity-100 scale-100"
+                     x-transition:leave-end="opacity-0 scale-105"
+                     class="absolute inset-0 flex items-center justify-center bg-gray-900">
+                    
+                    <template x-if="slide.type === 'image'">
+                        <img :src="slide.src" class="w-full h-full object-cover">
+                    </template>
+                    
+                    <template x-if="slide.type === 'video'">
+                        <video :id="'carousel-video-' + index" :src="slide.src" class="carousel-video w-full h-full object-cover" muted playsinline></video>
+                    </template>
+                </div>
+            </template>
+            
+            <!-- Controls (Overlay) -->
+            <button @click.stop="prev" class="absolute left-4 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/70 text-white p-3 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+            </button>
+            <button @click.stop="next" class="absolute right-4 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/70 text-white p-3 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+            </button>
+            
+            <div class="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2">
+                <template x-for="(slide, index) in slides" :key="slide.id">
+                    <button @click.stop="currentIndex = index; startAutoplay();" :class="{'bg-amber-500 w-6': currentIndex === index, 'bg-white/50 w-2': currentIndex !== index}" class="h-2 rounded-full transition-all duration-300"></button>
+                </template>
+            </div>
+        </div>
+
+        <!-- Lightbox Modal -->
+        <div x-show="lightboxOpen" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/95" style="display: none;" @keydown.escape.window="closeLightbox">
+            <button @click="closeLightbox" class="absolute top-6 right-6 text-white/70 hover:text-white z-50">
+                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            
+            <button @click="prev" class="absolute left-4 top-1/2 -translate-y-1/2 text-white/50 hover:text-white p-4 z-50">
+                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+            </button>
+            
+            <button @click="next" class="absolute right-4 top-1/2 -translate-y-1/2 text-white/50 hover:text-white p-4 z-50">
+                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+            </button>
+            
+            <div class="relative w-full max-w-6xl max-h-[90vh] px-4 sm:px-12 flex items-center justify-center">
+                <template x-for="(slide, index) in slides" :key="slide.id">
+                    <div x-show="currentIndex === index"
+                         x-transition:enter="transition ease-out duration-300"
+                         x-transition:enter-start="opacity-0 scale-95"
+                         x-transition:enter-end="opacity-100 scale-100"
+                         class="w-full flex justify-center">
+                        
+                        <template x-if="slide.type === 'image'">
+                            <img :src="slide.src" class="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl">
+                        </template>
+                        
+                        <template x-if="slide.type === 'video'">
+                            <!-- Using a different ID for lightbox video so they don't clash -->
+                            <video :id="'lightbox-video-' + index" :src="slide.src" class="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl" controls autoplay></video>
+                        </template>
+                    </div>
+                </template>
+            </div>
+            
+            <div class="absolute bottom-6 left-1/2 -translate-x-1/2 text-white/50 text-sm">
+                <span x-text="(currentIndex + 1)"></span> / <span x-text="slides.length"></span>
+            </div>
+        </div>
+    </section>
+    @endif
+
     <!-- Historia Section -->
     <section id="historia" class="py-24 relative">
         <div class="max-w-7xl mx-auto px-6 lg:px-8">

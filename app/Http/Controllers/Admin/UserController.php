@@ -59,9 +59,29 @@ class UserController extends Controller
         if ($request->has('instruments')) {
             $syncData = [];
             foreach ($request->instruments as $instrumentId) {
-                $syncData[$instrumentId] = ['serial_number' => $request->input("serial_numbers.{$instrumentId}")];
+                $syncData[$instrumentId] = [
+                    'serial_number' => $request->input("serial_numbers.{$instrumentId}"),
+                    'tipo_partitura' => $request->input("tipo_partitura.{$instrumentId}"),
+                    'propiedad' => $request->input("propiedad.{$instrumentId}"),
+                    'is_active' => $request->has("is_active_instrument.{$instrumentId}")
+                ];
             }
             $user->instruments()->sync($syncData);
+            
+            // Handle photos
+            foreach ($request->instruments as $instrumentId) {
+                if ($request->hasFile("photos.{$instrumentId}")) {
+                    $pivot = \App\Models\MusicianInstrument::where('user_id', $user->id)
+                                ->where('instrument_catalog_id', $instrumentId)
+                                ->first();
+                    if ($pivot) {
+                        foreach ($request->file("photos.{$instrumentId}") as $file) {
+                            $path = $file->store('instrument_photos', 'public');
+                            $pivot->photos()->create(['photo_path' => $path]);
+                        }
+                    }
+                }
+            }
         }
 
         return redirect()->route('admin.users.index')->with('success', 'Usuario creado correctamente.');
@@ -138,9 +158,29 @@ class UserController extends Controller
         if ($request->has('instruments')) {
             $syncData = [];
             foreach ($request->instruments as $instrumentId) {
-                $syncData[$instrumentId] = ['serial_number' => $request->input("serial_numbers.{$instrumentId}")];
+                $syncData[$instrumentId] = [
+                    'serial_number' => $request->input("serial_numbers.{$instrumentId}"),
+                    'tipo_partitura' => $request->input("tipo_partitura.{$instrumentId}"),
+                    'propiedad' => $request->input("propiedad.{$instrumentId}"),
+                    'is_active' => $request->has("is_active_instrument.{$instrumentId}")
+                ];
             }
             $user->instruments()->sync($syncData);
+
+            // Handle photos
+            foreach ($request->instruments as $instrumentId) {
+                if ($request->hasFile("photos.{$instrumentId}")) {
+                    $pivot = \App\Models\MusicianInstrument::where('user_id', $user->id)
+                                ->where('instrument_catalog_id', $instrumentId)
+                                ->first();
+                    if ($pivot) {
+                        foreach ($request->file("photos.{$instrumentId}") as $file) {
+                            $path = $file->store('instrument_photos', 'public');
+                            $pivot->photos()->create(['photo_path' => $path]);
+                        }
+                    }
+                }
+            }
         } else {
             $user->instruments()->detach();
         }
