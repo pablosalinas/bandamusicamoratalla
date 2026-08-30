@@ -46,7 +46,7 @@
                                         <a href="{{ route('admin.boards.minutes.index', $board) }}" class="text-emerald-400 hover:text-emerald-300 mr-4">Actas</a>
                                         <a href="{{ route('admin.boards.show', $board) }}" class="text-indigo-400 hover:text-indigo-300 mr-4">Gestionar Miembros</a>
                                         <a href="{{ route('admin.boards.edit', $board) }}" class="text-amber-500 hover:text-amber-400 mr-4">Editar</a>
-                                        <form action="{{ route('admin.boards.destroy', $board) }}" method="POST" class="inline-block" onsubmit="return confirm('¿Seguro que deseas eliminar esta legislatura? Se perderá el historial de miembros.');">
+                                        <form action="{{ route('admin.boards.destroy', $board) }}" method="POST" class="inline-block" onsubmit="return confirm('⚠️ AVISO: Es preferible DESACTIVAR el registro (cambiar su estado a inactivo) en lugar de borrarlo para no perder el historial. ¿Estás completamente seguro de que deseas ELIMINARLO definitivamente?');">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="text-red-500 hover:text-red-400">Eliminar</button>

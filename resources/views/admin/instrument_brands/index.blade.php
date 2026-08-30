@@ -34,7 +34,7 @@
                             </div>
                         </div>
                         <div class="flex flex-none items-center gap-x-4">
-                            <form action="{{ route('admin.instrument-brands.destroy', $brand) }}" method="POST" onsubmit="return confirm('¿Seguro que deseas eliminar esta marca?');">
+                            <form action="{{ route('admin.instrument-brands.destroy', $brand) }}" method="POST" onsubmit="return confirm('⚠️ AVISO: Es preferible DESACTIVAR el registro (cambiar su estado a inactivo) en lugar de borrarlo para no perder el historial. ¿Estás completamente seguro de que deseas ELIMINARLO definitivamente?');">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="hidden rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:block text-red-600">

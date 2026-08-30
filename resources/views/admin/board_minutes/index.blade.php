@@ -53,7 +53,7 @@
                                 <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
                                     <a href="{{ route('admin.boards.minutes.edit', [$board, $minute]) }}" class="text-amber-500 hover:text-amber-400 mr-4">Editar<span class="sr-only">, {{ $minute->title }}</span></a>
                                     
-                                    <form action="{{ route('admin.boards.minutes.destroy', [$board, $minute]) }}" method="POST" class="inline-block" onsubmit="return confirm('¿Estás seguro de querer eliminar esta acta?');">
+                                    <form action="{{ route('admin.boards.minutes.destroy', [$board, $minute]) }}" method="POST" class="inline-block" onsubmit="return confirm('⚠️ AVISO: Es preferible DESACTIVAR el registro (cambiar su estado a inactivo) en lugar de borrarlo para no perder el historial. ¿Estás completamente seguro de que deseas ELIMINARLO definitivamente?');">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="text-red-500 hover:text-red-400">Eliminar<span class="sr-only">, {{ $minute->title }}</span></button>

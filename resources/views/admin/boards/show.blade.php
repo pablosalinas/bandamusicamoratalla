@@ -81,7 +81,7 @@
                                     <span class="text-gray-500 block text-xs">{{ $member->user->email }}</span>
                                 </td>
                                 <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                                    <form action="{{ route('admin.boards.members.remove', [$board, $member]) }}" method="POST" class="inline-block" onsubmit="return confirm('¿Estás seguro de que quieres quitar a esta persona de la junta?');">
+                                    <form action="{{ route('admin.boards.members.remove', [$board, $member]) }}" method="POST" class="inline-block" onsubmit="return confirm('⚠️ AVISO: Es preferible DESACTIVAR el registro (cambiar su estado a inactivo) en lugar de borrarlo para no perder el historial. ¿Estás completamente seguro de que deseas ELIMINARLO definitivamente?');">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="text-red-500 hover:text-red-400">Eliminar</button>
