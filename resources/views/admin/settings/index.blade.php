@@ -90,22 +90,34 @@
 
                 <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-6">
                     @forelse($carouselMedia as $media)
-                        <div class="relative group bg-gray-800 rounded-lg overflow-hidden border border-gray-700 aspect-video flex items-center justify-center">
-                            @if($media->type === 'image')
-                                <img src="{{ asset('storage/' . $media->file_path) }}" class="w-full h-full object-cover">
-                            @else
-                                <video src="{{ asset('storage/' . $media->file_path) }}" class="w-full h-full object-cover" muted></video>
-                                <div class="absolute inset-0 flex items-center justify-center bg-black/30">
-                                    <svg class="w-8 h-8 text-white opacity-70" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                        <div class="flex flex-col bg-gray-800 rounded-lg overflow-hidden border border-gray-700">
+                            <div class="relative group aspect-video flex items-center justify-center bg-gray-900">
+                                @if($media->type === 'image')
+                                    <img src="{{ asset('storage/' . $media->file_path) }}" class="w-full h-full object-cover">
+                                @else
+                                    <video src="{{ asset('storage/' . $media->file_path) }}" class="w-full h-full object-cover" muted></video>
+                                    <div class="absolute inset-0 flex items-center justify-center bg-black/30">
+                                        <svg class="w-8 h-8 text-white opacity-70" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                    </div>
+                                @endif
+                                
+                                <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                    <form action="{{ route('admin.settings.carousel.destroy', $media) }}" method="POST" onsubmit="return confirm('¿Eliminar este archivo del carrusel?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="p-2 bg-red-600 text-white rounded-full hover:bg-red-500 focus:outline-none">
+                                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                        </button>
+                                    </form>
                                 </div>
-                            @endif
-                            
-                            <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                <form action="{{ route('admin.settings.carousel.destroy', $media) }}" method="POST" onsubmit="return confirm('¿Eliminar este archivo del carrusel?');">
+                            </div>
+                            <div class="p-3 border-t border-gray-700">
+                                <form action="{{ route('admin.settings.carousel.update', $media) }}" method="POST" class="flex gap-2">
                                     @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="p-2 bg-red-600 text-white rounded-full hover:bg-red-500 focus:outline-none">
-                                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                    @method('PUT')
+                                    <input type="text" name="description" value="{{ $media->description }}" placeholder="Descripción..." class="block w-full rounded-md border-0 bg-gray-900 py-1 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-xs">
+                                    <button type="submit" class="rounded-md bg-amber-600 px-2 py-1 text-xs font-semibold text-white shadow-sm hover:bg-amber-500" title="Guardar descripción">
+                                        Guardar
                                     </button>
                                 </form>
                             </div>

@@ -60,7 +60,7 @@
     </div>
 
     <div class="content">
-        {!! nl2br(e($minute->content)) !!}
+        {!! $minute->content !!}
     </div>
 
     <div class="signatures">

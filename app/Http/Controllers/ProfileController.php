@@ -43,6 +43,10 @@ class ProfileController extends Controller
             }
             
             $path = $request->file('photo')->store('profiles', 'public');
+            
+            // Apply watermark
+            \App\Services\ImageWatermarkService::applyWatermark(storage_path('app/public/' . $path));
+            
             $request->user()->photo_path = $path;
         }
 

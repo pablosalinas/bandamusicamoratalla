@@ -20,7 +20,8 @@ class UserController extends Controller
     public function create()
     {
         $instruments = InstrumentCatalog::where('is_active', true)->orderBy('name')->get();
-        return view('admin.users.create', compact('instruments'));
+        $brands = \App\Models\InstrumentBrand::orderBy('name')->get();
+        return view('admin.users.create', compact('instruments', 'brands'));
     }
 
     public function store(Request $request)
@@ -63,7 +64,9 @@ class UserController extends Controller
                     'serial_number' => $request->input("serial_numbers.{$instrumentId}"),
                     'tipo_partitura' => $request->input("tipo_partitura.{$instrumentId}"),
                     'propiedad' => $request->input("propiedad.{$instrumentId}"),
-                    'is_active' => $request->has("is_active_instrument.{$instrumentId}")
+                    'is_active' => $request->has("is_active_instrument.{$instrumentId}"),
+                    'instrument_brand_id' => $request->input("instrument_brand_id.{$instrumentId}"),
+                    'modelo' => $request->input("modelo.{$instrumentId}")
                 ];
             }
             $user->instruments()->sync($syncData);
@@ -77,6 +80,7 @@ class UserController extends Controller
                     if ($pivot) {
                         foreach ($request->file("photos.{$instrumentId}") as $file) {
                             $path = $file->store('instrument_photos', 'public');
+                            \App\Services\ImageWatermarkService::applyWatermark(storage_path('app/public/' . $path));
                             $pivot->photos()->create(['photo_path' => $path]);
                         }
                     }
@@ -111,7 +115,9 @@ class UserController extends Controller
         $userInstruments = $user->instruments->pluck('id')->toArray();
         $userInstrumentsData = $user->instruments->keyBy('id');
 
-        return view('admin.users.edit', compact('user', 'instruments', 'attendances', 'filter', 'userInstruments', 'userInstrumentsData'));
+        $brands = \App\Models\InstrumentBrand::orderBy('name')->get();
+
+        return view('admin.users.edit', compact('user', 'instruments', 'attendances', 'filter', 'userInstruments', 'userInstrumentsData', 'brands'));
     }
 
     public function update(Request $request, User $user)
@@ -162,7 +168,9 @@ class UserController extends Controller
                     'serial_number' => $request->input("serial_numbers.{$instrumentId}"),
                     'tipo_partitura' => $request->input("tipo_partitura.{$instrumentId}"),
                     'propiedad' => $request->input("propiedad.{$instrumentId}"),
-                    'is_active' => $request->has("is_active_instrument.{$instrumentId}")
+                    'is_active' => $request->has("is_active_instrument.{$instrumentId}"),
+                    'instrument_brand_id' => $request->input("instrument_brand_id.{$instrumentId}"),
+                    'modelo' => $request->input("modelo.{$instrumentId}")
                 ];
             }
             $user->instruments()->sync($syncData);
@@ -176,6 +184,7 @@ class UserController extends Controller
                     if ($pivot) {
                         foreach ($request->file("photos.{$instrumentId}") as $file) {
                             $path = $file->store('instrument_photos', 'public');
+                            \App\Services\ImageWatermarkService::applyWatermark(storage_path('app/public/' . $path));
                             $pivot->photos()->create(['photo_path' => $path]);
                         }
                     }

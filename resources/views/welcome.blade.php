@@ -138,7 +138,8 @@
                 {
                     id: {{ $media->id }},
                     type: '{{ $media->type }}',
-                    src: '{{ asset('storage/' . $media->file_path) }}'
+                    src: '{{ asset('storage/' . $media->file_path) }}',
+                    description: @js($media->description)
                 },
                 @endforeach
             ],
@@ -232,6 +233,14 @@
                     <template x-if="slide.type === 'video'">
                         <video :id="'carousel-video-' + index" :src="slide.src" class="carousel-video w-full h-full object-cover" muted playsinline></video>
                     </template>
+                    
+                    <template x-if="slide.description">
+                        <div class="absolute bottom-12 left-0 right-0 mx-auto w-3/4 max-w-2xl text-center">
+                            <div class="inline-block bg-black/60 backdrop-blur-sm px-6 py-3 rounded-lg border border-white/10 shadow-lg">
+                                <p class="text-white text-lg md:text-xl font-medium tracking-wide drop-shadow-md" x-text="slide.description"></p>
+                            </div>
+                        </div>
+                    </template>
                 </div>
             </template>
             
@@ -279,6 +288,14 @@
                         <template x-if="slide.type === 'video'">
                             <!-- Using a different ID for lightbox video so they don't clash -->
                             <video :id="'lightbox-video-' + index" :src="slide.src" class="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl" controls autoplay></video>
+                        </template>
+                        
+                        <template x-if="slide.description">
+                            <div class="absolute bottom-10 left-0 right-0 mx-auto w-11/12 max-w-3xl text-center">
+                                <div class="inline-block bg-black/70 backdrop-blur-md px-8 py-4 rounded-xl border border-white/20 shadow-2xl">
+                                    <p class="text-white text-xl md:text-2xl font-semibold tracking-wide drop-shadow-lg" x-text="slide.description"></p>
+                                </div>
+                            </div>
                         </template>
                     </div>
                 </template>

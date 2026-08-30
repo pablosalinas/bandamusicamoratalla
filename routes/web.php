@@ -81,8 +81,14 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
         'sheet-music' => 'sheetMusic'
     ]);
     Route::get('sheet-music/{sheetMusic}/download', [\App\Http\Controllers\Admin\SheetMusicController::class, 'download'])->name('sheet-music.download');
-    Route::resource('instruments', \App\Http\Controllers\Admin\InstrumentController::class);
+    
+    // Instrument Catalog
+    Route::resource('instruments', \App\Http\Controllers\Admin\InstrumentCatalogController::class)->except(['show']);
+    Route::resource('instrument-brands', \App\Http\Controllers\Admin\InstrumentBrandController::class)->only(['index', 'store', 'destroy']);
+    
+    // Inventory
     Route::get('inventory', [\App\Http\Controllers\Admin\InventoryController::class, 'index'])->name('inventory.index');
+    
     Route::resource('boards', \App\Http\Controllers\Admin\BoardController::class);
     Route::post('boards/{board}/members', [\App\Http\Controllers\Admin\BoardController::class, 'addMember'])->name('boards.members.add');
     Route::delete('boards/{board}/members/{member}', [\App\Http\Controllers\Admin\BoardController::class, 'removeMember'])->name('boards.members.remove');
@@ -100,6 +106,7 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     Route::get('settings', [\App\Http\Controllers\Admin\SettingsController::class, 'index'])->name('settings.index');
     Route::post('settings', [\App\Http\Controllers\Admin\SettingsController::class, 'update'])->name('settings.update');
     Route::post('settings/carousel', [\App\Http\Controllers\Admin\SettingsController::class, 'storeCarouselMedia'])->name('settings.carousel.store');
+    Route::put('settings/carousel/{media}', [\App\Http\Controllers\Admin\SettingsController::class, 'updateCarouselMedia'])->name('settings.carousel.update');
     Route::delete('settings/carousel/{media}', [\App\Http\Controllers\Admin\SettingsController::class, 'destroyCarouselMedia'])->name('settings.carousel.destroy');
     
     // Logs

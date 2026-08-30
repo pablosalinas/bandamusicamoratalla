@@ -57,6 +57,10 @@ class SettingsController extends Controller
                 $mime = $file->getMimeType();
                 $type = str_starts_with($mime, 'video/') ? 'video' : 'image';
                 
+                if ($type === 'image') {
+                    \App\Services\ImageWatermarkService::applyWatermark(storage_path('app/public/' . $path));
+                }
+                
                 $maxOrder++;
                 \App\Models\CarouselMedia::create([
                     'file_path' => $path,
@@ -77,5 +81,18 @@ class SettingsController extends Controller
         $media->delete();
         
         return redirect()->route('admin.settings.index')->with('success', 'Archivo eliminado del carrusel.');
+    }
+
+    public function updateCarouselMedia(Request $request, \App\Models\CarouselMedia $media)
+    {
+        $request->validate([
+            'description' => 'nullable|string|max:255',
+        ]);
+        
+        $media->update([
+            'description' => $request->description
+        ]);
+        
+        return redirect()->route('admin.settings.index')->with('success', 'Descripción actualizada.');
     }
 }

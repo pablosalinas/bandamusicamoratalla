@@ -135,11 +135,14 @@
                                         serial: {{ json_encode(old('serial_numbers.'.$instrument->id, '')) }}, 
                                         tipo: {{ json_encode(old('tipo_partitura.'.$instrument->id, '')) }}, 
                                         propiedad: {{ json_encode(old('propiedad.'.$instrument->id, '')) }}, 
+                                        brand_id: {{ json_encode(old('instrument_brand_id.'.$instrument->id, '')) }}, 
+                                        modelo: {{ json_encode(old('modelo.'.$instrument->id, '')) }}, 
                                         active: {{ old('is_active_instrument.'.$instrument->id, true) ? 'true' : 'false' }} 
                                     },
                                     @endif
                                 @endforeach
                             ],
+                            brands: {{ $brands->map(fn($b) => ['id' => $b->id, 'name' => $b->name])->toJson() }},
                             selectedToAdd: '',
                             addInstrument() {
                                 if (!this.selectedToAdd) return;
@@ -147,7 +150,7 @@
                                 if (!this.selectedInstruments.find(i => i.id === id)) {
                                     const inst = this.availableInstruments.find(i => i.id === id);
                                     if (inst) {
-                                        this.selectedInstruments.push({ id: inst.id, name: inst.name, serial: '', tipo: '', propiedad: '', active: true });
+                                        this.selectedInstruments.push({ id: inst.id, name: inst.name, serial: '', tipo: '', propiedad: '', brand_id: '', modelo: '', active: true });
                                     }
                                 }
                                 this.selectedToAdd = '';
@@ -209,6 +212,21 @@
                                                 <option value="Reliquia">Reliquia</option>
                                                 <option value="Alquilado">Alquilado</option>
                                             </select>
+                                        </div>
+                                        
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-400">Marca</label>
+                                            <select :name="'instrument_brand_id[' + inst.id + ']'" x-model="inst.brand_id" class="mt-1 block w-full rounded-md border-0 bg-gray-800 py-1 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-xs">
+                                                <option value="">Selecciona marca...</option>
+                                                <template x-for="brand in brands" :key="brand.id">
+                                                    <option :value="brand.id" x-text="brand.name"></option>
+                                                </template>
+                                            </select>
+                                        </div>
+
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-400">Modelo</label>
+                                            <input type="text" :name="'modelo[' + inst.id + ']'" x-model="inst.modelo" class="mt-1 block w-full rounded-md border-0 bg-gray-800 py-1 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-xs">
                                         </div>
                                         
                                         <div>

@@ -56,7 +56,7 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(InstrumentCatalog::class, 'musician_instruments', 'user_id', 'instrument_catalog_id')
                     ->using(MusicianInstrument::class)
-                    ->withPivot('id', 'serial_number', 'tipo_partitura', 'is_active', 'propiedad')
+                    ->withPivot('id', 'serial_number', 'tipo_partitura', 'is_active', 'propiedad', 'instrument_brand_id', 'modelo')
                     ->withTimestamps();
     }
 

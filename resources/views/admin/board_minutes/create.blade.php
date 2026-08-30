@@ -62,4 +62,19 @@
             </div>
         </form>
     </div>
+
+    <!-- TinyMCE CDN -->
+    <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+    <script>
+        tinymce.init({
+            selector: '#content',
+            skin: 'oxide-dark',
+            content_css: 'dark',
+            plugins: 'lists link table code',
+            toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | table | code',
+            menubar: false,
+            branding: false,
+            language: 'es'
+        });
+    </script>
 </x-admin-layout>

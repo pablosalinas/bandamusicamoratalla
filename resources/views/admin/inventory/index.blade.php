@@ -41,6 +41,7 @@
                         <tr>
                             <th scope="col" class="py-3 pl-4 pr-3 text-left text-xs font-medium uppercase tracking-wide text-gray-400 sm:pl-0">Músico</th>
                             <th scope="col" class="px-3 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-400">Instrumento</th>
+                            <th scope="col" class="px-3 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-400">Marca / Modelo</th>
                             <th scope="col" class="px-3 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-400">Nº Serie</th>
                             <th scope="col" class="px-3 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-400">Partitura / Propiedad</th>
                             <th scope="col" class="px-3 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-400">Estado</th>
@@ -55,6 +56,10 @@
                             </td>
                             <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
                                 {{ $item->instrument->name }}
+                            </td>
+                            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
+                                {{ $item->brand ? $item->brand->name : '-' }} 
+                                {{ $item->modelo ? ' / ' . $item->modelo : '' }}
                             </td>
                             <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
                                 {{ $item->pivot->serial_number ?: 'N/A' }}
