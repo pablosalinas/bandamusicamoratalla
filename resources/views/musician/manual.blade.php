@@ -31,7 +31,8 @@
                 <div class="text-gray-300 space-y-4 text-sm leading-relaxed">
                     <p>Es la pantalla principal que ves al entrar. En ella encontrarás un resumen de toda tu actividad en la banda.</p>
                     <ul class="list-disc pl-5 space-y-2">
-                        <li><strong>Tus Instrumentos:</strong> Lista de instrumentos que tienes asignados, indicando si pertenecen a la banda (con número de serie) o son propios.</li>
+                        <li><strong>Datos Personales:</strong> Un resumen de tus datos de contacto (nota: tu cuenta bancaria o IBAN está oculta por motivos de privacidad).</li>
+                        <li><strong>Tus Instrumentos:</strong> Lista detallada de los instrumentos que tienes asignados, indicando marca, modelo, número de serie y mostrando <strong>fotos reales</strong> de tu instrumento.</li>
                         <li><strong>Tu Repertorio:</strong> Muestra las partituras asociadas a tus instrumentos. Puedes usar el botón de <span class="text-amber-500">Descargar PDF</span> o escuchar el <span class="text-amber-500">Audio (MP3)</span> para ensayar.</li>
                         <li><strong>Historial de Faltas:</strong> Un resumen de los ensayos o eventos a los que has faltado o justificado ausencia.</li>
                     </ul>
@@ -72,9 +73,9 @@
                     <h3 class="text-xl font-bold text-white">Mi Perfil y Contraseña</h3>
                 </div>
                 <div class="text-gray-300 space-y-4 text-sm leading-relaxed">
-                    <p>Para acceder a tu perfil, pulsa en tu inicial en la esquina superior derecha y haz clic en <strong>Perfil</strong>.</p>
+                    <p>Para acceder a tu perfil, pulsa en tu miniatura en la esquina superior derecha y haz clic en <strong>Perfil</strong>.</p>
                     <ul class="list-disc pl-5 space-y-2">
-                        <li><strong>Foto de perfil:</strong> Puedes subir o actualizar tu foto para que la directiva te identifique fácilmente.</li>
+                        <li><strong>Foto de perfil:</strong> Puedes subir o actualizar tu foto para que la directiva te identifique fácilmente (se verá tu miniatura en los listados).</li>
                         <li><strong>Datos personales:</strong> Podrás ver tus datos de contacto (si necesitas modificarlos, debes avisar al administrador).</li>
                         <li><strong>Cambio de contraseña:</strong> Por tu seguridad, puedes cambiar tu contraseña en cualquier momento usando esta pantalla.</li>
                     </ul>
