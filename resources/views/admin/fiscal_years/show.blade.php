@@ -1,0 +1,139 @@
+<x-admin-layout>
+    <x-slot name="header">
+        <div class="sm:flex sm:items-center">
+            <div class="sm:flex-auto">
+                <h2 class="text-3xl font-bold leading-tight tracking-tight text-white">
+                    Ejercicio: {{ $fiscalYear->name }}
+                    @if($fiscalYear->is_closed)
+                        <span class="ml-3 inline-flex items-center rounded-md bg-red-400/10 px-2 py-1 text-sm font-medium text-red-400 ring-1 ring-inset ring-red-400/30">Cerrado</span>
+                    @endif
+                </h2>
+                <p class="mt-2 text-sm text-gray-400">{{ $fiscalYear->start_date->format('d/m/Y') }} - {{ $fiscalYear->end_date->format('d/m/Y') }}</p>
+            </div>
+            <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none flex space-x-3">
+                <a href="{{ route('admin.fiscal-years.index') }}" class="block rounded-md bg-gray-800 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-gray-700">
+                    Volver
+                </a>
+                @if(!$fiscalYear->is_closed)
+                <a href="{{ route('admin.fiscal-years.budget-movements.create', $fiscalYear) }}" class="block rounded-md bg-amber-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-amber-500">
+                    Añadir Movimiento
+                </a>
+                @endif
+            </div>
+        </div>
+    </x-slot>
+
+    <!-- Resumen -->
+    <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div class="overflow-hidden rounded-lg bg-gray-900 px-4 py-5 shadow sm:p-6 ring-1 ring-white/10 border-l-4 border-green-500">
+            <dt class="truncate text-sm font-medium text-gray-400">Total Ingresos</dt>
+            <dd class="mt-1 text-3xl font-semibold tracking-tight text-green-400">{{ number_format($fiscalYear->total_income, 2, ',', '.') }} €</dd>
+        </div>
+        <div class="overflow-hidden rounded-lg bg-gray-900 px-4 py-5 shadow sm:p-6 ring-1 ring-white/10 border-l-4 border-red-500">
+            <dt class="truncate text-sm font-medium text-gray-400">Total Gastos</dt>
+            <dd class="mt-1 text-3xl font-semibold tracking-tight text-red-400">{{ number_format($fiscalYear->total_expense, 2, ',', '.') }} €</dd>
+        </div>
+        <div class="overflow-hidden rounded-lg bg-gray-900 px-4 py-5 shadow sm:p-6 ring-1 ring-white/10 border-l-4 {{ $fiscalYear->balance >= 0 ? 'border-amber-500' : 'border-red-500' }}">
+            <dt class="truncate text-sm font-medium text-gray-400">Saldo del Ejercicio</dt>
+            <dd class="mt-1 text-3xl font-semibold tracking-tight {{ $fiscalYear->balance >= 0 ? 'text-amber-500' : 'text-red-400' }}">{{ number_format($fiscalYear->balance, 2, ',', '.') }} €</dd>
+        </div>
+    </div>
+
+    <!-- Filtros de ordenación -->
+    <div class="mt-8 flex justify-end">
+        <form method="GET" action="{{ route('admin.fiscal-years.show', $fiscalYear) }}" class="flex items-center space-x-3">
+            <label for="sort" class="text-sm font-medium text-gray-300">Ordenar por:</label>
+            <select name="sort" id="sort" onchange="this.form.submit()" class="block w-40 rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6">
+                <option value="date" {{ $sortBy === 'date' ? 'selected' : '' }}>Fecha</option>
+                <option value="type" {{ $sortBy === 'type' ? 'selected' : '' }}>Tipo (Ingresos/Gastos)</option>
+            </select>
+        </form>
+    </div>
+
+    <!-- Tabla Movimientos -->
+    <div class="mt-4 flow-root">
+        <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+            <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+                <div class="overflow-hidden shadow ring-1 ring-white/10 sm:rounded-lg">
+                    <table class="min-w-full divide-y divide-gray-800">
+                        <thead class="bg-gray-900">
+                            <tr>
+                                <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-white sm:pl-6">Fecha</th>
+                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-white">Concepto</th>
+                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-white">Tipo</th>
+                                <th scope="col" class="px-3 py-3.5 text-right text-sm font-semibold text-white">Importe</th>
+                                <th scope="col" class="px-3 py-3.5 text-center text-sm font-semibold text-white">Punteo / Doc</th>
+                                <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
+                                    <span class="sr-only">Acciones</span>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-800 bg-gray-950">
+                            @forelse ($movements as $mov)
+                                <tr>
+                                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-300 sm:pl-6">
+                                        {{ $mov->date->format('d/m/Y') }}
+                                    </td>
+                                    <td class="px-3 py-4 text-sm text-white">
+                                        {{ $mov->description }}
+                                    </td>
+                                    <td class="whitespace-nowrap px-3 py-4 text-sm">
+                                        @if($mov->type === 'income')
+                                            <span class="inline-flex items-center rounded-md bg-green-400/10 px-2 py-1 text-xs font-medium text-green-400 ring-1 ring-inset ring-green-400/30">Ingreso</span>
+                                        @else
+                                            <span class="inline-flex items-center rounded-md bg-red-400/10 px-2 py-1 text-xs font-medium text-red-400 ring-1 ring-inset ring-red-400/30">Gasto</span>
+                                        @endif
+                                    </td>
+                                    <td class="whitespace-nowrap px-3 py-4 text-sm font-semibold text-right {{ $mov->type === 'income' ? 'text-green-400' : 'text-red-400' }}">
+                                        {{ $mov->type === 'income' ? '+' : '-' }}{{ number_format($mov->amount, 2, ',', '.') }} €
+                                    </td>
+                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-center flex flex-col items-center justify-center space-y-1">
+                                        @if($mov->is_reconciled)
+                                            <span title="Punteado (Acreditado)" class="text-green-400">
+                                                <svg class="h-6 w-6 inline" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg>
+                                            </span>
+                                        @else
+                                            <span title="No Punteado" class="text-gray-500">
+                                                <svg class="h-6 w-6 inline" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                                </svg>
+                                            </span>
+                                        @endif
+                                        
+                                        @if($mov->document_url)
+                                            <a href="{{ $mov->document_url }}" target="_blank" class="text-amber-500 hover:text-amber-400 text-xs mt-1 underline">Ver Doc</a>
+                                        @endif
+                                    </td>
+                                    <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                                        @if(!$fiscalYear->is_closed)
+                                            <a href="{{ route('admin.fiscal-years.budget-movements.edit', [$fiscalYear, $mov]) }}" class="text-amber-500 hover:text-amber-400 mr-4">Editar</a>
+                                            
+                                            @if(!$mov->is_reconciled)
+                                            <form action="{{ route('admin.fiscal-years.budget-movements.destroy', [$fiscalYear, $mov]) }}" method="POST" class="inline-block" onsubmit="return confirm('¿Estás seguro de que deseas eliminar este movimiento?');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="text-red-500 hover:text-red-400">Eliminar</button>
+                                            </form>
+                                            @else
+                                            <span title="Quita el punteo para poder borrar" class="text-gray-600 cursor-not-allowed line-through">Eliminar</span>
+                                            @endif
+                                        @endif
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="6" class="px-3 py-4 text-sm text-gray-400 text-center">No hay movimientos en este ejercicio.</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-4">
+                    {{ $movements->appends(['sort' => $sortBy])->links() }}
+                </div>
+            </div>
+        </div>
+    </div>
+</x-admin-layout>

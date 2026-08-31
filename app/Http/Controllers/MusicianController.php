@@ -12,18 +12,14 @@ class MusicianController extends Controller
     public function index()
     {
         $user = Auth::user();
+        $user->load('instruments');
         
-        // Obtenemos los IDs de los instrumentos que toca este músico
-        $instrumentIds = $user->instruments->pluck('id');
-
-        // Buscamos las partituras que tengan asignados esos instrumentos
-        // Utilizamos whereHas para filtrar por la relación
-        $sheetMusics = SheetMusic::where('is_active', true)
-            ->whereHas('instruments', function($query) use ($instrumentIds) {
-                $query->whereIn('instrument_catalog_id', $instrumentIds);
+        $instrumentIds = $user->instruments->pluck('id')->toArray();
+        $sheetMusics = \App\Models\SheetMusic::where('is_active', true)
+            ->whereHas('instruments', function($q) use ($instrumentIds) {
+                $q->whereIn('instrument_catalog_id', $instrumentIds);
             })->orderBy('title')->get();
 
-        // Obtener historial de faltas
         $missedAttendances = \App\Models\Attendance::with('event')
             ->where('user_id', $user->id)
             ->whereIn('status', ['absent', 'excused'])
@@ -32,7 +28,14 @@ class MusicianController extends Controller
                 return $attendance->event->event_date;
             });
 
-        return view('dashboard', compact('sheetMusics', 'user', 'missedAttendances'));
+        $currentFiscalYear = null;
+        if ($user->isSuperAdmin() || $user->isCurrentBoardMember()) {
+            $currentFiscalYear = \App\Models\FiscalYear::where('is_closed', false)
+                ->orderBy('start_date', 'desc')
+                ->first();
+        }
+
+        return view('dashboard', compact('user', 'sheetMusics', 'missedAttendances', 'currentFiscalYear'));
     }
 
     // Método para descargar la partitura desde el panel del músico

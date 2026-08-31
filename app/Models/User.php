@@ -71,4 +71,12 @@ class User extends Authenticatable
         $name = urlencode($this->name . ' ' . $this->last_name);
         return "https://ui-avatars.com/api/?name={$name}&color=7F9CF5&background=EBF4FF";
     }
+
+    public function isCurrentBoardMember(): bool
+    {
+        return \App\Models\BoardMember::where('user_id', $this->id)
+            ->whereHas('board', function ($q) {
+                $q->where('is_active', true);
+            })->exists();
+    }
 }

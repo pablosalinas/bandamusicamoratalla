@@ -33,6 +33,28 @@
 
                 <h3 class="text-xl font-bold mb-4 text-white">¡Hola, {{ $user->name }}!</h3>
                 
+                @if(isset($currentFiscalYear))
+                    <div class="mb-8 p-6 rounded-lg border {{ $currentFiscalYear->balance >= 0 ? 'bg-amber-900/20 border-amber-500/30' : 'bg-red-900/20 border-red-500/30' }}">
+                        <h4 class="text-lg font-semibold mb-2 border-b {{ $currentFiscalYear->balance >= 0 ? 'border-amber-800/50 text-amber-500' : 'border-red-800/50 text-red-400' }} pb-2">
+                            Resumen Económico ({{ $currentFiscalYear->name }})
+                        </h4>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center mt-4">
+                            <div>
+                                <span class="block text-sm text-gray-400">Total Ingresos</span>
+                                <span class="block text-xl font-bold text-green-400">{{ number_format($currentFiscalYear->total_income, 2, ',', '.') }} €</span>
+                            </div>
+                            <div>
+                                <span class="block text-sm text-gray-400">Total Gastos</span>
+                                <span class="block text-xl font-bold text-red-400">{{ number_format($currentFiscalYear->total_expense, 2, ',', '.') }} €</span>
+                            </div>
+                            <div class="border-t border-gray-700 pt-2 md:border-t-0 md:border-l md:pt-0">
+                                <span class="block text-sm text-gray-400">Saldo Actual</span>
+                                <span class="block text-2xl font-bold {{ $currentFiscalYear->balance >= 0 ? 'text-amber-500' : 'text-red-500' }}">{{ number_format($currentFiscalYear->balance, 2, ',', '.') }} €</span>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+                
                 <div class="mb-8 bg-gray-950 p-6 rounded-lg border border-gray-800">
                     <h4 class="text-lg font-semibold mb-4 border-b border-gray-800 pb-2 text-white">Tus Datos Personales</h4>
                     <div class="flex flex-col md:flex-row gap-6">
