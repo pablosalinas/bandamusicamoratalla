@@ -24,8 +24,9 @@
 
             <div class="relative z-10 text-center mb-6">
                 <a href="/">
-                    <h1 class="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-600 tracking-tight">
-                        Banda de Música<br><span class="text-2xl font-medium text-gray-400">Moratalla</span>
+                    <h1 class="font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-600 tracking-tight leading-tight">
+                        <span class="text-2xl">Banda de Música</span><br>
+                        <span class="text-5xl uppercase tracking-widest">Moratalla</span>
                     </h1>
                 </a>
             </div>
