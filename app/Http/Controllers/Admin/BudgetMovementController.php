@@ -69,12 +69,16 @@ class BudgetMovementController extends Controller
 
         // If it was reconciled and they are un-reconciling it
         if ($wasReconciled && !$isReconciledNow) {
-            ActivityLog::create([
-                'user_id' => auth()->id(),
-                'action' => 'unreconcile_movement',
-                'description' => "Quitado el punteo del movimiento #{$movement->id} ({$movement->description})",
-                'ip_address' => $request->ip(),
-            ]);
+            try {
+                ActivityLog::create([
+                    'user_id' => auth()->id(),
+                    'action' => 'unreconcile_movement',
+                    'description' => "Quitado el punteo del movimiento #{$movement->id} ({$movement->description})",
+                    'ip_address' => $request->ip(),
+                ]);
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error('Error ActivityLog: ' . $e->getMessage());
+            }
             
             // Only update the reconciliation status if that's the only thing they can do
             $movement->update(['is_reconciled' => false]);
