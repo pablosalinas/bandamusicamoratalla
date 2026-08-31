@@ -54,8 +54,8 @@ class FiscalYearController extends Controller
 
         // Data for Comparative Charts
         $compareYearsCount = (int) $request->query('compare_years', 0);
-        $comparativeData = [];
         
+        $pastYears = collect();
         if ($compareYearsCount > 0) {
             $pastYears = FiscalYear::where('id', '!=', $fiscalYear->id)
                 ->where('start_date', '<=', $fiscalYear->start_date)
@@ -64,16 +64,16 @@ class FiscalYearController extends Controller
                 ->get()
                 ->reverse()
                 ->values(); // reset keys to ensure JSON array output
-
-            $allYears = $pastYears->push($fiscalYear)->values();
-            
-            $comparativeData = [
-                'labels' => $allYears->pluck('name')->values()->toArray(),
-                'income' => $allYears->map->total_income->values()->toArray(),
-                'expense' => $allYears->map->total_expense->values()->toArray(),
-                'balance' => $allYears->map->balance->values()->toArray(),
-            ];
         }
+
+        $allYears = $pastYears->push($fiscalYear)->values();
+        
+        $comparativeData = [
+            'labels' => $allYears->pluck('name')->values()->toArray(),
+            'income' => $allYears->map->total_income->values()->toArray(),
+            'expense' => $allYears->map->total_expense->values()->toArray(),
+            'balance' => $allYears->map->balance->values()->toArray(),
+        ];
         
         return view('admin.fiscal_years.show', compact('fiscalYear', 'movements', 'sortBy', 'previousYear', 'compareYearsCount', 'comparativeData'));
     }
