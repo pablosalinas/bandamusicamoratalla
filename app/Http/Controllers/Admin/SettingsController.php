@@ -9,12 +9,23 @@ class SettingsController extends Controller
 {
     public function index()
     {
+        $bandIban = '';
+        $rawIban = \App\Models\SiteSetting::getSetting('band_iban', '');
+        if ($rawIban) {
+            try {
+                $bandIban = \Illuminate\Support\Facades\Crypt::decryptString($rawIban);
+            } catch (\Illuminate\Contracts\Encryption\DecryptException $e) {
+                $bandIban = '';
+            }
+        }
+
         $settings = [
             'band_name' => \App\Models\SiteSetting::getSetting('band_name', 'Banda de Música de Moratalla'),
             'session_timeout' => \App\Models\SiteSetting::getSetting('session_timeout', 120),
             'statutes' => \App\Models\SiteSetting::getSetting('statutes', ''),
             'band_history' => \App\Models\SiteSetting::getSetting('band_history', ''),
             'carousel_speed' => \App\Models\SiteSetting::getSetting('carousel_speed', 4),
+            'band_iban' => $bandIban,
         ];
         
         $carouselMedia = \App\Models\CarouselMedia::orderBy('sort_order')->get();
@@ -24,15 +35,24 @@ class SettingsController extends Controller
 
     public function update(Request $request)
     {
-        $validated = $request->validate([
+        $rules = [
             'band_name' => 'required|string|max:255',
             'session_timeout' => 'required|integer|min:1',
             'statutes' => 'nullable|string',
             'band_history' => 'nullable|string',
             'carousel_speed' => 'required|integer|min:1',
-        ]);
+        ];
+
+        if (auth()->user()->canViewIban()) {
+            $rules['band_iban'] = 'nullable|string|max:50';
+        }
+
+        $validated = $request->validate($rules);
 
         foreach ($validated as $key => $value) {
+            if ($key === 'band_iban') {
+                $value = $value ? \Illuminate\Support\Facades\Crypt::encryptString($value) : '';
+            }
             \App\Models\SiteSetting::updateOrCreate(
                 ['key' => $key],
                 ['value' => $value, 'type' => is_numeric($value) ? 'integer' : 'text']
