@@ -44,7 +44,7 @@ class SettingsController extends Controller
         ];
 
         if (auth()->user()->canViewIban()) {
-            $rules['band_iban'] = 'nullable|string|max:50';
+            $rules['band_iban'] = ['nullable', 'string', 'max:50', new \App\Rules\ValidIban];
         }
 
         $validated = $request->validate($rules);

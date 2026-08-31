@@ -39,7 +39,7 @@ class UserController extends Controller
             'city' => ['nullable', 'string', 'max:100'],
             'province' => ['nullable', 'string', 'max:100'],
             'phone' => ['nullable', 'string', 'max:50'],
-            'iban' => ['nullable', 'string', 'max:50'],
+            'iban' => ['nullable', 'string', 'max:50', new \App\Rules\ValidIban],
         ]);
 
         $user = User::create([
@@ -136,7 +136,7 @@ class UserController extends Controller
             'city' => ['nullable', 'string', 'max:100'],
             'province' => ['nullable', 'string', 'max:100'],
             'phone' => ['nullable', 'string', 'max:50'],
-            'iban' => ['nullable', 'string', 'max:50'],
+            'iban' => ['nullable', 'string', 'max:50', new \App\Rules\ValidIban],
         ]);
 
         $data = [
