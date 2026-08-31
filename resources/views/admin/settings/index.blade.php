@@ -141,6 +141,55 @@
         </div>
     </div>
 
+    <!-- Logos Settings -->
+    <div class="mt-8 max-w-3xl">
+        <div class="bg-gray-900 shadow-sm ring-1 ring-gray-800 sm:rounded-xl">
+            <div class="px-4 py-6 sm:p-8">
+                <h3 class="text-xl font-bold leading-tight tracking-tight text-white mb-6">Logos de la Banda</h3>
+                <p class="text-sm text-gray-400 mb-6">Estos logos aparecerán en la web pública, en el panel de administración y en el login. Si subes más de uno, irán alternando cada 10 segundos automáticamente.</p>
+                
+                <form action="{{ route('admin.settings.logos.store') }}" method="POST" enctype="multipart/form-data" class="mb-8">
+                    @csrf
+                    <div class="sm:col-span-6">
+                        <label for="logos" class="block text-sm font-medium leading-6 text-white">Añadir Logos</label>
+                        <div class="mt-2 flex items-center gap-4">
+                            <input type="file" name="logos[]" id="logos" multiple accept="image/*" required class="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-gray-800 file:text-amber-500 hover:file:bg-gray-700">
+                            <button type="submit" class="rounded-md bg-amber-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-amber-500">
+                                Subir Logos
+                            </button>
+                        </div>
+                        @error('logos') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
+                        @error('logos.*') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
+                    </div>
+                </form>
+
+                <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4 mt-6">
+                    @forelse($settings['site_logos'] ?? [] as $logoPath)
+                        @php 
+                            $src = str_starts_with($logoPath, 'images/') ? asset($logoPath) : asset('storage/' . $logoPath); 
+                        @endphp
+                        <div class="flex flex-col bg-gray-800 rounded-lg overflow-hidden border border-gray-700 relative group aspect-square flex items-center justify-center p-2">
+                            <img src="{{ $src }}" class="max-w-full max-h-full object-contain">
+                            
+                            <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                <form action="{{ route('admin.settings.logos.destroy') }}" method="POST" onsubmit="return confirm('¿Seguro que deseas eliminar este logo?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <input type="hidden" name="path" value="{{ $logoPath }}">
+                                    <button type="submit" class="p-2 bg-red-600 text-white rounded-full hover:bg-red-500 focus:outline-none">
+                                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    @empty
+                        <p class="col-span-full text-sm text-gray-500 italic">No hay logos subidos. Se usará el logo por defecto o sólo texto.</p>
+                    @endforelse
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- CKEditor 5 -->
     <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
     <script>

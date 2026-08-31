@@ -26,6 +26,7 @@ class SettingsController extends Controller
             'band_history' => \App\Models\SiteSetting::getSetting('band_history', ''),
             'carousel_speed' => \App\Models\SiteSetting::getSetting('carousel_speed', 4),
             'band_iban' => $bandIban,
+            'site_logos' => json_decode(\App\Models\SiteSetting::getSetting('site_logos', '[]'), true),
         ];
         
         $carouselMedia = \App\Models\CarouselMedia::orderBy('sort_order')->get();
@@ -114,5 +115,50 @@ class SettingsController extends Controller
         ]);
         
         return redirect()->route('admin.settings.index')->with('success', 'Descripción actualizada.');
+    }
+
+    public function storeLogo(Request $request)
+    {
+        $request->validate([
+            'logos' => 'required|array',
+            'logos.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:5120'
+        ]);
+
+        $currentLogos = json_decode(\App\Models\SiteSetting::getSetting('site_logos', '[]'), true) ?: [];
+
+        if ($request->hasFile('logos')) {
+            foreach ($request->file('logos') as $file) {
+                $path = $file->store('logos', 'public');
+                $currentLogos[] = $path;
+            }
+        }
+
+        \App\Models\SiteSetting::updateOrCreate(
+            ['key' => 'site_logos'],
+            ['value' => json_encode(array_values($currentLogos)), 'type' => 'text']
+        );
+
+        return redirect()->route('admin.settings.index')->with('success', 'Logos añadidos correctamente.');
+    }
+
+    public function destroyLogo(Request $request)
+    {
+        $path = $request->input('path');
+        $currentLogos = json_decode(\App\Models\SiteSetting::getSetting('site_logos', '[]'), true) ?: [];
+        
+        $currentLogos = array_filter($currentLogos, function($logo) use ($path) {
+            return $logo !== $path;
+        });
+
+        if (\Illuminate\Support\Facades\Storage::disk('public')->exists($path)) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($path);
+        }
+
+        \App\Models\SiteSetting::updateOrCreate(
+            ['key' => 'site_logos'],
+            ['value' => json_encode(array_values($currentLogos)), 'type' => 'text']
+        );
+
+        return redirect()->route('admin.settings.index')->with('success', 'Logo eliminado correctamente.');
     }
 }

@@ -36,11 +36,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-20">
                 <div class="flex items-center gap-3 md:gap-4">
-                    <div class="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-gray-950 shadow-[0_0_15px_rgba(245,158,11,0.4)] shrink-0">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
-                        </svg>
-                    </div>
+                    <x-logo-rotator class="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 rounded-full shadow-[0_0_15px_rgba(245,158,11,0.4)] shrink-0 overflow-hidden" />
                     <div class="flex flex-col">
                         <div class="flex flex-col lg:flex-row lg:items-baseline leading-none">
                             <span class="text-xl sm:text-2xl lg:text-4xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-600">{{ $globalBandName }}</span>
@@ -376,11 +372,7 @@
         <div class="max-w-7xl mx-auto px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center">
             <div class="mb-6 md:mb-0">
                 <div class="flex items-center gap-4">
-                    <div class="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-gray-950 shrink-0">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
-                        </svg>
-                    </div>
+                    <x-logo-rotator class="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 rounded-full shrink-0 overflow-hidden" />
                     <div class="flex flex-col">
                         <div class="flex flex-col leading-none">
                             <span class="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-600">{{ $globalBandName }}</span>

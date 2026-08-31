@@ -23,7 +23,8 @@
             </div>
 
             <div class="relative z-10 text-center mb-6">
-                <a href="/">
+                <a href="/" class="flex flex-col items-center justify-center">
+                    <x-logo-rotator class="h-32 w-32 mb-4" />
                     <h1 class="font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-600 tracking-tight leading-tight">
                         <span class="text-2xl">Banda de Música</span><br>
                         <span class="text-5xl uppercase tracking-widest">Moratalla</span>

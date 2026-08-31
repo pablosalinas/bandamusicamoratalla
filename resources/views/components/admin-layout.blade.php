@@ -32,7 +32,8 @@
                     </div>
                     <!-- Sidebar component for mobile -->
                     <div class="flex grow flex-col gap-y-5 overflow-y-auto bg-gray-900 px-6 pb-2 ring-1 ring-white/10">
-                        <div class="flex h-16 shrink-0 items-center">
+                        <div class="flex h-16 shrink-0 items-center gap-2">
+                            <x-logo-rotator class="h-10 w-10" textClass="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-600" />
                             <span class="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-600">Banda Moratalla</span>
                         </div>
                         <nav class="flex flex-1 flex-col">
@@ -46,10 +47,11 @@
         <!-- Static sidebar for desktop -->
         <div class="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col">
             <div class="flex grow flex-col gap-y-5 overflow-y-auto bg-gray-900/50 backdrop-blur-xl border-r border-gray-800 px-6">
-                <div class="flex h-24 shrink-0 items-center mt-2">
-                    <h1 class="font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-600 leading-tight">
-                        <span class="text-lg">Banda de Música</span><br>
-                        <span class="text-3xl uppercase tracking-wider">Moratalla</span>
+                <div class="flex shrink-0 items-center mt-6 mb-4 flex-col gap-2">
+                    <x-logo-rotator class="h-24 w-24" />
+                    <h1 class="font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-600 leading-tight text-center">
+                        <span class="text-sm">Banda de Música</span><br>
+                        <span class="text-2xl uppercase tracking-wider">Moratalla</span>
                     </h1>
                 </div>
                 <nav class="flex flex-1 flex-col pb-4">
