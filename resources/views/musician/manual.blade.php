@@ -3,12 +3,12 @@
         <div class="sm:flex sm:items-center">
             <div class="sm:flex-auto">
                 <h2 class="text-3xl font-bold leading-tight tracking-tight text-white">Manual del Músico</h2>
-                <p class="mt-2 text-sm text-gray-400">Guía de uso para las funciones del panel de músicos.</p>
+                <p class="mt-2 text-sm text-gray-400">Guía rápida para sacarle el máximo partido a tu panel de la banda.</p>
             </div>
             <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
-                <button onclick="window.print()" class="inline-flex items-center rounded-md bg-amber-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-amber-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-600 print:hidden">
-                    <svg class="-ml-0.5 mr-1.5 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0110.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0l.229 2.523a1.125 1.125 0 01-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0021 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 00-1.913-.247M6.34 18H5.25A2.25 2.25 0 013 15.75V9.456c0-1.081.768-2.015 1.837-2.175a48.041 48.041 0 011.913-.247m10.5 0a48.536 48.536 0 00-10.5 0m10.5 0V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659M18 10.5h.008v.008H18V10.5zm-3 0h.008v.008H15V10.5z" />
+                <button type="button" onclick="window.print()" class="flex items-center gap-2 rounded-md bg-amber-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-amber-500">
+                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6.728 9.39A3 3 0 004 12v6m16-6a3 3 0 00-2.728-2.61M6.728 9.39A3 3 0 0110 7h4a3 3 0 013.272 2.39M6.728 9.39L6 6h12l-.728 3.39M10 16h4M8 21h8" />
                     </svg>
                     Imprimir / Guardar PDF
                 </button>
@@ -18,7 +18,7 @@
 
     <div class="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2">
         <!-- Mi Panel -->
-        <div class="bg-gray-900 overflow-hidden shadow ring-1 ring-white/10 sm:rounded-lg">
+        <div class="bg-gray-900 overflow-hidden shadow ring-1 ring-white/10 sm:rounded-lg md:col-span-2">
             <div class="p-6 border-b border-gray-800">
                 <div class="flex items-center gap-3 mb-4">
                     <div class="p-2 bg-amber-500/10 rounded-lg">
@@ -31,10 +31,10 @@
                 <div class="text-gray-300 space-y-4 text-sm leading-relaxed">
                     <p>Es la pantalla principal que ves al entrar. En ella encontrarás un resumen de toda tu actividad en la banda.</p>
                     <ul class="list-disc pl-5 space-y-2">
-                        <li><strong>Datos Personales:</strong> Un resumen de tus datos de contacto (nota: tu cuenta bancaria o IBAN está oculta por motivos de privacidad).</li>
-                        <li><strong>Tus Instrumentos:</strong> Lista detallada de los instrumentos que tienes asignados, indicando marca, modelo, número de serie y mostrando <strong>fotos reales</strong> de tu instrumento.</li>
-                        <li><strong>Tu Repertorio:</strong> Muestra las partituras asociadas a tus instrumentos. Puedes usar el botón de <span class="text-amber-500">Descargar PDF</span> o escuchar el <span class="text-amber-500">Audio (MP3)</span> para ensayar.</li>
-                        <li><strong>Historial de Faltas:</strong> Un resumen de los ensayos o eventos a los que has faltado o justificado ausencia.</li>
+                        <li><strong>Datos Personales:</strong> Un resumen de tus datos de contacto (nota: por tu seguridad, la directiva es la única que puede ver/modificar ciertos datos confidenciales, como tu IBAN).</li>
+                        <li><strong>Tus Instrumentos:</strong> Lista detallada de los instrumentos que te ha cedido la banda, indicando marca, modelo, número de serie y mostrando <strong>fotos reales</strong> del mismo.</li>
+                        <li><strong>Tu Repertorio:</strong> Muestra automáticamente las partituras asociadas a tus instrumentos. Puedes usar el botón de <span class="text-amber-500">Descargar PDF</span> o escuchar el <span class="text-amber-500">Audio (MP3)</span> para ensayar en casa.</li>
+                        <li><strong>Control de Asistencia:</strong> La directiva lleva un registro de asistencia de cada evento. En tu panel siempre verás un resumen de los ensayos o conciertos a los que has asistido, has faltado o has justificado tu ausencia.</li>
                     </ul>
                 </div>
             </div>
@@ -55,7 +55,7 @@
                     <p>En el menú lateral encontrarás la opción <strong>Planning</strong>. Muestra todos los eventos y actividades futuras programadas por la directiva.</p>
                     <ul class="list-disc pl-5 space-y-2">
                         <li>Están separados por colores según el <strong>tipo de actividad</strong> (Ensayos, procesiones, conciertos...).</li>
-                        <li>Puedes descargar un <strong>PDF resumen mensual</strong> pulsando en el botón superior, ideal para imprimir o pasar por WhatsApp.</li>
+                        <li>Puedes descargar un <strong>PDF resumen mensual</strong> pulsando en el botón superior, ideal para imprimir o compartir por WhatsApp con tus compañeros.</li>
                     </ul>
                 </div>
             </div>
@@ -75,8 +75,8 @@
                 <div class="text-gray-300 space-y-4 text-sm leading-relaxed">
                     <p>Para acceder a tu perfil, pulsa en tu miniatura en la esquina superior derecha y haz clic en <strong>Perfil</strong>.</p>
                     <ul class="list-disc pl-5 space-y-2">
-                        <li><strong>Foto de perfil:</strong> Puedes subir o actualizar tu foto para que la directiva te identifique fácilmente (se verá tu miniatura en los listados).</li>
-                        <li><strong>Datos personales:</strong> Podrás ver tus datos de contacto (si necesitas modificarlos, debes avisar al administrador).</li>
+                        <li><strong>Foto de perfil:</strong> Puedes subir o actualizar tu foto para que la directiva te identifique fácilmente.</li>
+                        <li><strong>Datos personales:</strong> Podrás ver tus datos de contacto. (Para modificar cuentas bancarias o campos bloqueados, ponte en contacto con la directiva).</li>
                         <li><strong>Cambio de contraseña:</strong> Por tu seguridad, puedes cambiar tu contraseña en cualquier momento usando esta pantalla.</li>
                     </ul>
                 </div>
@@ -84,7 +84,7 @@
         </div>
 
         <!-- Estatutos y Avisos -->
-        <div class="bg-gray-900 overflow-hidden shadow ring-1 ring-white/10 sm:rounded-lg">
+        <div class="bg-gray-900 overflow-hidden shadow ring-1 ring-white/10 sm:rounded-lg md:col-span-2">
             <div class="p-6 border-b border-gray-800">
                 <div class="flex items-center gap-3 mb-4">
                     <div class="p-2 bg-purple-500/10 rounded-lg">
@@ -92,11 +92,11 @@
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
                         </svg>
                     </div>
-                    <h3 class="text-xl font-bold text-white">Estatutos y Avisos</h3>
+                    <h3 class="text-xl font-bold text-white">Estatutos y Tablón de Anuncios</h3>
                 </div>
                 <div class="text-gray-300 space-y-4 text-sm leading-relaxed">
-                    <p>En el menú inferior izquierdo de tu pantalla verás la opción de los <strong>Estatutos</strong> de la banda, que siempre están disponibles para consulta o impresión.</p>
-                    <p>Además, cada vez que la directiva publique un nuevo <strong>Aviso o Noticia</strong>, lo verás destacado en la parte superior de tu panel mientras siga vigente.</p>
+                    <p>En el menú inferior izquierdo de tu pantalla verás la opción de los <strong>Estatutos</strong> de la banda, que siempre están disponibles para lectura o impresión.</p>
+                    <p>Además, cada vez que la directiva publique un nuevo <strong>Aviso o Noticia</strong> importante (por ejemplo, cambios de horario o comunicados oficiales), lo verás destacado en la parte superior de tu panel principal mientras esté vigente.</p>
                 </div>
             </div>
         </div>
