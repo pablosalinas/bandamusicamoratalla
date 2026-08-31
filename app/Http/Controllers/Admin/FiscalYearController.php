@@ -11,7 +11,7 @@ class FiscalYearController extends Controller
 {
     public function index()
     {
-        $fiscalYears = FiscalYear::orderBy('start_date', 'desc')->get();
+        $fiscalYears = FiscalYear::orderBy('start_date', 'desc')->orderBy('end_date', 'desc')->get();
         return view('admin.fiscal_years.index', compact('fiscalYears'));
     }
 
@@ -57,7 +57,8 @@ class FiscalYearController extends Controller
         $comparativeData = [];
         
         if ($compareYearsCount > 0) {
-            $pastYears = FiscalYear::where('start_date', '<', $fiscalYear->start_date)
+            $pastYears = FiscalYear::where('id', '!=', $fiscalYear->id)
+                ->where('start_date', '<=', $fiscalYear->start_date)
                 ->orderBy('start_date', 'desc')
                 ->take($compareYearsCount)
                 ->get()
