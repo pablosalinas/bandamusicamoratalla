@@ -6,7 +6,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class IsAdmin
+class AdminOrTreasurer
 {
     /**
      * Handle an incoming request.
@@ -15,10 +15,10 @@ class IsAdmin
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (auth()->check() && (in_array(auth()->user()->role, ['admin', 'treasurer', 'director']) || auth()->user()->isSuperAdmin())) {
+        if (auth()->check() && (in_array(auth()->user()->role, ['admin', 'treasurer']) || auth()->user()->isSuperAdmin())) {
             return $next($request);
         }
 
-        abort(403, 'Acceso denegado. Se requieren permisos de administrador.');
+        abort(403, 'No tienes permisos para acceder a esta sección.');
     }
 }

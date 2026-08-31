@@ -105,8 +105,7 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     Route::get('/', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
     Route::view('/manual', 'admin.manual')->name('manual');
     
-    // Placeholder para futuras rutas
-    Route::resource('users', \App\Http\Controllers\Admin\UserController::class);
+    // Rutas permitidas para Director
     Route::resource('sheet-music', \App\Http\Controllers\Admin\SheetMusicController::class)->parameters([
         'sheet-music' => 'sheetMusic'
     ]);
@@ -121,29 +120,34 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     // Inventory
     Route::get('inventory', [\App\Http\Controllers\Admin\InventoryController::class, 'index'])->name('inventory.index');
     
-    Route::resource('boards', \App\Http\Controllers\Admin\BoardController::class);
-    Route::post('boards/{board}/members', [\App\Http\Controllers\Admin\BoardController::class, 'addMember'])->name('boards.members.add');
-    Route::delete('boards/{board}/members/{member}', [\App\Http\Controllers\Admin\BoardController::class, 'removeMember'])->name('boards.members.remove');
-    
-    Route::resource('boards.minutes', \App\Http\Controllers\Admin\BoardMinuteController::class);
-    Route::get('boards/{board}/minutes/{minute}/pdf', [\App\Http\Controllers\Admin\BoardMinuteController::class, 'downloadPdf'])->name('boards.minutes.pdf');
-    
     Route::resource('news', \App\Http\Controllers\Admin\NewsController::class);
     
     Route::resource('events', \App\Http\Controllers\Admin\EventController::class);
     Route::get('events/{event}/attendance', [\App\Http\Controllers\Admin\EventController::class, 'attendance'])->name('events.attendance');
     Route::post('events/{event}/attendance', [\App\Http\Controllers\Admin\EventController::class, 'storeAttendance'])->name('events.attendance.store');
-    
-    // Settings
-    Route::get('settings', [\App\Http\Controllers\Admin\SettingsController::class, 'index'])->name('settings.index');
-    Route::post('settings', [\App\Http\Controllers\Admin\SettingsController::class, 'update'])->name('settings.update');
-    Route::post('settings/carousel', [\App\Http\Controllers\Admin\SettingsController::class, 'storeCarouselMedia'])->name('settings.carousel.store');
-    Route::put('settings/carousel/{media}', [\App\Http\Controllers\Admin\SettingsController::class, 'updateCarouselMedia'])->name('settings.carousel.update');
-    Route::delete('settings/carousel/{media}', [\App\Http\Controllers\Admin\SettingsController::class, 'destroyCarouselMedia'])->name('settings.carousel.destroy');
-    
-    // Analytics & Logs
-    Route::get('analytics', [\App\Http\Controllers\Admin\AnalyticsController::class, 'index'])->name('analytics.index');
-    Route::get('logs', [\App\Http\Controllers\Admin\LogsController::class, 'index'])->name('logs.index');
+
+    // Rutas RESTRINGIDAS (solo admin y treasurer)
+    Route::middleware(['admin_or_treasurer'])->group(function () {
+        Route::resource('users', \App\Http\Controllers\Admin\UserController::class);
+        
+        Route::resource('boards', \App\Http\Controllers\Admin\BoardController::class);
+        Route::post('boards/{board}/members', [\App\Http\Controllers\Admin\BoardController::class, 'addMember'])->name('boards.members.add');
+        Route::delete('boards/{board}/members/{member}', [\App\Http\Controllers\Admin\BoardController::class, 'removeMember'])->name('boards.members.remove');
+        
+        Route::resource('boards.minutes', \App\Http\Controllers\Admin\BoardMinuteController::class);
+        Route::get('boards/{board}/minutes/{minute}/pdf', [\App\Http\Controllers\Admin\BoardMinuteController::class, 'downloadPdf'])->name('boards.minutes.pdf');
+        
+        // Settings
+        Route::get('settings', [\App\Http\Controllers\Admin\SettingsController::class, 'index'])->name('settings.index');
+        Route::post('settings', [\App\Http\Controllers\Admin\SettingsController::class, 'update'])->name('settings.update');
+        Route::post('settings/carousel', [\App\Http\Controllers\Admin\SettingsController::class, 'storeCarouselMedia'])->name('settings.carousel.store');
+        Route::put('settings/carousel/{media}', [\App\Http\Controllers\Admin\SettingsController::class, 'updateCarouselMedia'])->name('settings.carousel.update');
+        Route::delete('settings/carousel/{media}', [\App\Http\Controllers\Admin\SettingsController::class, 'destroyCarouselMedia'])->name('settings.carousel.destroy');
+        
+        // Analytics & Logs
+        Route::get('analytics', [\App\Http\Controllers\Admin\AnalyticsController::class, 'index'])->name('analytics.index');
+        Route::get('logs', [\App\Http\Controllers\Admin\LogsController::class, 'index'])->name('logs.index');
+    });
 });
 require __DIR__.'/auth.php';
 
