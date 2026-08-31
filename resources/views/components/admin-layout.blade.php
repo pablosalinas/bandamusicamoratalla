@@ -46,9 +46,10 @@
         <!-- Static sidebar for desktop -->
         <div class="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col">
             <div class="flex grow flex-col gap-y-5 overflow-y-auto bg-gray-900/50 backdrop-blur-xl border-r border-gray-800 px-6">
-                <div class="flex h-20 shrink-0 items-center mt-2">
-                    <h1 class="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-600 tracking-tight leading-none">
-                        Banda de Música<br><span class="text-sm font-medium text-gray-400">Moratalla</span>
+                <div class="flex h-24 shrink-0 items-center mt-2">
+                    <h1 class="font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-600 leading-tight">
+                        <span class="text-lg">Banda de Música</span><br>
+                        <span class="text-3xl uppercase tracking-wider">Moratalla</span>
                     </h1>
                 </div>
                 <nav class="flex flex-1 flex-col pb-4">
@@ -73,9 +74,13 @@
                         <div class="relative" x-data="{ open: false }" @click.outside="open = false">
                             <button type="button" class="-m-1.5 flex items-center p-1.5" id="user-menu-button" @click="open = !open">
                                 <span class="sr-only">Abrir menú de usuario</span>
-                                <div class="h-9 w-9 rounded-full bg-gray-800 flex items-center justify-center border border-gray-700">
-                                    <span class="text-sm font-medium leading-none text-white">{{ substr(Auth::user()->name, 0, 1) }}</span>
-                                </div>
+                                @if(Auth::user()->photo_path)
+                                    <img class="h-9 w-9 rounded-full object-cover border border-gray-700" src="{{ asset('storage/' . Auth::user()->photo_path) }}" alt="{{ Auth::user()->name }}">
+                                @else
+                                    <div class="h-9 w-9 rounded-full bg-gray-800 flex items-center justify-center border border-gray-700 overflow-hidden">
+                                        <span class="text-sm font-medium leading-none text-white uppercase">{{ substr(Auth::user()->name, 0, 1) }}{{ Auth::user()->last_name ? substr(Auth::user()->last_name, 0, 1) : '' }}</span>
+                                    </div>
+                                @endif
                                 <span class="hidden lg:flex lg:items-center">
                                     <span class="ml-4 text-sm font-semibold leading-6 text-white" aria-hidden="true">{{ Auth::user()->name }}</span>
                                     <svg class="ml-2 h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -86,10 +91,6 @@
                             <!-- Dropdown menu -->
                             <div x-show="open" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opacity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="absolute right-0 z-10 mt-2.5 w-32 origin-top-right rounded-md bg-gray-800 py-2 shadow-lg ring-1 ring-white/10 focus:outline-none" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button" tabindex="-1" x-cloak>
                                 <a href="{{ route('profile.edit') }}" class="block px-3 py-1 text-sm leading-6 text-gray-300 hover:text-white hover:bg-gray-700" role="menuitem">Perfil</a>
-                                <form method="POST" action="{{ route('logout') }}">
-                                    @csrf
-                                    <button type="submit" class="block w-full text-left px-3 py-1 text-sm leading-6 text-gray-300 hover:text-white hover:bg-gray-700" role="menuitem">Salir</button>
-                                </form>
                             </div>
                         </div>
                     </div>
