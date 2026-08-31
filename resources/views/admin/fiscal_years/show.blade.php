@@ -19,12 +19,6 @@
                     Volver
                 </a>
                 @if(!$fiscalYear->is_closed)
-                <form action="{{ route('admin.fiscal-years.import-balance', $fiscalYear) }}" method="POST" class="inline" onsubmit="return confirm('¿Importar los totales del ejercicio anterior? Esto creará dos movimientos iniciales (Total de Ingresos y Total de Gastos) en este ejercicio.');">
-                    @csrf
-                    <button type="submit" class="block rounded-md bg-blue-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-blue-500">
-                        Importar Año Anterior
-                    </button>
-                </form>
                 <a href="{{ route('admin.fiscal-years.budget-movements.create', $fiscalYear) }}" class="block rounded-md bg-amber-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-amber-500">
                     Añadir Movimiento
                 </a>
@@ -36,15 +30,30 @@
     <!-- Resumen -->
     <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div class="overflow-hidden rounded-lg bg-gray-900 px-4 py-5 shadow sm:p-6 ring-1 ring-white/10 border-l-4 border-green-500">
-            <dt class="truncate text-sm font-medium text-gray-400">Total Ingresos</dt>
+            <dt class="truncate text-sm font-medium text-gray-400 flex items-center justify-between">
+                Total Ingresos
+                @if(isset($previousYear))
+                    <span class="text-xs text-gray-500">Año anterior: {{ number_format($previousYear->total_income, 2, ',', '.') }} €</span>
+                @endif
+            </dt>
             <dd class="mt-1 text-3xl font-semibold tracking-tight text-green-400">{{ number_format($fiscalYear->total_income, 2, ',', '.') }} €</dd>
         </div>
         <div class="overflow-hidden rounded-lg bg-gray-900 px-4 py-5 shadow sm:p-6 ring-1 ring-white/10 border-l-4 border-red-500">
-            <dt class="truncate text-sm font-medium text-gray-400">Total Gastos</dt>
+            <dt class="truncate text-sm font-medium text-gray-400 flex items-center justify-between">
+                Total Gastos
+                @if(isset($previousYear))
+                    <span class="text-xs text-gray-500">Año anterior: {{ number_format($previousYear->total_expense, 2, ',', '.') }} €</span>
+                @endif
+            </dt>
             <dd class="mt-1 text-3xl font-semibold tracking-tight text-red-400">{{ number_format($fiscalYear->total_expense, 2, ',', '.') }} €</dd>
         </div>
         <div class="overflow-hidden rounded-lg bg-gray-900 px-4 py-5 shadow sm:p-6 ring-1 ring-white/10 border-l-4 {{ $fiscalYear->balance >= 0 ? 'border-amber-500' : 'border-red-500' }}">
-            <dt class="truncate text-sm font-medium text-gray-400">Saldo del Ejercicio</dt>
+            <dt class="truncate text-sm font-medium text-gray-400 flex items-center justify-between">
+                Saldo del Ejercicio
+                @if(isset($previousYear))
+                    <span class="text-xs text-gray-500">Año anterior: {{ number_format($previousYear->balance, 2, ',', '.') }} €</span>
+                @endif
+            </dt>
             <dd class="mt-1 text-3xl font-semibold tracking-tight {{ $fiscalYear->balance >= 0 ? 'text-amber-500' : 'text-red-400' }}">{{ number_format($fiscalYear->balance, 2, ',', '.') }} €</dd>
         </div>
     </div>

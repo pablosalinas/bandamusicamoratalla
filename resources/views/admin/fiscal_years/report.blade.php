@@ -104,19 +104,28 @@
 
         <!-- Resumen de Balance -->
         <div class="grid grid-cols-3 gap-6 mb-12 avoid-break">
-            <div class="bg-gray-50 rounded-lg p-5 border border-gray-200 shadow-sm text-center">
+            <div class="bg-gray-50 rounded-lg p-5 border border-gray-200 shadow-sm text-center relative">
                 <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-1">Total Ingresos</h3>
                 <p class="text-2xl font-bold text-green-600">{{ number_format($fiscalYear->total_income, 2, ',', '.') }} €</p>
+                @if(isset($previousYear))
+                    <p class="text-xs text-gray-500 mt-2 border-t pt-1">Año anterior: {{ number_format($previousYear->total_income, 2, ',', '.') }} €</p>
+                @endif
             </div>
-            <div class="bg-gray-50 rounded-lg p-5 border border-gray-200 shadow-sm text-center">
+            <div class="bg-gray-50 rounded-lg p-5 border border-gray-200 shadow-sm text-center relative">
                 <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-1">Total Gastos</h3>
                 <p class="text-2xl font-bold text-red-600">{{ number_format($fiscalYear->total_expense, 2, ',', '.') }} €</p>
+                @if(isset($previousYear))
+                    <p class="text-xs text-gray-500 mt-2 border-t pt-1">Año anterior: {{ number_format($previousYear->total_expense, 2, ',', '.') }} €</p>
+                @endif
             </div>
-            <div class="bg-gray-50 rounded-lg p-5 border border-gray-200 shadow-sm text-center {{ $fiscalYear->balance >= 0 ? 'ring-2 ring-green-500' : 'ring-2 ring-red-500' }}">
+            <div class="bg-gray-50 rounded-lg p-5 border border-gray-200 shadow-sm text-center {{ $fiscalYear->balance >= 0 ? 'ring-2 ring-green-500' : 'ring-2 ring-red-500' }} relative">
                 <h3 class="text-sm font-semibold text-gray-800 uppercase tracking-wider mb-1">Saldo del Ejercicio</h3>
                 <p class="text-3xl font-extrabold {{ $fiscalYear->balance >= 0 ? 'text-green-600' : 'text-red-600' }}">
                     {{ number_format($fiscalYear->balance, 2, ',', '.') }} €
                 </p>
+                @if(isset($previousYear))
+                    <p class="text-xs text-gray-600 mt-2 border-t border-gray-300 pt-1 font-medium">Año anterior: {{ number_format($previousYear->balance, 2, ',', '.') }} €</p>
+                @endif
             </div>
         </div>
 
