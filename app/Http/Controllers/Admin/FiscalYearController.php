@@ -46,13 +46,35 @@ class FiscalYearController extends Controller
         
         $movements = $query->paginate(20);
 
-        // Calculate previous year totals for comparison
+        // Previous year for the summary cards
         $previousYear = FiscalYear::where('end_date', '<=', $fiscalYear->start_date)
             ->where('id', '!=', $fiscalYear->id)
             ->orderBy('end_date', 'desc')
             ->first();
+
+        // Data for Comparative Charts
+        $compareYearsCount = (int) $request->query('compare_years', 0);
+        $comparativeData = [];
         
-        return view('admin.fiscal_years.show', compact('fiscalYear', 'movements', 'sortBy', 'previousYear'));
+        if ($compareYearsCount > 0) {
+            $pastYears = FiscalYear::where('end_date', '<=', $fiscalYear->start_date)
+                ->where('id', '!=', $fiscalYear->id)
+                ->orderBy('end_date', 'desc')
+                ->take($compareYearsCount)
+                ->get()
+                ->reverse(); // chronological order
+
+            $allYears = $pastYears->push($fiscalYear);
+            
+            $comparativeData = [
+                'labels' => $allYears->pluck('name')->toArray(),
+                'income' => $allYears->map->total_income->toArray(),
+                'expense' => $allYears->map->total_expense->toArray(),
+                'balance' => $allYears->map->balance->toArray(),
+            ];
+        }
+        
+        return view('admin.fiscal_years.show', compact('fiscalYear', 'movements', 'sortBy', 'previousYear', 'compareYearsCount', 'comparativeData'));
     }
 
     public function edit(FiscalYear $fiscalYear)

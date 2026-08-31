@@ -58,6 +58,167 @@
         </div>
     </div>
 
+    <!-- Comparativa Gráfica -->
+    <div class="mt-8 bg-gray-900 rounded-lg shadow ring-1 ring-white/10 p-6">
+        <div class="flex items-center justify-between mb-4 border-b border-gray-800 pb-4">
+            <h3 class="text-lg font-medium text-white">Gráficos Comparativos</h3>
+            <form method="GET" action="{{ route('admin.fiscal-years.show', $fiscalYear) }}" class="flex items-center space-x-3">
+                <input type="hidden" name="sort" value="{{ $sortBy }}">
+                <label for="compare_years" class="text-sm font-medium text-gray-300">Años hacia atrás a comparar:</label>
+                <input type="number" name="compare_years" id="compare_years" min="0" max="10" value="{{ $compareYearsCount }}" class="block w-20 rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6 text-center">
+                <button type="submit" class="rounded-md bg-amber-600 px-3 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-amber-500">Comparar</button>
+            </form>
+        </div>
+
+        @if($compareYearsCount > 0 && !empty($comparativeData))
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-6">
+                <!-- Gráfico de Pastel Concéntrico -->
+                <div class="bg-gray-800 p-4 rounded-lg flex flex-col items-center justify-center">
+                    <h4 class="text-center text-gray-300 font-semibold mb-2">Proporción Ingresos/Gastos/Saldo</h4>
+                    <div class="relative w-full aspect-square max-h-[300px] flex justify-center">
+                        <canvas id="doughnutChart"></canvas>
+                    </div>
+                </div>
+                
+                <!-- Gráfico de Columnas -->
+                <div class="bg-gray-800 p-4 rounded-lg flex flex-col items-center justify-center">
+                    <h4 class="text-center text-gray-300 font-semibold mb-2">Evolución de Totales</h4>
+                    <div class="relative w-full aspect-[4/3] max-h-[300px] flex justify-center">
+                        <canvas id="barChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            <script>
+                document.addEventListener("DOMContentLoaded", function() {
+                    const data = @json($comparativeData);
+                    
+                    // Colores temáticos
+                    const colorIncome = 'rgba(74, 222, 128, 0.8)'; // green-400
+                    const colorExpense = 'rgba(248, 113, 113, 0.8)'; // red-400
+                    const colorBalancePos = 'rgba(251, 191, 36, 0.8)'; // amber-400
+                    const colorBalanceNeg = 'rgba(153, 27, 27, 0.8)'; // red-800
+
+                    const borderIncome = 'rgba(34, 197, 94, 1)'; 
+                    const borderExpense = 'rgba(239, 68, 68, 1)';
+                    const borderBalance = 'rgba(245, 158, 11, 1)';
+
+                    // Preparar datos para Doughnut (cada año es un dataset concéntrico)
+                    const doughnutDatasets = data.labels.map((year, index) => {
+                        return {
+                            label: year,
+                            data: [data.income[index], data.expense[index], Math.abs(data.balance[index])],
+                            backgroundColor: [
+                                colorIncome, 
+                                colorExpense, 
+                                data.balance[index] >= 0 ? colorBalancePos : colorBalanceNeg
+                            ],
+                            borderColor: '#1f2937', // gray-800
+                            borderWidth: 2
+                        };
+                    });
+
+                    new Chart(document.getElementById('doughnutChart'), {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['Ingresos', 'Gastos', 'Saldo'],
+                            datasets: doughnutDatasets
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: { color: '#d1d5db' } // gray-300
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            let label = context.dataset.label || '';
+                                            if (label) { label += ': '; }
+                                            if (context.parsed !== null) {
+                                                label += new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(context.parsed);
+                                            }
+                                            return label;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+
+                    // Preparar datos para Bar Chart (agrupado por año)
+                    new Chart(document.getElementById('barChart'), {
+                        type: 'bar',
+                        data: {
+                            labels: data.labels,
+                            datasets: [
+                                {
+                                    label: 'Ingresos',
+                                    data: data.income,
+                                    backgroundColor: colorIncome,
+                                    borderColor: borderIncome,
+                                    borderWidth: 1
+                                },
+                                {
+                                    label: 'Gastos',
+                                    data: data.expense,
+                                    backgroundColor: colorExpense,
+                                    borderColor: borderExpense,
+                                    borderWidth: 1
+                                },
+                                {
+                                    label: 'Saldo',
+                                    data: data.balance,
+                                    backgroundColor: data.balance.map(b => b >= 0 ? colorBalancePos : colorBalanceNeg),
+                                    borderColor: borderBalance,
+                                    borderWidth: 1
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                                    ticks: { color: '#9ca3af' } // gray-400
+                                },
+                                x: {
+                                    grid: { display: false },
+                                    ticks: { color: '#9ca3af' }
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: { color: '#d1d5db' }
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            let label = context.dataset.label || '';
+                                            if (label) { label += ': '; }
+                                            if (context.parsed.y !== null) {
+                                                label += new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(context.parsed.y);
+                                            }
+                                            return label;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                });
+            </script>
+        @elseif($compareYearsCount > 0)
+            <div class="mt-4 text-center text-sm text-gray-500 italic">No hay suficientes ejercicios anteriores para comparar.</div>
+        @endif
+    </div>
+
     <!-- Filtros de ordenación -->
     <div class="mt-8 flex justify-end">
         <form method="GET" action="{{ route('admin.fiscal-years.show', $fiscalYear) }}" class="flex items-center space-x-3">
