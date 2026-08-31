@@ -41,6 +41,12 @@
         </div>
 
         <div>
+            <x-input-label for="nif" :value="__('NIF / NIE (Opcional)')" />
+            <x-text-input id="nif" name="nif" type="text" class="mt-1 block w-full" :value="old('nif', $user->nif)" placeholder="12345678A" />
+            <x-input-error class="mt-2" :messages="$errors->get('nif')" />
+        </div>
+
+        <div>
             <x-input-label for="email" :value="__('Correo Electrónico')" />
             <x-text-input id="email" name="email" type="email" class="mt-1 block w-full" :value="old('email', $user->email)" required autocomplete="username" />
             <x-input-error class="mt-2" :messages="$errors->get('email')" />

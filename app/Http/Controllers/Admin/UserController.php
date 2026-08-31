@@ -30,6 +30,7 @@ class UserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'last_name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:'.User::class],
+            'nif' => ['nullable', 'string', new \App\Rules\ValidNif],
             'password' => ['required', Rules\Password::defaults()],
             'role' => ['required', 'in:admin,treasurer,director,musician'],
             'instruments' => ['nullable', 'array'],
@@ -44,6 +45,7 @@ class UserController extends Controller
         $user = User::create([
             'name' => $request->name,
             'last_name' => $request->last_name,
+            'nif' => $request->nif ? strtoupper(trim($request->nif)) : null,
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'role' => $request->role,
@@ -126,6 +128,7 @@ class UserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'last_name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:'.User::class.',email,'.$user->id],
+            'nif' => ['nullable', 'string', new \App\Rules\ValidNif],
             'role' => ['required', 'in:admin,treasurer,director,musician'],
             'instruments' => ['nullable', 'array'],
             'address' => ['nullable', 'string', 'max:255'],
@@ -139,6 +142,7 @@ class UserController extends Controller
         $data = [
             'name' => $request->name,
             'last_name' => $request->last_name,
+            'nif' => $request->nif ? strtoupper(trim($request->nif)) : null,
             'email' => $request->email,
             'role' => $request->role,
             'is_active' => $request->has('is_active'),

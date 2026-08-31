@@ -35,7 +35,15 @@
                         @error('last_name') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
                     </div>
 
-                    <div class="sm:col-span-4">
+                    <div class="sm:col-span-3">
+                        <label for="nif" class="block text-sm font-medium leading-6 text-white">NIF / NIE (Opcional)</label>
+                        <div class="mt-2">
+                            <input type="text" name="nif" id="nif" value="{{ old('nif') }}" class="block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6" placeholder="12345678A">
+                        </div>
+                        @error('nif') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div class="sm:col-span-3">
                         <label for="email" class="block text-sm font-medium leading-6 text-white">Email (Usuario)</label>
                         <div class="mt-2">
                             <input id="email" name="email" type="email" value="{{ old('email') }}" required class="block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6">
