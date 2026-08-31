@@ -78,7 +78,7 @@ class BudgetMovementController extends Controller
             
             // Only update the reconciliation status if that's the only thing they can do
             $movement->update(['is_reconciled' => false]);
-            return redirect()->route('admin.budget-movements.edit', [$fiscalYear, $movement])
+            return redirect()->route('admin.fiscal-years.budget-movements.edit', [$fiscalYear, $movement])
                 ->with('success', 'Punteo quitado. Ahora puedes modificar el resto de campos.');
         }
 
