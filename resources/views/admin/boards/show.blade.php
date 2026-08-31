@@ -41,8 +41,20 @@
                             </div>
 
                             <div>
-                                <label for="role_name" class="block text-sm font-medium leading-6 text-white">Cargo (Ej: Presidente, Tesorero, Vocal)</label>
-                                <input type="text" name="role_name" id="role_name" value="{{ old('role_name') }}" required class="mt-2 block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6">
+                                <label for="role_name" class="block text-sm font-medium leading-6 text-white">Cargo en la Junta Directiva</label>
+                                <input list="board_roles" name="role_name" id="role_name" value="{{ old('role_name') }}" required placeholder="Selecciona o escribe un cargo..." class="mt-2 block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6">
+                                <datalist id="board_roles">
+                                    <option value="Presidente">
+                                    <option value="Vicepresidente">
+                                    <option value="Secretario">
+                                    <option value="Tesorero">
+                                    <option value="Vocal">
+                                    <option value="Archivero">
+                                    <option value="Responsable de Material">
+                                    <option value="Representante de los Músicos">
+                                    <option value="Director">
+                                    <option value="Relaciones Públicas">
+                                </datalist>
                                 @error('role_name') <p class="mt-1 text-sm text-red-400">{{ $message }}</p> @enderror
                             </div>
 
