@@ -1,5 +1,18 @@
 @php
-    $logos = json_decode(\App\Models\SiteSetting::getSetting('site_logos', '[]'), true) ?: [];
+    $rawLogos = json_decode(\App\Models\SiteSetting::getSetting('site_logos', '[]'), true) ?: [];
+    $logos = [];
+    foreach ($rawLogos as $logo) {
+        if (is_string($logo)) {
+            $logos[] = ['path' => $logo, 'order' => 999];
+        } else if (is_array($logo)) {
+            $logos[] = $logo;
+        }
+    }
+    usort($logos, function($a, $b) {
+        return ($a['order'] ?? 999) <=> ($b['order'] ?? 999);
+    });
+    $logos = array_column($logos, 'path');
+    
     if (empty($logos)) {
         $logos = ['images/logo.jpg'];
     }

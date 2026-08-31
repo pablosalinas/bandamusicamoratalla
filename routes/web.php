@@ -146,6 +146,7 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
         
         // Logos
         Route::post('settings/logos', [\App\Http\Controllers\Admin\SettingsController::class, 'storeLogo'])->name('settings.logos.store');
+        Route::put('settings/logos', [\App\Http\Controllers\Admin\SettingsController::class, 'updateLogoOrder'])->name('settings.logos.update');
         Route::delete('settings/logos', [\App\Http\Controllers\Admin\SettingsController::class, 'destroyLogo'])->name('settings.logos.destroy');
 
         // Analytics & Logs

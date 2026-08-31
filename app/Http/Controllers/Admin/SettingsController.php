@@ -19,6 +19,19 @@ class SettingsController extends Controller
             }
         }
 
+        $rawLogos = json_decode(\App\Models\SiteSetting::getSetting('site_logos', '[]'), true) ?: [];
+        $logos = [];
+        foreach ($rawLogos as $logo) {
+            if (is_string($logo)) {
+                $logos[] = ['path' => $logo, 'order' => 999];
+            } else if (is_array($logo)) {
+                $logos[] = $logo;
+            }
+        }
+        usort($logos, function($a, $b) {
+            return ($a['order'] ?? 999) <=> ($b['order'] ?? 999);
+        });
+
         $settings = [
             'band_name' => \App\Models\SiteSetting::getSetting('band_name', 'Banda de Música de Moratalla'),
             'session_timeout' => \App\Models\SiteSetting::getSetting('session_timeout', 120),
@@ -26,7 +39,7 @@ class SettingsController extends Controller
             'band_history' => \App\Models\SiteSetting::getSetting('band_history', ''),
             'carousel_speed' => \App\Models\SiteSetting::getSetting('carousel_speed', 4),
             'band_iban' => $bandIban,
-            'site_logos' => json_decode(\App\Models\SiteSetting::getSetting('site_logos', '[]'), true),
+            'site_logos' => $logos,
         ];
         
         $carouselMedia = \App\Models\CarouselMedia::orderBy('sort_order')->get();
@@ -124,12 +137,25 @@ class SettingsController extends Controller
             'logos.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:5120'
         ]);
 
-        $currentLogos = json_decode(\App\Models\SiteSetting::getSetting('site_logos', '[]'), true) ?: [];
+        $rawLogos = json_decode(\App\Models\SiteSetting::getSetting('site_logos', '[]'), true) ?: [];
+        $currentLogos = [];
+        $maxOrder = 0;
+        foreach ($rawLogos as $logo) {
+            if (is_string($logo)) {
+                $currentLogos[] = ['path' => $logo, 'order' => 999];
+            } else if (is_array($logo)) {
+                $currentLogos[] = $logo;
+                if (isset($logo['order']) && $logo['order'] > $maxOrder && $logo['order'] != 999) {
+                    $maxOrder = $logo['order'];
+                }
+            }
+        }
 
         if ($request->hasFile('logos')) {
             foreach ($request->file('logos') as $file) {
                 $path = $file->store('logos', 'public');
-                $currentLogos[] = $path;
+                $maxOrder++;
+                $currentLogos[] = ['path' => $path, 'order' => $maxOrder];
             }
         }
 
@@ -144,11 +170,14 @@ class SettingsController extends Controller
     public function destroyLogo(Request $request)
     {
         $path = $request->input('path');
-        $currentLogos = json_decode(\App\Models\SiteSetting::getSetting('site_logos', '[]'), true) ?: [];
-        
-        $currentLogos = array_filter($currentLogos, function($logo) use ($path) {
-            return $logo !== $path;
-        });
+        $rawLogos = json_decode(\App\Models\SiteSetting::getSetting('site_logos', '[]'), true) ?: [];
+        $currentLogos = [];
+        foreach ($rawLogos as $logo) {
+            $logoPath = is_string($logo) ? $logo : ($logo['path'] ?? '');
+            if ($logoPath !== $path) {
+                $currentLogos[] = is_string($logo) ? ['path' => $logo, 'order' => 999] : $logo;
+            }
+        }
 
         if (\Illuminate\Support\Facades\Storage::disk('public')->exists($path)) {
             \Illuminate\Support\Facades\Storage::disk('public')->delete($path);
@@ -160,5 +189,36 @@ class SettingsController extends Controller
         );
 
         return redirect()->route('admin.settings.index')->with('success', 'Logo eliminado correctamente.');
+    }
+
+    public function updateLogoOrder(Request $request)
+    {
+        $request->validate([
+            'path' => 'required|string',
+            'order' => 'required|integer'
+        ]);
+
+        $path = $request->input('path');
+        $order = $request->input('order');
+
+        $rawLogos = json_decode(\App\Models\SiteSetting::getSetting('site_logos', '[]'), true) ?: [];
+        $currentLogos = [];
+        foreach ($rawLogos as $logo) {
+            if (is_string($logo)) {
+                $currentLogos[] = ['path' => $logo, 'order' => ($logo === $path ? $order : 999)];
+            } else if (is_array($logo)) {
+                if (isset($logo['path']) && $logo['path'] === $path) {
+                    $logo['order'] = $order;
+                }
+                $currentLogos[] = $logo;
+            }
+        }
+
+        \App\Models\SiteSetting::updateOrCreate(
+            ['key' => 'site_logos'],
+            ['value' => json_encode(array_values($currentLogos)), 'type' => 'text']
+        );
+
+        return redirect()->route('admin.settings.index')->with('success', 'Orden actualizado.');
     }
 }

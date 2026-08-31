@@ -70,7 +70,15 @@
         <div class="flex justify-between items-start mb-10 border-b-2 border-gray-800 pb-6">
             <div class="flex items-center gap-4">
                 @php
-                    $logos = json_decode(\App\Models\SiteSetting::getSetting('site_logos', '[]'), true) ?: [];
+                    $rawLogos = json_decode(\App\Models\SiteSetting::getSetting('site_logos', '[]'), true) ?: [];
+                    $logos = [];
+                    foreach ($rawLogos as $logo) {
+                        if (is_string($logo)) $logos[] = ['path' => $logo, 'order' => 999];
+                        else if (is_array($logo)) $logos[] = $logo;
+                    }
+                    usort($logos, function($a, $b) { return ($a['order'] ?? 999) <=> ($b['order'] ?? 999); });
+                    $logos = array_column($logos, 'path');
+
                     $bandName = \App\Models\SiteSetting::getSetting('band_name', 'Banda de Música de Moratalla');
                     $primaryLogo = count($logos) > 0 ? $logos[0] : 'images/logo.jpg';
                     $logoSrc = str_starts_with($primaryLogo, 'images/') ? asset($primaryLogo) : asset('storage/' . $primaryLogo);

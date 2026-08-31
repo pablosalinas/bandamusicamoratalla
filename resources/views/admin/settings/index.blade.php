@@ -163,21 +163,37 @@
                     </div>
                 </form>
 
-                <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4 mt-6">
-                    @forelse($settings['site_logos'] ?? [] as $logoPath)
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-6">
+                    @forelse($settings['site_logos'] ?? [] as $logoObj)
                         @php 
+                            $logoPath = is_array($logoObj) ? $logoObj['path'] : $logoObj;
+                            $logoOrder = is_array($logoObj) ? ($logoObj['order'] ?? 999) : 999;
                             $src = str_starts_with($logoPath, 'images/') ? asset($logoPath) : asset('storage/' . $logoPath); 
                         @endphp
-                        <div class="flex flex-col bg-gray-800 rounded-lg overflow-hidden border border-gray-700 relative group aspect-square flex items-center justify-center p-2">
-                            <img src="{{ $src }}" class="max-w-full max-h-full object-contain">
-                            
-                            <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                <form action="{{ route('admin.settings.logos.destroy') }}" method="POST" onsubmit="return confirm('¿Seguro que deseas eliminar este logo?');">
+                        <div class="flex flex-col bg-gray-800 rounded-lg overflow-hidden border border-gray-700">
+                            <div class="relative group aspect-square flex items-center justify-center p-2 bg-gray-900">
+                                <img src="{{ $src }}" class="max-w-full max-h-full object-contain">
+                                
+                                <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                    <form action="{{ route('admin.settings.logos.destroy') }}" method="POST" onsubmit="return confirm('¿Seguro que deseas eliminar este logo?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <input type="hidden" name="path" value="{{ $logoPath }}">
+                                        <button type="submit" class="p-2 bg-red-600 text-white rounded-full hover:bg-red-500 focus:outline-none" title="Eliminar Logo">
+                                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                            <div class="p-2 border-t border-gray-700 bg-gray-800">
+                                <form action="{{ route('admin.settings.logos.update') }}" method="POST" class="flex items-center gap-2">
                                     @csrf
-                                    @method('DELETE')
+                                    @method('PUT')
                                     <input type="hidden" name="path" value="{{ $logoPath }}">
-                                    <button type="submit" class="p-2 bg-red-600 text-white rounded-full hover:bg-red-500 focus:outline-none">
-                                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                    <label class="text-xs text-gray-400">Orden:</label>
+                                    <input type="number" name="order" value="{{ $logoOrder !== 999 ? $logoOrder : '' }}" placeholder="Nº" class="block w-full rounded-md border-0 bg-gray-900 py-1 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-xs text-center p-1">
+                                    <button type="submit" class="rounded-md bg-amber-600 px-2 py-1 text-xs font-semibold text-white shadow-sm hover:bg-amber-500" title="Guardar orden">
+                                        Guardar
                                     </button>
                                 </form>
                             </div>
