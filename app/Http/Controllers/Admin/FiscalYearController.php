@@ -89,4 +89,43 @@ class FiscalYearController extends Controller
         $movements = $fiscalYear->movements()->orderBy('date', 'asc')->get();
         return view('admin.fiscal_years.report', compact('fiscalYear', 'movements'));
     }
+
+    public function importBalance(FiscalYear $fiscalYear)
+    {
+        if ($fiscalYear->is_closed) {
+            return back()->withErrors('No se puede importar el saldo en un ejercicio cerrado.');
+        }
+
+        // Find the most recent fiscal year before this one
+        $previousYear = FiscalYear::where('end_date', '<=', $fiscalYear->start_date)
+            ->where('id', '!=', $fiscalYear->id)
+            ->orderBy('end_date', 'desc')
+            ->first();
+
+        if (!$previousYear) {
+            return back()->withErrors('No se ha encontrado un ejercicio anterior válido para importar el saldo.');
+        }
+
+        $balance = $previousYear->balance;
+
+        if ($balance == 0) {
+            return back()->with('success', 'El saldo del ejercicio anterior era 0€. No se ha añadido ningún movimiento.');
+        }
+
+        // Check if a carry over movement already exists
+        $exists = $fiscalYear->movements()->where('description', 'Saldo del Ejercicio Anterior (' . $previousYear->name . ')')->exists();
+        if ($exists) {
+            return back()->withErrors('El saldo del ejercicio anterior ya fue importado.');
+        }
+
+        $fiscalYear->movements()->create([
+            'date' => $fiscalYear->start_date,
+            'type' => $balance > 0 ? 'income' : 'expense',
+            'description' => 'Saldo del Ejercicio Anterior (' . $previousYear->name . ')',
+            'amount' => abs($balance),
+            'is_reconciled' => true,
+        ]);
+
+        return back()->with('success', 'Se ha importado correctamente el saldo del ejercicio anterior (' . number_format($balance, 2, ',', '.') . ' €).');
+    }
 }

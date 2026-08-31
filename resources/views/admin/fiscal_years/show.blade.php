@@ -19,6 +19,12 @@
                     Volver
                 </a>
                 @if(!$fiscalYear->is_closed)
+                <form action="{{ route('admin.fiscal-years.import-balance', $fiscalYear) }}" method="POST" class="inline" onsubmit="return confirm('¿Importar el saldo del ejercicio anterior? Esto creará un movimiento al inicio de este ejercicio.');">
+                    @csrf
+                    <button type="submit" class="block rounded-md bg-blue-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-blue-500">
+                        Importar Saldo Anterior
+                    </button>
+                </form>
                 <a href="{{ route('admin.fiscal-years.budget-movements.create', $fiscalYear) }}" class="block rounded-md bg-amber-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-amber-500">
                     Añadir Movimiento
                 </a>
