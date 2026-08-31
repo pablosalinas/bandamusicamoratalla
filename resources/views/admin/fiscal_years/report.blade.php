@@ -68,10 +68,19 @@
         
         <!-- Cabecera del Informe -->
         <div class="flex justify-between items-start mb-10 border-b-2 border-gray-800 pb-6">
-            <div>
-                <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight uppercase">Banda de Música de Moratalla</h1>
-                <p class="text-lg text-gray-600 mt-1 font-medium">Informe Financiero y Balance de Ejercicio</p>
-                <p class="text-sm text-gray-500 mt-2">Generado el {{ now()->format('d/m/Y \a \l\a\s H:i') }}</p>
+            <div class="flex items-center gap-4">
+                @php
+                    $logos = json_decode(\App\Models\SiteSetting::getSetting('site_logos', '[]'), true) ?: [];
+                    $bandName = \App\Models\SiteSetting::getSetting('band_name', 'Banda de Música de Moratalla');
+                    $primaryLogo = count($logos) > 0 ? $logos[0] : 'images/logo.jpg';
+                    $logoSrc = str_starts_with($primaryLogo, 'images/') ? asset($primaryLogo) : asset('storage/' . $primaryLogo);
+                @endphp
+                <img src="{{ $logoSrc }}" alt="Logo" class="w-24 h-24 object-contain rounded-full shadow-sm">
+                <div>
+                    <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight uppercase">{{ $bandName }}</h1>
+                    <p class="text-lg text-gray-600 mt-1 font-medium">Informe Financiero y Balance de Ejercicio</p>
+                    <p class="text-sm text-gray-500 mt-2">Generado el {{ now()->format('d/m/Y \a \l\a\s H:i') }}</p>
+                </div>
             </div>
             <div class="text-right">
                 <h2 class="text-xl font-bold text-gray-800">{{ $fiscalYear->name }}</h2>
