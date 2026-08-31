@@ -31,7 +31,7 @@
                     @if(auth()->user()->canViewIban())
                     <div class="sm:col-span-6">
                         <label for="band_iban" class="block text-sm font-medium leading-6 text-amber-500">Cuenta Bancaria de la Banda (IBAN)</label>
-                        <p class="text-sm text-gray-400 mb-2">Se guardará de forma encriptada en la base de datos y solo será visible para el tesorero y Pablo.</p>
+                        <p class="text-sm text-gray-400 mb-2">Se guardará de forma encriptada en la base de datos y solo será visible para el tesorero.</p>
                         <div class="mt-2">
                             <input type="text" name="band_iban" id="band_iban" value="{{ old('band_iban', $settings['band_iban']) }}" class="block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-amber-500/50 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6" placeholder="ES00 0000 0000 0000 0000 0000">
                         </div>
