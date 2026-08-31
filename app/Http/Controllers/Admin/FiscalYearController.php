@@ -106,26 +106,39 @@ class FiscalYearController extends Controller
             return back()->withErrors('No se ha encontrado un ejercicio anterior válido para importar el saldo.');
         }
 
-        $balance = $previousYear->balance;
+        $totalIncome = $previousYear->total_income;
+        $totalExpense = $previousYear->total_expense;
 
-        if ($balance == 0) {
-            return back()->with('success', 'El saldo del ejercicio anterior era 0€. No se ha añadido ningún movimiento.');
+        if ($totalIncome == 0 && $totalExpense == 0) {
+            return back()->with('success', 'El ejercicio anterior no tuvo movimientos. No se ha importado nada.');
         }
 
         // Check if a carry over movement already exists
-        $exists = $fiscalYear->movements()->where('description', 'Saldo del Ejercicio Anterior (' . $previousYear->name . ')')->exists();
+        $exists = $fiscalYear->movements()->where('description', 'like', 'Ingresos del Ejercicio Anterior%')->exists();
         if ($exists) {
-            return back()->withErrors('El saldo del ejercicio anterior ya fue importado.');
+            return back()->withErrors('Los importes del ejercicio anterior ya fueron importados.');
         }
 
-        $fiscalYear->movements()->create([
-            'date' => $fiscalYear->start_date,
-            'type' => $balance > 0 ? 'income' : 'expense',
-            'description' => 'Saldo del Ejercicio Anterior (' . $previousYear->name . ')',
-            'amount' => abs($balance),
-            'is_reconciled' => true,
-        ]);
+        if ($totalIncome > 0) {
+            $fiscalYear->movements()->create([
+                'date' => $fiscalYear->start_date,
+                'type' => 'income',
+                'description' => 'Ingresos del Ejercicio Anterior (' . $previousYear->name . ')',
+                'amount' => $totalIncome,
+                'is_reconciled' => true,
+            ]);
+        }
 
-        return back()->with('success', 'Se ha importado correctamente el saldo del ejercicio anterior (' . number_format($balance, 2, ',', '.') . ' €).');
+        if ($totalExpense > 0) {
+            $fiscalYear->movements()->create([
+                'date' => $fiscalYear->start_date,
+                'type' => 'expense',
+                'description' => 'Gastos del Ejercicio Anterior (' . $previousYear->name . ')',
+                'amount' => $totalExpense,
+                'is_reconciled' => true,
+            ]);
+        }
+
+        return back()->with('success', 'Se han importado los totales del ejercicio anterior: Ingresos (' . number_format($totalIncome, 2, ',', '.') . ' €) y Gastos (' . number_format($totalExpense, 2, ',', '.') . ' €).');
     }
 }
