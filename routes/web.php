@@ -149,6 +149,7 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
         Route::get('logs', [\App\Http\Controllers\Admin\LogsController::class, 'index'])->name('logs.index');
         
         // Contabilidad
+        Route::get('fiscal-years/{fiscalYear}/report', [\App\Http\Controllers\Admin\FiscalYearController::class, 'report'])->name('fiscal-years.report');
         Route::resource('fiscal-years', \App\Http\Controllers\Admin\FiscalYearController::class);
         Route::resource('fiscal-years.budget-movements', \App\Http\Controllers\Admin\BudgetMovementController::class)->except(['index', 'show'])->parameters([
             'fiscal-years' => 'fiscalYear',

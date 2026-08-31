@@ -83,4 +83,10 @@ class FiscalYearController extends Controller
         $fiscalYear->delete();
         return redirect()->route('admin.fiscal-years.index')->with('success', 'Ejercicio eliminado.');
     }
+
+    public function report(FiscalYear $fiscalYear)
+    {
+        $movements = $fiscalYear->movements()->orderBy('date', 'asc')->get();
+        return view('admin.fiscal_years.report', compact('fiscalYear', 'movements'));
+    }
 }
