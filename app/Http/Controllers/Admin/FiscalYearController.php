@@ -57,20 +57,20 @@ class FiscalYearController extends Controller
         $comparativeData = [];
         
         if ($compareYearsCount > 0) {
-            $pastYears = FiscalYear::where('end_date', '<=', $fiscalYear->start_date)
-                ->where('id', '!=', $fiscalYear->id)
-                ->orderBy('end_date', 'desc')
+            $pastYears = FiscalYear::where('start_date', '<', $fiscalYear->start_date)
+                ->orderBy('start_date', 'desc')
                 ->take($compareYearsCount)
                 ->get()
-                ->reverse(); // chronological order
+                ->reverse()
+                ->values(); // reset keys to ensure JSON array output
 
-            $allYears = $pastYears->push($fiscalYear);
+            $allYears = $pastYears->push($fiscalYear)->values();
             
             $comparativeData = [
-                'labels' => $allYears->pluck('name')->toArray(),
-                'income' => $allYears->map->total_income->toArray(),
-                'expense' => $allYears->map->total_expense->toArray(),
-                'balance' => $allYears->map->balance->toArray(),
+                'labels' => $allYears->pluck('name')->values()->toArray(),
+                'income' => $allYears->map->total_income->values()->toArray(),
+                'expense' => $allYears->map->total_expense->values()->toArray(),
+                'balance' => $allYears->map->balance->values()->toArray(),
             ];
         }
         
