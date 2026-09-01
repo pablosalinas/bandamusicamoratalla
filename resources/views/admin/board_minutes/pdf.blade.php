@@ -12,28 +12,6 @@
             margin: 0;
             padding: 30px;
         }
-        /* Línea superior con nombre de banda + fecha de impresión */
-        .top-bar {
-            border-top: 3px solid #D97706;
-            border-bottom: 1px solid #D97706;
-            padding: 6px 4px;
-            margin-bottom: 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 12px;
-            color: #555;
-        }
-        .top-bar .band-name {
-            font-weight: bold;
-            color: #D97706;
-            font-size: 13px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        .top-bar .print-date {
-            font-style: italic;
-        }
         .header {
             text-align: center;
             border-bottom: 2px solid #D97706;
@@ -139,12 +117,6 @@
     {{-- Botón de impresión (no aparece en el PDF) --}}
     <div class="no-print">
         <button onclick="window.print()" class="btn-print">Imprimir / Guardar PDF</button>
-    </div>
-
-    {{-- Línea superior con nombre de banda y fecha de impresión --}}
-    <div class="top-bar">
-        <span class="band-name">{{ $bandName }}</span>
-        <span class="print-date">Impreso el {{ $fechaImpresionEsp }}</span>
     </div>
 
     {{-- Cabecera con título y fecha de junta --}}
