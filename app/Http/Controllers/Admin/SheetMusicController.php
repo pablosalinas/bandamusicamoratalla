@@ -20,11 +20,18 @@ class SheetMusicController extends Controller
         if ($request->filled('work_type') && $request->work_type !== '') {
             $query->where('work_type', $request->work_type);
         }
+
+        if ($request->filled('instrument_id') && $request->instrument_id !== '') {
+            $query->whereHas('instruments', function($q) use ($request) {
+                $q->where('instrument_catalogs.id', $request->instrument_id);
+            });
+        }
         
         $sheetMusics = $query->orderBy('title')->paginate(15);
         $workTypes = SheetMusic::whereNotNull('work_type')->distinct()->pluck('work_type')->filter()->sort();
+        $instruments = InstrumentCatalog::where('is_active', true)->orderBy('name')->get();
         
-        return view('admin.sheet-music.index', compact('sheetMusics', 'workTypes'));
+        return view('admin.sheet-music.index', compact('sheetMusics', 'workTypes', 'instruments'));
     }
 
     public function pdf(Request $request)
@@ -34,9 +41,17 @@ class SheetMusicController extends Controller
         if ($request->filled('work_type') && $request->work_type !== '') {
             $query->where('work_type', $request->work_type);
         }
+
+        if ($request->filled('instrument_id') && $request->instrument_id !== '') {
+            $query->whereHas('instruments', function($q) use ($request) {
+                $q->where('instrument_catalogs.id', $request->instrument_id);
+            });
+        }
         
         $sheetMusics = $query->orderBy('title')->get();
-        return view('admin.sheet-music.pdf', compact('sheetMusics'));
+        $instrument = $request->filled('instrument_id') ? InstrumentCatalog::find($request->instrument_id) : null;
+
+        return view('admin.sheet-music.pdf', compact('sheetMusics', 'instrument'));
     }
 
     public function create()

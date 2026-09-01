@@ -13,16 +13,30 @@
         </div>
     </x-slot>
 
-    <div class="mt-4 flex justify-between items-center bg-gray-800 p-4 rounded-lg shadow no-print">
-        <form action="{{ route('admin.sheet-music.index') }}" method="GET" class="flex items-center gap-4">
-            <label for="work_type" class="text-sm font-medium text-white">Filtrar por tipo:</label>
-            <select name="work_type" id="work_type" class="rounded-md bg-gray-900 border-gray-700 text-white shadow-sm focus:border-amber-500 focus:ring-amber-500 sm:text-sm">
-                <option value="">Todos</option>
-                @foreach($workTypes as $type)
-                    <option value="{{ $type }}" {{ request('work_type') == $type ? 'selected' : '' }}>{{ $type }}</option>
-                @endforeach
-            </select>
-            <button type="submit" class="bg-gray-700 text-white px-3 py-2 rounded-md hover:bg-gray-600 text-sm">Filtrar</button>
+    <div class="mt-4 flex flex-col md:flex-row justify-between items-start md:items-end bg-gray-800 p-4 rounded-lg shadow no-print gap-4">
+        <form action="{{ route('admin.sheet-music.index') }}" method="GET" class="flex flex-col sm:flex-row items-start sm:items-end gap-4 w-full md:w-auto">
+                <div>
+                    <label for="work_type" class="text-sm font-medium text-white mb-1 block">Filtrar por tipo:</label>
+                    <select name="work_type" id="work_type" class="w-full rounded-md bg-gray-900 border-gray-700 text-white shadow-sm focus:border-amber-500 focus:ring-amber-500 sm:text-sm">
+                        <option value="">Todos los tipos</option>
+                        @foreach($workTypes as $type)
+                            <option value="{{ $type }}" {{ request('work_type') == $type ? 'selected' : '' }}>{{ $type }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
+                    <label for="instrument_id" class="text-sm font-medium text-white mb-1 block">Filtrar por instrumento:</label>
+                    <select name="instrument_id" id="instrument_id" class="w-full rounded-md bg-gray-900 border-gray-700 text-white shadow-sm focus:border-amber-500 focus:ring-amber-500 sm:text-sm">
+                        <option value="">Todos los instrumentos</option>
+                        @foreach($instruments as $inst)
+                            <option value="{{ $inst->id }}" {{ request('instrument_id') == $inst->id ? 'selected' : '' }}>{{ $inst->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+            <div class="self-end mt-4 sm:mt-0">
+                <button type="submit" class="bg-gray-700 text-white px-4 py-2 rounded-md hover:bg-gray-600 text-sm font-semibold h-[38px]">Aplicar Filtros</button>
+            </div>
         </form>
         
         <div class="flex gap-2">

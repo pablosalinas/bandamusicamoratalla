@@ -47,8 +47,13 @@
 
     <h1 class="text-2xl font-bold mb-4 hidden print:block text-center">Archivo Musical de la Banda</h1>
     
-    @if(request('work_type'))
-    <p class="text-center mb-4 italic text-gray-700">Filtro: {{ request('work_type') }}</p>
+    @if(request('work_type') || isset($instrument))
+    <p class="text-center mb-4 italic text-gray-700">
+        Filtros aplicados: 
+        {{ request('work_type') ? 'Tipo: ' . request('work_type') : '' }}
+        {{ request('work_type') && isset($instrument) ? ' | ' : '' }}
+        {{ isset($instrument) ? 'Instrumento: ' . $instrument->name : '' }}
+    </p>
     @endif
 
     <table class="w-full text-left border-collapse">
