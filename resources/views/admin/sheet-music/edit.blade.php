@@ -107,6 +107,20 @@
 
                     <div class="sm:col-span-6 border-t border-gray-800 pt-6 mt-2">
                         <label class="block text-xl font-semibold leading-6 text-white mb-4">Archivos por Instrumento y Tipo</label>
+                        <div class="rounded-md bg-blue-900/50 p-4 mb-6 border border-blue-800">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <svg class="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                                <div class="ml-3 flex-1 md:flex md:justify-between">
+                                    <p class="text-sm text-blue-300">
+                                        <strong>Consejo:</strong> El sistema mantiene tu sesión activa automáticamente mientras estés en esta página. Sin embargo, si vas a subir muchos archivos, es recomendable <strong>guardar periódicamente</strong> (pulsando Actualizar) para evitar que el tamaño total del envío supere el límite del servidor, lo que causaría un error 419 (Página caducada).
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
                         <p class="text-sm text-gray-400 mb-6">Selecciona el instrumento y asigna el archivo PDF o Imagen correspondiente a cada tipo. Si subes imágenes, se les aplicará automáticamente una marca de agua.</p>
                         
                         <div class="space-y-6">
@@ -166,4 +180,14 @@
             </div>
         </form>
     </div>
+    
+    <script>
+        // Mantener la sesión activa haciendo una pequeña petición cada 15 minutos
+        setInterval(function() {
+            fetch('{{ route('admin.dashboard') }}', { 
+                method: 'GET', 
+                headers: { 'X-Requested-With': 'XMLHttpRequest' } 
+            }).catch(e => console.log('Keep-alive ping failed'));
+        }, 15 * 60 * 1000);
+    </script>
 </x-admin-layout>
