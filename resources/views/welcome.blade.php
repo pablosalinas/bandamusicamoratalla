@@ -108,7 +108,8 @@
             speed: {{ ($carouselSpeed ?? 4) * 1000 }},
             lightboxOpen: false,
             windowWidth: window.innerWidth,
-            
+            globalMuted: true,
+
             get visibleItems() {
                 if (this.windowWidth < 640) return 1;
                 if (this.windowWidth < 1024) return 2;
@@ -118,30 +119,50 @@
             get maxIndex() {
                 return Math.max(0, this.slides.length - this.visibleItems);
             },
-            
+
+            get hasVideos() {
+                return this.slides.some(s => s.type === 'video');
+            },
+
             init() {
-                this.startAutoplay();
+                let firstVideoIdx = this.slides.findIndex(s => s.type === 'video');
+                if (firstVideoIdx !== -1 && firstVideoIdx <= this.maxIndex) {
+                    this.currentIndex = firstVideoIdx;
+                }
+                this.$nextTick(() => {
+                    this.playAllVisibleVideos();
+                    this.startAutoplay();
+                });
+            },
+
+            playAllVisibleVideos() {
+                for (let i = this.currentIndex; i < this.currentIndex + this.visibleItems; i++) {
+                    if (this.slides[i] && this.slides[i].type === 'video') {
+                        let vid = document.getElementById('carousel-video-' + i);
+                        if (vid) {
+                            vid.muted = this.globalMuted;
+                            vid.play().catch(() => {});
+                        }
+                    }
+                }
             },
             
             startAutoplay() {
                 this.stopAutoplay();
-                
-                let currentSlide = this.slides[this.currentIndex];
-                if (currentSlide && currentSlide.type === 'video') {
-                    this.$nextTick(() => {
+                this.$nextTick(() => {
+                    this.playAllVisibleVideos();
+                    let currentSlide = this.slides[this.currentIndex];
+                    if (!currentSlide || currentSlide.type !== 'video') {
+                        this.scheduleNext();
+                    } else {
                         let videoEl = document.getElementById('carousel-video-' + this.currentIndex);
-                        if(videoEl) {
-                            videoEl.play().catch(e => console.log('Autoplay prevented'));
-                            videoEl.onended = () => {
-                                this.next();
-                            };
+                        if (videoEl) {
+                            videoEl.onended = () => { this.next(); };
                         } else {
                             this.scheduleNext();
                         }
-                    });
-                } else {
-                    this.scheduleNext();
-                }
+                    }
+                });
             },
             
             scheduleNext() {
@@ -155,7 +176,6 @@
                     clearTimeout(this.autoplayInterval);
                 }
                 document.querySelectorAll('.carousel-video').forEach(v => {
-                    v.pause();
                     v.onended = null;
                 });
             },
@@ -169,9 +189,16 @@
                 this.currentIndex = (this.currentIndex - 1 < 0) ? this.maxIndex : this.currentIndex - 1;
                 this.startAutoplay();
             },
+
+            toggleMute() {
+                this.globalMuted = !this.globalMuted;
+                document.querySelectorAll('.carousel-video').forEach(v => {
+                    v.muted = this.globalMuted;
+                    if (!this.globalMuted) v.play().catch(() => {});
+                });
+            },
             
             openLightbox(index) {
-                // Determine actual slide clicked based on visible items
                 this.lightboxOpen = true;
                 document.body.style.overflow = 'hidden';
             },
@@ -199,7 +226,32 @@
                                 </template>
                                 
                                 <template x-if="slide.type === 'video'">
-                                    <video :id="'carousel-video-' + index" :src="slide.src" class="carousel-video w-full h-full object-cover" muted playsinline></video>
+                                    <div class="relative w-full h-full">
+                                        <video :id="'carousel-video-' + index"
+                                               :src="slide.src"
+                                               class="carousel-video w-full h-full object-cover"
+                                               muted
+                                               playsinline
+                                               loop
+                                               autoplay>
+                                        </video>
+                                        <button @click.stop="toggleMute()"
+                                                class="absolute bottom-3 right-3 z-20 bg-black/60 hover:bg-black/90 text-white rounded-full p-2 transition-all"
+                                                :title="globalMuted ? 'Activar sonido' : 'Silenciar'">
+                                            <svg x-show="globalMuted" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                      d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                      d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"/>
+                                            </svg>
+                                            <svg x-show="!globalMuted" style="display:none" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                      d="M15.536 8.464a5 5 0 010 7.072M12 6v12m0 0l-4-4H4V10h4l4-4z"/>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                      d="M18.364 5.636a9 9 0 010 12.728"/>
+                                            </svg>
+                                        </button>
+                                    </div>
                                 </template>
                                 
                                 <template x-if="slide.description">
