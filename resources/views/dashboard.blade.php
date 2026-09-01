@@ -132,23 +132,20 @@
                     
                     <h4 class="text-lg font-semibold mb-4 border-b border-gray-800 pb-2 text-white">Tus Partituras Disponibles</h4>
                     
-                    @if($sheetMusics->count() > 0)
+                    @if($availableParts->count() > 0)
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            @foreach($sheetMusics as $sheet)
+                            @foreach($availableParts as $part)
                                 <div class="bg-gray-950 border border-gray-800 rounded-lg p-5 shadow-sm hover:border-gray-700 transition-colors">
-                                    <h5 class="font-bold text-lg text-amber-500">{{ $sheet->title }}</h5>
-                                    <p class="text-sm text-gray-400 mb-6">{{ $sheet->composer ?? 'Compositor desconocido' }}</p>
+                                    <h5 class="font-bold text-lg text-amber-500">{{ $part->title }}</h5>
+                                    <p class="text-sm text-gray-400 mb-2">{{ $part->composer ?? 'Compositor desconocido' }}</p>
+                                    <p class="text-xs text-gray-500 mb-6 font-mono">Tipo: {{ $part->tipo_partitura }}</p>
                                     
-                                    @if($sheet->pdf_file_path)
-                                        <a href="{{ route('musician.sheet-music.download', $sheet) }}" class="inline-flex items-center rounded-md bg-amber-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-amber-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-600 transition-colors">
-                                            <svg class="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
-                                            </svg>
-                                            Descargar PDF
-                                        </a>
-                                    @else
-                                        <span class="text-sm text-red-400">PDF no disponible</span>
-                                    @endif
+                                    <a href="{{ route('musician.sheet-music.download', $part->id) }}" class="inline-flex items-center rounded-md bg-amber-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-amber-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-600 transition-colors">
+                                        <svg class="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                                        </svg>
+                                        Descargar Archivo
+                                    </a>
                                 </div>
                             @endforeach
                         </div>

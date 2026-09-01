@@ -14,11 +14,36 @@ class MusicianController extends Controller
         $user = Auth::user();
         $user->load('instruments');
         
-        $instrumentIds = $user->instruments->pluck('id')->toArray();
-        $sheetMusics = \App\Models\SheetMusic::where('is_active', true)
-            ->whereHas('instruments', function($q) use ($instrumentIds) {
-                $q->whereIn('instrument_catalog_id', $instrumentIds);
-            })->orderBy('title')->get();
+        // Find which (instrument, tipo) the user has
+        $userInstrumentParts = [];
+        foreach ($user->instruments as $inst) {
+            if ($inst->pivot->is_active) {
+                $userInstrumentParts[] = [
+                    'id' => $inst->id,
+                    'tipo' => $inst->pivot->tipo_partitura ?: 'TODOS'
+                ];
+            }
+        }
+
+        // Get the specific parts the user can download
+        $availableParts = collect();
+        if (!empty($userInstrumentParts)) {
+            $query = \App\Models\SheetMusicInstrument::query()
+                ->join('sheet_music', 'sheet_music_instruments.sheet_music_id', '=', 'sheet_music.id')
+                ->where('sheet_music.is_active', true)
+                ->select('sheet_music_instruments.*', 'sheet_music.title', 'sheet_music.composer');
+            
+            $query->where(function($q) use ($userInstrumentParts) {
+                foreach ($userInstrumentParts as $uip) {
+                    $q->orWhere(function($subQ) use ($uip) {
+                        $subQ->where('instrument_catalog_id', $uip['id'])
+                             ->whereIn('tipo_partitura', [$uip['tipo'], 'TODOS']);
+                    });
+                }
+            });
+            
+            $availableParts = $query->orderBy('sheet_music.title')->get();
+        }
 
         $missedAttendances = \App\Models\Attendance::with('event')
             ->where('user_id', $user->id)
@@ -35,23 +60,34 @@ class MusicianController extends Controller
                 ->first();
         }
 
-        return view('dashboard', compact('user', 'sheetMusics', 'missedAttendances', 'currentFiscalYear'));
+        return view('dashboard', compact('user', 'availableParts', 'missedAttendances', 'currentFiscalYear'));
     }
 
-    // Método para descargar la partitura desde el panel del músico
-    public function download(SheetMusic $sheetMusic)
+    public function download(\App\Models\SheetMusicInstrument $sheetMusicInstrument)
     {
         $user = Auth::user();
-        $instrumentIds = $user->instruments->pluck('id');
+        
+        $hasAccess = false;
+        foreach ($user->instruments as $inst) {
+            if ($inst->pivot->is_active && $inst->id == $sheetMusicInstrument->instrument_catalog_id) {
+                $userTipo = $inst->pivot->tipo_partitura ?: 'TODOS';
+                if (in_array($sheetMusicInstrument->tipo_partitura, [$userTipo, 'TODOS'])) {
+                    $hasAccess = true;
+                    break;
+                }
+            }
+        }
 
-        // Verificar si el músico tiene permiso para descargar esta partitura
-        $hasAccess = $sheetMusic->instruments()->whereIn('instrument_catalog_id', $instrumentIds)->exists();
-
-        if (!$hasAccess || !$sheetMusic->pdf_file_path || !Storage::disk('local')->exists($sheetMusic->pdf_file_path)) {
+        if (!$hasAccess || !$sheetMusicInstrument->pdf_file_path || !Storage::disk('local')->exists($sheetMusicInstrument->pdf_file_path)) {
             abort(403, 'No tienes acceso a esta partitura o el archivo no existe.');
         }
 
-        return Storage::disk('local')->download($sheetMusic->pdf_file_path, $sheetMusic->title . '.pdf');
+        $sheetMusic = \App\Models\SheetMusic::find($sheetMusicInstrument->sheet_music_id);
+        $instrument = \App\Models\InstrumentCatalog::find($sheetMusicInstrument->instrument_catalog_id);
+        $extension = pathinfo($sheetMusicInstrument->pdf_file_path, PATHINFO_EXTENSION);
+        $filename = $sheetMusic->title . '_' . $instrument->name . '_' . $sheetMusicInstrument->tipo_partitura . '.' . $extension;
+
+        return Storage::disk('local')->download($sheetMusicInstrument->pdf_file_path, $filename);
     }
 
     public function planning()

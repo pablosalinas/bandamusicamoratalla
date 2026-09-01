@@ -87,18 +87,49 @@
                     </div>
 
                     <div class="sm:col-span-6 border-t border-gray-800 pt-6 mt-2">
-                        <label class="block text-base font-semibold leading-6 text-white mb-4">Instrumentación de la Obra</label>
-                        <p class="text-sm text-gray-400 mb-4">Marca los instrumentos que participan en esta obra. Los músicos que toquen estos instrumentos podrán ver la obra en su área privada.</p>
+                        <label class="block text-xl font-semibold leading-6 text-white mb-4">Archivos por Instrumento y Tipo</label>
+                        <p class="text-sm text-gray-400 mb-6">Selecciona el instrumento y asigna el archivo PDF o Imagen correspondiente a cada tipo. Si subes imágenes, se les aplicará automáticamente una marca de agua.</p>
                         
-                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                            @php $assignedInstruments = $sheetMusic->instruments->pluck('id')->toArray(); @endphp
+                        <div class="space-y-6">
                             @foreach($instruments as $instrument)
-                                <div class="relative flex items-start">
-                                    <div class="flex h-6 items-center">
-                                        <input id="instrument_{{ $instrument->id }}" name="instruments[]" type="checkbox" value="{{ $instrument->id }}" {{ in_array($instrument->id, old('instruments', $assignedInstruments)) ? 'checked' : '' }} class="h-4 w-4 rounded border-gray-700 bg-gray-900 text-blue-600 focus:ring-blue-600 focus:ring-offset-gray-900">
+                                <div class="bg-gray-800/50 rounded-lg p-4 border border-gray-700" x-data="{ expanded: false }">
+                                    <div class="flex items-center justify-between cursor-pointer" @click="expanded = !expanded">
+                                        <h4 class="text-lg font-medium text-gray-200">{{ $instrument->name }}</h4>
+                                        <svg class="h-5 w-5 text-gray-400 transform transition-transform" :class="expanded ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                        </svg>
                                     </div>
-                                    <div class="ml-3 text-sm leading-6">
-                                        <label for="instrument_{{ $instrument->id }}" class="font-medium text-gray-300">{{ $instrument->name }}</label>
+                                    
+                                    <div x-show="expanded" x-transition class="mt-4 border-t border-gray-700 pt-4 grid grid-cols-1 md:grid-cols-2 gap-4" style="display: none;">
+                                        @foreach(['1º', '2º', '3º', 'PRINCIPAL', 'TODOS'] as $tipo)
+                                            @php
+                                                $pivot = $filesIndexed[$instrument->id][$tipo] ?? null;
+                                            @endphp
+                                            <div class="bg-gray-900 p-3 rounded border border-gray-700">
+                                                <div class="flex items-center justify-between mb-2">
+                                                    <span class="text-sm font-semibold text-gray-300">Tipo: <span class="text-amber-500">{{ $tipo }}</span></span>
+                                                    @if($pivot)
+                                                        <a href="{{ route('sheet-music.download-part', $pivot->id) }}" target="_blank" class="text-xs text-blue-400 hover:text-blue-300 flex items-center">
+                                                            <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                                            Ver archivo
+                                                        </a>
+                                                    @else
+                                                        <span class="text-xs text-gray-500">Sin archivo</span>
+                                                    @endif
+                                                </div>
+                                                
+                                                <div class="mt-2">
+                                                    <input type="file" name="files[{{ $instrument->id }}][{{ $tipo }}]" accept=".pdf,.jpg,.jpeg,.png,.bmp,.webp" class="block w-full text-xs text-gray-400 file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-gray-700 file:text-white hover:file:bg-gray-600">
+                                                </div>
+                                                
+                                                @if($pivot)
+                                                    <div class="mt-3 flex items-center">
+                                                        <input id="delete_{{ $instrument->id }}_{{ $tipo }}" name="delete_files[{{ $instrument->id }}][{{ $tipo }}]" type="checkbox" value="1" class="h-4 w-4 rounded border-gray-700 bg-gray-900 text-red-600 focus:ring-red-600">
+                                                        <label for="delete_{{ $instrument->id }}_{{ $tipo }}" class="ml-2 block text-xs font-medium text-red-400">Eliminar archivo actual</label>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        @endforeach
                                     </div>
                                 </div>
                             @endforeach

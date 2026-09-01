@@ -110,6 +110,7 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
         'sheet-music' => 'sheetMusic'
     ]);
     Route::get('sheet-music/{sheetMusic}/download', [\App\Http\Controllers\Admin\SheetMusicController::class, 'download'])->name('sheet-music.download');
+    Route::get('sheet-music-parts/{sheetMusicInstrument}/download', [\App\Http\Controllers\Admin\SheetMusicController::class, 'downloadPart'])->name('sheet-music.download-part');
     
     // Instrument Catalog
     Route::resource('instruments', \App\Http\Controllers\Admin\InstrumentController::class)->except(['show']);
