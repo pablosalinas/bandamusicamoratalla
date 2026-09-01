@@ -12,21 +12,44 @@
             margin: 0;
             padding: 30px;
         }
+        /* Línea superior con nombre de banda + fecha de impresión */
+        .top-bar {
+            border-top: 3px solid #D97706;
+            border-bottom: 1px solid #D97706;
+            padding: 6px 4px;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: #555;
+        }
+        .top-bar .band-name {
+            font-weight: bold;
+            color: #D97706;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .top-bar .print-date {
+            font-style: italic;
+        }
         .header {
             text-align: center;
-            border-bottom: 2px solid #D97706; /* amber-600 */
+            border-bottom: 2px solid #D97706;
             padding-bottom: 20px;
             margin-bottom: 30px;
         }
         h1 {
             color: #D97706;
             margin: 0 0 10px 0;
-            font-size: 24px;
+            font-size: 26px;
         }
         .date {
             font-style: italic;
             color: #666;
             font-size: 14px;
+            margin-top: 4px;
         }
         .content {
             margin-bottom: 50px;
@@ -79,6 +102,7 @@
 </head>
 <body>
     @php
+        // Logo para marca de agua
         $rawLogos = json_decode(\App\Models\SiteSetting::getSetting('site_logos', '[]'), true) ?: [];
         $logos = [];
         foreach ($rawLogos as $logo) {
@@ -87,26 +111,54 @@
         }
         usort($logos, function($a, $b) { return ($a['order'] ?? 999) <=> ($b['order'] ?? 999); });
         $logos = array_column($logos, 'path');
-
         $primaryLogo = count($logos) > 0 ? $logos[0] : 'images/logo.jpg';
         $logoSrc = str_starts_with($primaryLogo, 'images/') ? asset($primaryLogo) : asset('storage/' . $primaryLogo);
+
+        // Nombre de la banda
+        $bandName = \App\Models\SiteSetting::getSetting('band_name', 'Banda de Música');
+
+        // Meses en español
+        $meses = [
+            1 => 'enero', 2 => 'febrero', 3 => 'marzo', 4 => 'abril',
+            5 => 'mayo', 6 => 'junio', 7 => 'julio', 8 => 'agosto',
+            9 => 'septiembre', 10 => 'octubre', 11 => 'noviembre', 12 => 'diciembre'
+        ];
+
+        // Fecha de la junta en español
+        $dateObj = $minute->date instanceof \Carbon\Carbon ? $minute->date : \Carbon\Carbon::parse($minute->date);
+        $fechaJuntaEsp = $dateObj->day . ' de ' . $meses[(int)$dateObj->format('n')] . ' de ' . $dateObj->year;
+
+        // Fecha de impresión en español
+        $hoy = now();
+        $fechaImpresionEsp = $hoy->day . ' de ' . $meses[(int)$hoy->format('n')] . ' de ' . $hoy->year;
     @endphp
 
+    {{-- Marca de agua --}}
     <img src="{{ $logoSrc }}" class="watermark">
 
+    {{-- Botón de impresión (no aparece en el PDF) --}}
     <div class="no-print">
         <button onclick="window.print()" class="btn-print">Imprimir / Guardar PDF</button>
     </div>
 
-    <div class="header">
-        <h1>{{ $minute->title }}</h1>
-        <div class="date">Fecha de la junta: {{ $minute->date->format('d de F de Y') }}</div>
+    {{-- Línea superior con nombre de banda y fecha de impresión --}}
+    <div class="top-bar">
+        <span class="band-name">{{ $bandName }}</span>
+        <span class="print-date">Impreso el {{ $fechaImpresionEsp }}</span>
     </div>
 
+    {{-- Cabecera con título y fecha de junta --}}
+    <div class="header">
+        <h1>{{ $minute->title }}</h1>
+        <div class="date">Fecha de la junta: {{ $fechaJuntaEsp }}</div>
+    </div>
+
+    {{-- Contenido del acta --}}
     <div class="content">
         {!! $minute->content !!}
     </div>
 
+    {{-- Espacio para firmas --}}
     <div class="signatures">
         <div class="signature-box" style="float: left;">
             <div class="signature-line">
