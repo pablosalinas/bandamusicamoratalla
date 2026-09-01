@@ -69,42 +69,20 @@
         </form>
     </div>
 
-    <!-- CKEditor 5 CDN -->
-    <style>
-        .ck-editor__editable_inline {
-            min-height: 400px;
-            background-color: #111827 !important;
-            color: #f3f4f6 !important;
-            border-bottom-left-radius: 0.375rem !important;
-            border-bottom-right-radius: 0.375rem !important;
-        }
-        .ck.ck-toolbar {
-            background-color: #1f2937 !important;
-            border: 1px solid #374151 !important;
-            border-top-left-radius: 0.375rem !important;
-            border-top-right-radius: 0.375rem !important;
-        }
-        .ck.ck-editor__main>.ck-editor__editable {
-            border: 1px solid #374151 !important;
-            border-top: none !important;
-        }
-        .ck.ck-button {
-            color: #d1d5db !important;
-        }
-        .ck.ck-button:hover, .ck.ck-button.ck-on {
-            background-color: #374151 !important;
-            color: #fff !important;
-        }
-    </style>
-    <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
-    <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/translations/es.js"></script>
+    <!-- CKEditor 4 Full (fuente HTML + enlaces en nueva pestaña) -->
+    <script src="https://cdn.ckeditor.com/4.22.1/full/ckeditor.js"></script>
     <script>
-        ClassicEditor
-            .create( document.querySelector( '#content' ), {
-                language: 'es'
-            } )
-            .catch( error => {
-                console.error( error );
-            } );
+        CKEDITOR.on('dialogDefinition', function(ev) {
+            if (ev.data.name === 'link') {
+                var targetTab = ev.data.definition.getContents('target');
+                if (targetTab) targetTab.get('linkTargetType')['default'] = '_blank';
+            }
+        });
+        CKEDITOR.replace('content', {
+            language: 'es',
+            height: 450,
+            allowedContent: true,
+            extraPlugins: 'sourcedialog'
+        });
     </script>
 </x-admin-layout>
