@@ -28,6 +28,7 @@ class EventController extends Controller
             'name' => 'required|string|max:255',
             'event_date' => 'required|date',
             'type' => 'required|string|max:255',
+            'description' => 'nullable|string',
             'is_active' => 'nullable|boolean',
         ]);
 
@@ -54,6 +55,7 @@ class EventController extends Controller
             'name' => 'required|string|max:255',
             'event_date' => 'required|date',
             'type' => 'required|string|max:255',
+            'description' => 'nullable|string',
             'is_active' => 'nullable|boolean',
         ]);
 

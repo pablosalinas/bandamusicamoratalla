@@ -50,7 +50,15 @@
                         @error('type') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
                     </div>
 
-                    <div class="flex items-center">
+                    <div class="sm:col-span-6">
+                        <label for="description" class="block text-sm font-medium leading-6 text-white">Descripción / Contenido (Opcional)</label>
+                        <div class="mt-2">
+                            <textarea id="description" name="description" rows="6" class="block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6">{{ old('description') }}</textarea>
+                        </div>
+                        @error('description') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div class="flex items-center sm:col-span-6">
                         <input id="is_active" name="is_active" type="checkbox" value="1" {{ old('is_active', true) ? 'checked' : '' }} class="h-4 w-4 rounded border-gray-700 bg-gray-900 text-amber-600 focus:ring-amber-600 focus:ring-offset-gray-900">
                         <label for="is_active" class="ml-3 block text-sm font-medium leading-6 text-white">Evento Activo (Mostrar en Planning)</label>
                     </div>
@@ -66,4 +74,43 @@
             </div>
         </form>
     </div>
+
+    <!-- CKEditor 5 CDN -->
+    <style>
+        .ck-editor__editable_inline {
+            min-height: 250px;
+            background-color: #111827 !important;
+            color: #f3f4f6 !important;
+            border-bottom-left-radius: 0.375rem !important;
+            border-bottom-right-radius: 0.375rem !important;
+        }
+        .ck.ck-toolbar {
+            background-color: #1f2937 !important;
+            border: 1px solid #374151 !important;
+            border-top-left-radius: 0.375rem !important;
+            border-top-right-radius: 0.375rem !important;
+        }
+        .ck.ck-editor__main>.ck-editor__editable {
+            border: 1px solid #374151 !important;
+            border-top: none !important;
+        }
+        .ck.ck-button {
+            color: #d1d5db !important;
+        }
+        .ck.ck-button:hover, .ck.ck-button.ck-on {
+            background-color: #374151 !important;
+            color: #fff !important;
+        }
+    </style>
+    <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
+    <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/translations/es.js"></script>
+    <script>
+        ClassicEditor
+            .create( document.querySelector( '#description' ), {
+                language: 'es'
+            } )
+            .catch( error => {
+                console.error( error );
+            } );
+    </script>
 </x-admin-layout>

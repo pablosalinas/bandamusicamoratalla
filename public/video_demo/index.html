@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vídeo y Recorrido - Panel de Administración Banda de Música Moratalla</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.bunny.net">
+    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700,800&display=swap" rel="stylesheet" />
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-950 text-gray-100 min-h-screen">
+    <div class="max-w-6xl mx-auto px-4 py-8">
+        <!-- Header -->
+        <header class="text-center mb-10">
+            <span
+                class="px-3 py-1 bg-amber-500/20 text-amber-400 border border-amber-500/30 rounded-full text-xs font-semibold uppercase tracking-wider">Demostración
+                y Recorrido Oficial</span>
+            <h1
+                class="text-4xl font-extrabold mt-3 bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-600 bg-clip-text text-transparent">
+                Panel de Administración - Banda de Música Moratalla
+            </h1>
+            <p class="text-gray-400 mt-2 text-sm max-w-2xl mx-auto">
+                Vídeos interactivos y guía explicativa sección por sección del funcionamiento de la zona privada de
+                administración.
+            </p>
+        </header>
+
+        <!-- Video Player Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+            <!-- Video 1 -->
+            <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6 shadow-2xl">
+                <div class="flex items-center gap-3 mb-4">
+                    <span
+                        class="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500/20 text-amber-400 font-bold">1</span>
+                    <div>
+                        <h2 class="text-lg font-bold text-white">Parte 1: Recorrido Principal</h2>
+                        <p class="text-xs text-gray-400">Dashboard, Usuarios, Partituras, Instrumentos, Inventario,
+                            Junta y Contabilidad</p>
+                    </div>
+                </div>
+                <div
+                    class="rounded-xl overflow-hidden border border-gray-800 bg-black aspect-video flex items-center justify-center">
+                    <img src="admin_walkthrough_1788267092008.webp" alt="Recorrido Parte 1"
+                        class="w-full h-full object-contain" />
+                </div>
+                <div class="mt-4 flex justify-between items-center text-xs text-gray-400">
+                    <span>Formato: WebP Animado</span>
+                    <a href="admin_walkthrough_1788267092008.webp" target="_blank"
+                        class="text-amber-400 hover:underline">Abrir en pestaña completa &rarr;</a>
+                </div>
+            </div>
+
+            <!-- Video 2 -->
+            <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6 shadow-2xl">
+                <div class="flex items-center gap-3 mb-4">
+                    <span
+                        class="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500/20 text-blue-400 font-bold">2</span>
+                    <div>
+                        <h2 class="text-lg font-bold text-white">Parte 2: Módulos de Gestión</h2>
+                        <p class="text-xs text-gray-400">Noticias, Eventos/Planning, Configuración Web, Estadísticas,
+                            Logs y Manual</p>
+                    </div>
+                </div>
+                <div
+                    class="rounded-xl overflow-hidden border border-gray-800 bg-black aspect-video flex items-center justify-center">
+                    <img src="admin_walkthrough_part2_1788267847649.webp" alt="Recorrido Parte 2"
+                        class="w-full h-full object-contain" />
+                </div>
+                <div class="mt-4 flex justify-between items-center text-xs text-gray-400">
+                    <span>Formato: WebP Animado</span>
+                    <a href="admin_walkthrough_part2_1788267847649.webp" target="_blank"
+                        class="text-blue-400 hover:underline">Abrir en pestaña completa &rarr;</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Secciones Detalladas con Capturas -->
+        <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+            <svg class="h-6 w-6 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
+            Detalle Sección por Sección
+        </h2>
+
+        <div class="space-y-8">
+            <!-- Section 1 -->
+            <div class="bg-gray-900/60 border border-gray-800 rounded-xl p-6">
+                <h3 class="text-xl font-bold text-amber-400 mb-2">1. Dashboard Principal (/admin)</h3>
+                <p class="text-gray-300 text-sm mb-4">Centro de control con métricas en tiempo real de usuarios,
+                    partituras registradas, miembros de junta y noticias publicadas.</p>
+                <img src="admin_dashboard_1788267172896.png" alt="Dashboard"
+                    class="rounded-lg border border-gray-800 w-full" />
+            </div>
+
+            <!-- Section 2 -->
+            <div class="bg-gray-900/60 border border-gray-800 rounded-xl p-6">
+                <h3 class="text-xl font-bold text-amber-400 mb-2">2. Músicos y Usuarios (/admin/users)</h3>
+                <p class="text-gray-300 text-sm mb-4">Gestión completa de componentes de la banda, asignación de roles
+                    (Administrador, Tesorero, Director, Músico), NIF, teléfono y estado activo.</p>
+                <img src="admin_users_1788267190051.png" alt="Usuarios"
+                    class="rounded-lg border border-gray-800 w-full" />
+            </div>
+
+            <!-- Section 3 -->
+            <div class="bg-gray-900/60 border border-gray-800 rounded-xl p-6">
+                <h3 class="text-xl font-bold text-amber-400 mb-2">3. Catálogo de Partituras (/admin/sheet-music)</h3>
+                <p class="text-gray-300 text-sm mb-4">Archivo digital con búsqueda por compositor/género, subida de
+                    guiones completos y subida instantánea de particellas por instrumento.</p>
+                <img src="admin_sheet_music_1788267200141.png" alt="Partituras"
+                    class="rounded-lg border border-gray-800 w-full" />
+            </div>
+
+            <!-- Section 4 -->
+            <div class="bg-gray-900/60 border border-gray-800 rounded-xl p-6">
+                <h3 class="text-xl font-bold text-amber-400 mb-2">4. Catálogo de Instrumentos (/admin/instruments)</h3>
+                <p class="text-gray-300 text-sm mb-4">Registro patrimonial del instrumental de la banda con marca,
+                    modelo, número de serie y asignación en préstamo a cada músico.</p>
+                <img src="admin_instruments_1788267225418.png" alt="Instrumentos"
+                    class="rounded-lg border border-gray-800 w-full" />
+            </div>
+
+            <!-- Section 5 -->
+            <div class="bg-gray-900/60 border border-gray-800 rounded-xl p-6">
+                <h3 class="text-xl font-bold text-amber-400 mb-2">5. Contabilidad y Ejercicios Fiscales
+                    (/admin/fiscal-years)</h3>
+                <p class="text-gray-300 text-sm mb-4">Gestión económica para tesorería, registro de ingresos/gastos,
+                    balance en tiempo real y exportación de liquidación de cuentas.</p>
+                <img src="accounting_recalculated_1788267832487.png" alt="Contabilidad"
+                    class="rounded-lg border border-gray-800 w-full" />
+            </div>
+
+            <!-- Section 6 -->
+            <div class="bg-gray-900/60 border border-gray-800 rounded-xl p-6">
+                <h3 class="text-xl font-bold text-amber-400 mb-2">6. Eventos y Control de Asistencia (/admin/events)
+                </h3>
+                <p class="text-gray-300 text-sm mb-4">Calendario de ensayos, conciertos y procesiones, con pase de lista
+                    y control de asistencia de músicos.</p>
+                <img src="admin_events_1788267858510.png" alt="Eventos"
+                    class="rounded-lg border border-gray-800 w-full" />
+            </div>
+
+            <!-- Section 7 -->
+            <div class="bg-gray-900/60 border border-gray-800 rounded-xl p-6">
+                <h3 class="text-xl font-bold text-amber-400 mb-2">7. Configuración Web y Patrocinadores
+                    (/admin/settings)</h3>
+                <p class="text-gray-300 text-sm mb-4">Gestión de portada, carrusel de diapositivas, textos históricos y
+                    logotipos de colaboradores.</p>
+                <img src="admin_settings_1788267862091.png" alt="Configuración"
+                    class="rounded-lg border border-gray-800 w-full" />
+            </div>
+
+            <!-- Section 8 -->
+            <div class="bg-gray-900/60 border border-gray-800 rounded-xl p-6">
+                <h3 class="text-xl font-bold text-amber-400 mb-2">8. Estadísticas Web (/admin/analytics)</h3>
+                <p class="text-gray-300 text-sm mb-4">Métricas de visitas, histórico de accesos y páginas más visitadas.
+                </p>
+                <img src="admin_analytics_1788267865465.png" alt="Estadísticas"
+                    class="rounded-lg border border-gray-800 w-full" />
+            </div>
+
+            <!-- Section 9 -->
+            <div class="bg-gray-900/60 border border-gray-800 rounded-xl p-6">
+                <h3 class="text-xl font-bold text-amber-400 mb-2">9. Manual de Administrador (/admin/manual)</h3>
+                <p class="text-gray-300 text-sm mb-4">Documentación interna integrada para formación y consulta rápida
+                    de la directiva.</p>
+                <img src="admin_manual_1788267874385.png" alt="Manual"
+                    class="rounded-lg border border-gray-800 w-full" />
+            </div>
+        </div>
+
+        <footer class="mt-12 text-center text-gray-500 text-xs border-t border-gray-900 pt-6">
+            Banda de Música de Moratalla &bull; Entorno de Demostración Local
+        </footer>
+    </div>
+</body>
+
+</html>
