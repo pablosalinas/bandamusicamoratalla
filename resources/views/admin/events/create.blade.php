@@ -87,8 +87,7 @@
         CKEDITOR.replace('description', {
             language: 'es',
             height: 300,
-            allowedContent: true,
-            extraPlugins: 'sourcedialog'
+            allowedContent: true
         });
     </script>
 </x-admin-layout>

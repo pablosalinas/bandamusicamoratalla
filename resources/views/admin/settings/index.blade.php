@@ -218,14 +218,12 @@
         CKEDITOR.replace('statutes', {
             language: 'es',
             height: 350,
-            allowedContent: true,
-            extraPlugins: 'sourcedialog'
+            allowedContent: true
         });
         CKEDITOR.replace('band_history', {
             language: 'es',
             height: 350,
-            allowedContent: true,
-            extraPlugins: 'sourcedialog'
+            allowedContent: true
         });
     </script>
 </x-admin-layout>
