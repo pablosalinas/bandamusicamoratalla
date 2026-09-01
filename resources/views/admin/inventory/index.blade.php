@@ -1,11 +1,63 @@
 <x-admin-layout>
     <x-slot name="header">
-        <h2 class="text-3xl font-bold leading-tight tracking-tight text-white">Inventario de Instrumentos Asignados</h2>
+        <div class="flex justify-between items-center w-full">
+            <h2 class="text-3xl font-bold leading-tight tracking-tight text-white">Inventario de Instrumentos Asignados</h2>
+            <button onclick="window.print()" class="no-print bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 px-4 rounded shadow flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                Imprimir
+            </button>
+        </div>
     </x-slot>
 
-    <div class="mt-8 bg-gray-900 overflow-hidden shadow-sm ring-1 ring-gray-800 sm:rounded-xl">
-        <div class="p-6">
-            <form method="GET" action="{{ route('admin.inventory.index') }}" class="mb-6 bg-gray-950 p-4 rounded-lg border border-gray-800 grid grid-cols-1 sm:grid-cols-4 gap-4 items-end">
+    @push('styles')
+    <style>
+        .watermark {
+            display: none;
+        }
+        @media print {
+            body { background: white; color: black; }
+            .no-print { display: none !important; }
+            .bg-gray-900, .bg-gray-950, .bg-gray-800 { background: white !important; color: black !important; border: 1px solid #e5e7eb; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .text-white, .text-gray-400, .text-gray-300 { color: black !important; }
+            table { width: 100%; border-collapse: collapse; }
+            th, td { border: 1px solid #e5e7eb; padding: 0.5rem; }
+            th { background-color: #f3f4f6 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .watermark {
+                display: block;
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: 30%;
+                opacity: 0.15;
+                z-index: -1;
+                pointer-events: none;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+    </style>
+    @endpush
+
+    @php
+        $rawLogos = json_decode(\App\Models\SiteSetting::getSetting('site_logos', '[]'), true) ?: [];
+        $logos = [];
+        foreach ($rawLogos as $logo) {
+            if (is_string($logo)) $logos[] = ['path' => $logo, 'order' => 999];
+            else if (is_array($logo)) $logos[] = $logo;
+        }
+        usort($logos, function($a, $b) { return ($a['order'] ?? 999) <=> ($b['order'] ?? 999); });
+        $logos = array_column($logos, 'path');
+
+        $primaryLogo = count($logos) > 0 ? $logos[0] : 'images/logo.jpg';
+        $logoSrc = str_starts_with($primaryLogo, 'images/') ? asset($primaryLogo) : asset('storage/' . $primaryLogo);
+    @endphp
+
+    <img src="{{ $logoSrc }}" class="watermark" alt="Watermark">
+
+    <div class="mt-8 bg-gray-900 overflow-hidden shadow-sm ring-1 ring-gray-800 sm:rounded-xl print:shadow-none print:ring-0">
+        <div class="p-6 print:p-0">
+            <form method="GET" action="{{ route('admin.inventory.index') }}" class="no-print mb-6 bg-gray-950 p-4 rounded-lg border border-gray-800 grid grid-cols-1 sm:grid-cols-4 gap-4 items-end">
                 <div>
                     <label class="block text-sm font-medium text-gray-400">Filtrar por Músico</label>
                     <select name="musician_id" class="mt-1 block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm">

@@ -50,9 +50,46 @@
             margin-top: 60px;
             padding-top: 10px;
         }
+        .watermark {
+            position: fixed;
+            top: 35%;
+            left: 35%;
+            width: 30%;
+            opacity: 0.15;
+            z-index: -1000;
+        }
     </style>
 </head>
 <body>
+    @php
+        $rawLogos = json_decode(\App\Models\SiteSetting::getSetting('site_logos', '[]'), true) ?: [];
+        $logos = [];
+        foreach ($rawLogos as $logo) {
+            if (is_string($logo)) $logos[] = ['path' => $logo, 'order' => 999];
+            else if (is_array($logo)) $logos[] = $logo;
+        }
+        usort($logos, function($a, $b) { return ($a['order'] ?? 999) <=> ($b['order'] ?? 999); });
+        $logos = array_column($logos, 'path');
+
+        $primaryLogo = count($logos) > 0 ? $logos[0] : 'images/logo.jpg';
+        
+        // DomPDF needs absolute local path or base64. Base64 is safest.
+        $logoPath = str_starts_with($primaryLogo, 'images/') 
+            ? public_path($primaryLogo) 
+            : storage_path('app/public/' . $primaryLogo);
+            
+        $logoBase64 = '';
+        if (file_exists($logoPath)) {
+            $type = pathinfo($logoPath, PATHINFO_EXTENSION);
+            $data = file_get_contents($logoPath);
+            $logoBase64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
+        }
+    @endphp
+
+    @if($logoBase64)
+        <img src="{{ $logoBase64 }}" class="watermark">
+    @endif
+
     <div class="header">
         <!-- Puedes incluir aquí el logo en Base64 o URL absoluta -->
         <h1>{{ $minute->title }}</h1>

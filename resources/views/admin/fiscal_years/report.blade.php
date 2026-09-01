@@ -47,9 +47,40 @@
                 print-color-adjust: exact;
             }
         }
+        .watermark {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 30%;
+            opacity: 0.15;
+            z-index: -1;
+            pointer-events: none;
+        }
+        @media print {
+            .watermark {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-900 font-sans antialiased p-8">
+    @php
+        $rawLogos = json_decode(\App\Models\SiteSetting::getSetting('site_logos', '[]'), true) ?: [];
+        $logos = [];
+        foreach ($rawLogos as $logo) {
+            if (is_string($logo)) $logos[] = ['path' => $logo, 'order' => 999];
+            else if (is_array($logo)) $logos[] = $logo;
+        }
+        usort($logos, function($a, $b) { return ($a['order'] ?? 999) <=> ($b['order'] ?? 999); });
+        $logos = array_column($logos, 'path');
+
+        $primaryLogo = count($logos) > 0 ? $logos[0] : 'images/logo.jpg';
+        $logoSrc = str_starts_with($primaryLogo, 'images/') ? asset($primaryLogo) : asset('storage/' . $primaryLogo);
+    @endphp
+
+    <img src="{{ $logoSrc }}" class="watermark" alt="Watermark">
 
     <!-- Barra de acciones (no se imprime) -->
     <div class="max-w-5xl mx-auto mb-8 flex justify-between items-center no-print">
@@ -70,18 +101,7 @@
         <div class="flex justify-between items-start mb-10 border-b-2 border-gray-800 pb-6">
             <div class="flex items-center gap-4">
                 @php
-                    $rawLogos = json_decode(\App\Models\SiteSetting::getSetting('site_logos', '[]'), true) ?: [];
-                    $logos = [];
-                    foreach ($rawLogos as $logo) {
-                        if (is_string($logo)) $logos[] = ['path' => $logo, 'order' => 999];
-                        else if (is_array($logo)) $logos[] = $logo;
-                    }
-                    usort($logos, function($a, $b) { return ($a['order'] ?? 999) <=> ($b['order'] ?? 999); });
-                    $logos = array_column($logos, 'path');
-
                     $bandName = \App\Models\SiteSetting::getSetting('band_name', 'Banda de Música de Moratalla');
-                    $primaryLogo = count($logos) > 0 ? $logos[0] : 'images/logo.jpg';
-                    $logoSrc = str_starts_with($primaryLogo, 'images/') ? asset($primaryLogo) : asset('storage/' . $primaryLogo);
                 @endphp
                 <img src="{{ $logoSrc }}" alt="Logo" class="w-24 h-24 object-contain rounded-full shadow-sm">
                 <div>

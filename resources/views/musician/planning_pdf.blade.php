@@ -28,10 +28,39 @@
             .no-print { display: none !important; }
             .print-container { padding: 1cm; }
             .page-break { page-break-before: always; }
+            .watermark {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+        .watermark {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 30%;
+            opacity: 0.15;
+            z-index: -1;
+            pointer-events: none;
         }
     </style>
 </head>
 <body class="antialiased bg-gray-50 text-gray-900" onload="window.print()">
+    @php
+        $rawLogos = json_decode(\App\Models\SiteSetting::getSetting('site_logos', '[]'), true) ?: [];
+        $logos = [];
+        foreach ($rawLogos as $logo) {
+            if (is_string($logo)) $logos[] = ['path' => $logo, 'order' => 999];
+            else if (is_array($logo)) $logos[] = $logo;
+        }
+        usort($logos, function($a, $b) { return ($a['order'] ?? 999) <=> ($b['order'] ?? 999); });
+        $logos = array_column($logos, 'path');
+
+        $primaryLogo = count($logos) > 0 ? $logos[0] : 'images/logo.jpg';
+        $logoSrc = str_starts_with($primaryLogo, 'images/') ? asset($primaryLogo) : asset('storage/' . $primaryLogo);
+    @endphp
+
+    <img src="{{ $logoSrc }}" class="watermark" alt="Watermark">
     
     <div class="max-w-4xl mx-auto p-8 print-container">
         
