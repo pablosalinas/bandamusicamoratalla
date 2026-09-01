@@ -13,7 +13,7 @@
     </x-slot>
 
     <div class="mt-8 max-w-3xl">
-        <form action="{{ route('admin.sheet-music.update', $sheetMusic) }}" method="POST" enctype="multipart/form-data" class="bg-gray-900 shadow-sm ring-1 ring-gray-800 sm:rounded-xl">
+        <form id="sheet-music-form" action="{{ route('admin.sheet-music.update', $sheetMusic) }}" method="POST" enctype="multipart/form-data" class="bg-gray-900 shadow-sm ring-1 ring-gray-800 sm:rounded-xl">
             @csrf
             @method('PUT')
             
@@ -204,5 +204,71 @@
                 isUserActive = false;
             }
         }, 15 * 60 * 1000);
+        // Control de subida asíncrona de archivos
+        document.getElementById('sheet-music-form').addEventListener('submit', async function(e) {
+            const form = this;
+            const fileInputs = Array.from(form.querySelectorAll('input[type="file"][name^="files["]')).filter(input => input.files.length > 0);
+            
+            if (fileInputs.length === 0) {
+                return; // Normal submit si no hay archivos nuevos
+            }
+            
+            e.preventDefault();
+            const btn = form.querySelector('button[type="submit"]');
+            const originalText = btn.innerHTML;
+            
+            for (let i = 0; i < fileInputs.length; i++) {
+                const input = fileInputs[i];
+                btn.innerHTML = `Subiendo archivo ${i+1} de ${fileInputs.length}... (Espera)`;
+                btn.disabled = true;
+                btn.classList.add('opacity-50', 'cursor-not-allowed');
+                
+                // Extraer instrument_id y tipo del nombre: files[1][1º]
+                const match = input.name.match(/files\[(\d+)\]\[(.*?)\]/);
+                if (!match) continue;
+                
+                const instrument_id = match[1];
+                const tipo = match[2];
+                
+                let formData = new FormData();
+                formData.append('_token', document.querySelector('meta[name="csrf-token"]').content);
+                formData.append('instrument_id', instrument_id);
+                formData.append('tipo', tipo);
+                formData.append('file', input.files[0]);
+                
+                try {
+                    const resp = await fetch('{{ route('admin.sheet-music.upload-part-ajax', $sheetMusic->id) }}', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    if (!resp.ok) {
+                        alert('Error subiendo un archivo. El servidor devolvió: ' + resp.statusText);
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                        btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                        return; // Abortar
+                    }
+                    
+                    // Quitarle el nombre al input para que no viaje con el submit normal final y sature PHP
+                    input.removeAttribute('name');
+                    
+                    // Esperar 5 segundos si no es el último, para no ahogar al servidor según lo solicitado
+                    if (i < fileInputs.length - 1) {
+                        btn.innerHTML = `Pausa de seguridad (5s)...`;
+                        await new Promise(r => setTimeout(r, 5000));
+                    }
+                } catch (err) {
+                    alert('Error de conexión al subir archivos.');
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    return;
+                }
+            }
+            
+            btn.innerHTML = 'Guardando datos finales...';
+            form.submit();
+        });
     </script>
 </x-admin-layout>

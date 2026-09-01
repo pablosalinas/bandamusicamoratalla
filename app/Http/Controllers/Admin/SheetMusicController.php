@@ -161,6 +161,63 @@ class SheetMusicController extends Controller
         return redirect()->route('admin.sheet-music.edit', $sheetMusic)->with('success', 'Partitura y archivos actualizados correctamente.');
     }
 
+    public function uploadPartAjax(Request $request, SheetMusic $sheetMusic)
+    {
+        $request->validate([
+            'instrument_id' => 'required|exists:instrument_catalogs,id',
+            'tipo' => 'required|string',
+            'file' => 'required|file|max:20480'
+        ]);
+
+        $instrumentId = $request->instrument_id;
+        $tipo = $request->tipo;
+        $file = $request->file('file');
+
+        if ($file->isValid()) {
+            $pivot = SheetMusicInstrument::where('sheet_music_id', $sheetMusic->id)
+                ->where('instrument_catalog_id', $instrumentId)
+                ->where('tipo_partitura', $tipo)
+                ->first();
+            
+            if ($pivot && $pivot->pdf_file_path && Storage::disk('local')->exists($pivot->pdf_file_path)) {
+                Storage::disk('local')->delete($pivot->pdf_file_path);
+            }
+
+            $extension = strtolower($file->getClientOriginalExtension());
+            
+            if (in_array($extension, ['jpg', 'jpeg', 'png', 'bmp', 'webp'])) {
+                $manager = new ImageManager(new Driver());
+                $image = $manager->read($file->getPathname());
+                
+                $image->text('www.bandamusicamoratalla.com', $image->width() - 20, $image->height() - 20, function($font) use ($image) {
+                    $font->size(min($image->width() * 0.03, 30)); 
+                    $font->color('rgba(150, 150, 150, 0.5)');
+                    $font->align('right');
+                    $font->valign('bottom');
+                });
+                
+                $filename = 'sheet-music-parts/' . uniqid() . '.jpg';
+                Storage::disk('local')->put($filename, (string) $image->toJpeg(80));
+                $path = $filename;
+            } else {
+                $path = $file->store('sheet-music-parts', 'local');
+            }
+
+            if ($pivot) {
+                $pivot->update(['pdf_file_path' => $path]);
+            } else {
+                SheetMusicInstrument::create([
+                    'sheet_music_id' => $sheetMusic->id,
+                    'instrument_catalog_id' => $instrumentId,
+                    'tipo_partitura' => $tipo,
+                    'pdf_file_path' => $path
+                ]);
+            }
+        }
+
+        return response()->json(['success' => true]);
+    }
+
     public function destroy(SheetMusic $sheetMusic)
     {
         $pivots = SheetMusicInstrument::where('sheet_music_id', $sheetMusic->id)->get();
