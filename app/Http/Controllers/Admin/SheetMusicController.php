@@ -47,11 +47,21 @@ class SheetMusicController extends Controller
                 $q->where('instrument_catalogs.id', $request->instrument_id);
             });
         }
+
+        $desglose = $request->boolean('desglose');
+
+        // Cuando se pide desglose, cargamos los instrumentos con partitura subida
+        if ($desglose) {
+            $query->with(['instruments' => function($q) {
+                $q->whereNotNull('sheet_music_instruments.pdf_file_path')
+                  ->orderBy('instrument_catalogs.name');
+            }]);
+        }
         
         $sheetMusics = $query->orderBy('title')->get();
         $instrument = $request->filled('instrument_id') ? InstrumentCatalog::find($request->instrument_id) : null;
 
-        return view('admin.sheet-music.pdf', compact('sheetMusics', 'instrument'));
+        return view('admin.sheet-music.pdf', compact('sheetMusics', 'instrument', 'desglose'));
     }
 
     public function create()

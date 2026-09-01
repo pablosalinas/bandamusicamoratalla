@@ -17,6 +17,6 @@ class SheetMusic extends Model
 
     public function instruments()
     {
-        return $this->belongsToMany(InstrumentCatalog::class, 'sheet_music_instruments', 'sheet_music_id', 'instrument_catalog_id')->withPivot('pdf_file_path')->withTimestamps();
+        return $this->belongsToMany(InstrumentCatalog::class, 'sheet_music_instruments', 'sheet_music_id', 'instrument_catalog_id')->withPivot('pdf_file_path', 'tipo_partitura')->withTimestamps();
     }
 }

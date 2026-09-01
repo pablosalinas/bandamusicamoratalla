@@ -22,6 +22,25 @@
             .no-print { display: none !important; }
             body { padding: 0; }
         }
+        .instruments-list {
+            margin-top: 4px;
+            padding-top: 4px;
+            border-top: 1px dashed #ccc;
+        }
+        .instrument-badge {
+            display: inline-block;
+            background: #f3f4f6;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            padding: 1px 6px;
+            font-size: 0.72rem;
+            margin: 1px 2px;
+            white-space: nowrap;
+        }
+        .instrument-badge .tipo {
+            color: #6b7280;
+            font-style: italic;
+        }
     </style>
 </head>
 <body>
@@ -42,7 +61,16 @@
 
     <div class="mb-6 flex justify-between items-center no-print">
         <h1 class="text-2xl font-bold">Catálogo de Partituras</h1>
-        <button onclick="window.print()" class="bg-amber-600 text-white px-4 py-2 rounded">Imprimir / Guardar PDF</button>
+        <div class="flex items-center gap-4">
+            <label class="flex items-center gap-2 text-sm font-medium cursor-pointer select-none">
+                <input type="checkbox" id="toggle-desglose"
+                       {{ $desglose ? 'checked' : '' }}
+                       onchange="toggleDesglose(this)"
+                       class="h-4 w-4 rounded border-gray-400 accent-amber-600">
+                <span>Desglose por instrumento</span>
+            </label>
+            <button onclick="window.print()" class="bg-amber-600 text-white px-4 py-2 rounded">Imprimir / Guardar PDF</button>
+        </div>
     </div>
 
     <h1 class="text-2xl font-bold mb-4 hidden print:block text-center">Archivo Musical de la Banda</h1>
@@ -53,7 +81,12 @@
         {{ request('work_type') ? 'Tipo: ' . request('work_type') : '' }}
         {{ request('work_type') && isset($instrument) ? ' | ' : '' }}
         {{ isset($instrument) ? 'Instrumento: ' . $instrument->name : '' }}
+        @if($desglose)
+            {{ (request('work_type') || isset($instrument)) ? ' | ' : '' }}<strong>Desglose por instrumento activado</strong>
+        @endif
     </p>
+    @elseif($desglose)
+    <p class="text-center mb-4 italic text-gray-700"><strong>Desglose por instrumento activado</strong></p>
     @endif
 
     <table class="w-full text-left border-collapse">
@@ -69,11 +102,32 @@
         <tbody>
             @foreach($sheetMusics as $sheet)
                 <tr class="border-b">
-                    <td class="p-2 font-medium">{{ $sheet->title }}</td>
-                    <td class="p-2">{{ $sheet->composer ?? '-' }}</td>
-                    <td class="p-2">{{ $sheet->arranger ?? '-' }}</td>
-                    <td class="p-2">{{ $sheet->work_type ?? '-' }}</td>
-                    <td class="p-2">
+                    <td class="p-2 font-medium align-top">
+                        {{ $sheet->title }}
+                        @if($desglose)
+                            @php
+                                $instrumentsWithFile = $sheet->instruments->filter(fn($i) => !empty($i->pivot->pdf_file_path));
+                            @endphp
+                            @if($instrumentsWithFile->isNotEmpty())
+                                <div class="instruments-list">
+                                    @foreach($instrumentsWithFile as $instr)
+                                        <span class="instrument-badge">
+                                            {{ $instr->name }}
+                                            @if($instr->pivot->tipo_partitura)
+                                                <span class="tipo">({{ $instr->pivot->tipo_partitura }})</span>
+                                            @endif
+                                        </span>
+                                    @endforeach
+                                </div>
+                            @else
+                                <div class="instruments-list text-xs text-gray-400 italic">Sin partituras individuales subidas</div>
+                            @endif
+                        @endif
+                    </td>
+                    <td class="p-2 align-top">{{ $sheet->composer ?? '-' }}</td>
+                    <td class="p-2 align-top">{{ $sheet->arranger ?? '-' }}</td>
+                    <td class="p-2 align-top">{{ $sheet->work_type ?? '-' }}</td>
+                    <td class="p-2 align-top">
                         @if($sheet->is_active)
                             <span class="text-green-600 font-bold">Activa</span>
                         @else
@@ -86,6 +140,16 @@
     </table>
 
     <script>
+        function toggleDesglose(checkbox) {
+            const url = new URL(window.location.href);
+            if (checkbox.checked) {
+                url.searchParams.set('desglose', '1');
+            } else {
+                url.searchParams.delete('desglose');
+            }
+            window.location.href = url.toString();
+        }
+
         window.onload = function() {
             window.print();
         }

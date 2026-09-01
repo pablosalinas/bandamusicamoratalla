@@ -33,6 +33,12 @@
                         @endforeach
                     </select>
                 </div>
+                <div class="flex items-center gap-2 pb-1">
+                    <input type="checkbox" name="desglose" id="desglose" value="1"
+                           {{ request('desglose') ? 'checked' : '' }}
+                           class="h-4 w-4 rounded border-gray-600 bg-gray-900 text-amber-500 focus:ring-amber-500">
+                    <label for="desglose" class="text-sm font-medium text-white">Desglose por instrumento</label>
+                </div>
             </div>
             <div class="self-end mt-4 sm:mt-0">
                 <button type="submit" class="bg-gray-700 text-white px-4 py-2 rounded-md hover:bg-gray-600 text-sm font-semibold h-[38px]">Aplicar Filtros</button>
