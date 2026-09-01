@@ -25,11 +25,12 @@
         </a>
     </li>
 
-    @if(in_array(Auth::user()->role, ['admin', 'treasurer']) || Auth::user()->isSuperAdmin())
+    @if(in_array(Auth::user()->role, ['admin', 'treasurer', 'director']) || Auth::user()->isSuperAdmin() || Auth::user()->isCurrentBoardMember())
         <div class="pt-4 pb-1">
             <div class="text-xs font-semibold leading-6 text-gray-500 uppercase tracking-wider px-2">Administración</div>
         </div>
         
+        @if(in_array(Auth::user()->role, ['admin', 'treasurer', 'director']) || Auth::user()->isSuperAdmin())
         <li>
             <a href="{{ route('admin.dashboard') }}" class="{{ request()->routeIs('admin.dashboard') ? 'bg-gray-800 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-800' }} group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold transition-colors">
                 <svg class="h-6 w-6 shrink-0 {{ request()->routeIs('admin.dashboard') ? 'text-white' : 'text-gray-400 group-hover:text-white' }}" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
@@ -80,7 +81,7 @@
                 Inventario de la Banda
             </a>
         </li>
-        </li>
+        @endif
         @if(in_array(Auth::user()->role, ['admin', 'treasurer']) || Auth::user()->isSuperAdmin())
         <li>
             <a href="{{ route('admin.boards.index') }}" class="{{ request()->routeIs('admin.boards.*') ? 'bg-gray-800 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-800' }} group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold transition-colors">
@@ -90,6 +91,8 @@
                 Junta Directiva
             </a>
         </li>
+        @endif
+        @if(in_array(Auth::user()->role, ['admin', 'treasurer']) || Auth::user()->isSuperAdmin() || Auth::user()->isCurrentBoardMember())
         <li>
             <a href="{{ route('admin.fiscal-years.index') }}" class="{{ request()->routeIs('admin.fiscal-years.*') || request()->routeIs('admin.budget-movements.*') ? 'bg-gray-800 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-800' }} group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold transition-colors">
                 <svg class="h-6 w-6 shrink-0 {{ request()->routeIs('admin.fiscal-years.*') || request()->routeIs('admin.budget-movements.*') ? 'text-white' : 'text-gray-400 group-hover:text-white' }}" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
@@ -99,6 +102,7 @@
             </a>
         </li>
         @endif
+        @if(in_array(Auth::user()->role, ['admin', 'treasurer', 'director']) || Auth::user()->isSuperAdmin())
         <li>
             <a href="{{ route('admin.news.index') }}" class="{{ request()->routeIs('admin.news.*') ? 'bg-gray-800 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-800' }} group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
                 <svg class="h-6 w-6 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
@@ -114,6 +118,8 @@
                 </svg>
                 Eventos / Planning
             </a>
+        </li>
+        @endif
         @if(in_array(Auth::user()->role, ['admin', 'treasurer']) || Auth::user()->isSuperAdmin())
         <li>
             <a href="{{ route('admin.settings.index') }}" class="{{ request()->routeIs('admin.settings.*') ? 'bg-gray-800 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-800' }} group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
@@ -142,6 +148,7 @@
             </a>
         </li>
         @endif
+        @if(in_array(Auth::user()->role, ['admin', 'treasurer', 'director']) || Auth::user()->isSuperAdmin())
         <li>
             <a href="{{ route('admin.manual') }}" class="{{ request()->routeIs('admin.manual') ? 'bg-gray-800 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-800' }} group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
                 <svg class="h-6 w-6 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
@@ -150,6 +157,7 @@
                 Manual Administrador
             </a>
         </li>
+        @endif
     @endif
     <li class="mt-auto pb-4">
         <a href="{{ url('/') }}" class="group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold text-gray-400 hover:text-white hover:bg-gray-800">
