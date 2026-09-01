@@ -30,7 +30,7 @@
                 transform: translate(-50%, -50%);
                 width: 30%;
                 opacity: 0.15;
-                z-index: -1;
+                z-index: 9999;
                 pointer-events: none;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;

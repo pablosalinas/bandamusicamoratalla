@@ -73,21 +73,13 @@
 
         $primaryLogo = count($logos) > 0 ? $logos[0] : 'images/logo.jpg';
         
-        // DomPDF needs absolute local path or base64. Base64 is safest.
         $logoPath = str_starts_with($primaryLogo, 'images/') 
             ? public_path($primaryLogo) 
             : storage_path('app/public/' . $primaryLogo);
-            
-        $logoBase64 = '';
-        if (file_exists($logoPath)) {
-            $type = pathinfo($logoPath, PATHINFO_EXTENSION);
-            $data = file_get_contents($logoPath);
-            $logoBase64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
-        }
     @endphp
 
-    @if($logoBase64)
-        <img src="{{ $logoBase64 }}" class="watermark">
+    @if(file_exists($logoPath))
+        <img src="{{ str_replace('\\', '/', $logoPath) }}" class="watermark">
     @endif
 
     <div class="header">

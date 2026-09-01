@@ -42,7 +42,7 @@
                                 </td>
                                 <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
                                     <div class="flex flex-col gap-2">
-                                        <a href="{{ route('admin.boards.minutes.pdf', [$board, $minute]) }}" class="text-amber-500 hover:text-amber-400">📄 Generar PDF del texto</a>
+                                        <a href="{{ route('admin.boards.minutes.pdf', [$board, $minute]) }}" class="text-amber-500 hover:text-amber-400">📄 Generar PDF del acta</a>
                                         @if($minute->signed_pdf_path)
                                             <a href="{{ asset('storage/' . $minute->signed_pdf_path) }}" target="_blank" class="text-amber-500 hover:text-amber-400">✍️ Ver PDF Firmado</a>
                                         @else
