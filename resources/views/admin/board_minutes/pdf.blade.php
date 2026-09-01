@@ -18,10 +18,6 @@
             padding-bottom: 20px;
             margin-bottom: 30px;
         }
-        .logo {
-            max-width: 150px;
-            margin-bottom: 15px;
-        }
         h1 {
             color: #D97706;
             margin: 0 0 10px 0;
@@ -52,11 +48,32 @@
         }
         .watermark {
             position: fixed;
-            top: 35%;
-            left: 35%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             width: 30%;
             opacity: 0.15;
-            z-index: -1000;
+            z-index: 9999;
+            pointer-events: none;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+        .no-print {
+            text-align: right;
+            margin-bottom: 20px;
+        }
+        .btn-print {
+            background-color: #d97706;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        @media print {
+            .no-print { display: none !important; }
+            body { padding: 0; }
         }
     </style>
 </head>
@@ -72,18 +89,16 @@
         $logos = array_column($logos, 'path');
 
         $primaryLogo = count($logos) > 0 ? $logos[0] : 'images/logo.jpg';
-        
-        $logoPath = str_starts_with($primaryLogo, 'images/') 
-            ? public_path($primaryLogo) 
-            : storage_path('app/public/' . $primaryLogo);
+        $logoSrc = str_starts_with($primaryLogo, 'images/') ? asset($primaryLogo) : asset('storage/' . $primaryLogo);
     @endphp
 
-    @if(file_exists($logoPath))
-        <img src="{{ str_replace('\\', '/', $logoPath) }}" class="watermark">
-    @endif
+    <img src="{{ $logoSrc }}" class="watermark">
+
+    <div class="no-print">
+        <button onclick="window.print()" class="btn-print">Imprimir / Guardar PDF</button>
+    </div>
 
     <div class="header">
-        <!-- Puedes incluir aquí el logo en Base64 o URL absoluta -->
         <h1>{{ $minute->title }}</h1>
         <div class="date">Fecha de la junta: {{ $minute->date->format('d de F de Y') }}</div>
     </div>
@@ -105,5 +120,11 @@
         </div>
         <div style="clear: both;"></div>
     </div>
+
+    <script>
+        window.onload = function() {
+            window.print();
+        }
+    </script>
 </body>
 </html>

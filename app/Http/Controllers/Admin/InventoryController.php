@@ -57,4 +57,46 @@ class InventoryController extends Controller
 
         return view('admin.inventory.index', compact('inventory', 'musiciansList'));
     }
+
+    public function pdf(Request $request)
+    {
+        $query = User::with(['instruments' => function($q) {
+            $q->withPivot('id', 'serial_number', 'tipo_partitura', 'propiedad', 'is_active', 'instrument_brand_id', 'modelo');
+        }]);
+
+        if (!$request->has('show_all')) {
+            $query->where('is_active', true);
+        }
+        
+        if ($request->filled('musician_id')) {
+            $query->where('id', $request->musician_id);
+        }
+
+        $users = $query->get();
+        $inventory = collect();
+
+        foreach ($users as $user) {
+            foreach ($user->instruments as $instrument) {
+                if (!$request->has('show_all') && !$instrument->pivot->is_active) {
+                    continue;
+                }
+                
+                if ($request->filled('propiedad') && $instrument->pivot->propiedad !== $request->propiedad) {
+                    continue;
+                }
+
+                $brand = $instrument->pivot->instrument_brand_id ? \App\Models\InstrumentBrand::find($instrument->pivot->instrument_brand_id) : null;
+
+                $inventory->push((object)[
+                    'musician' => $user,
+                    'instrument' => $instrument,
+                    'pivot' => $instrument->pivot,
+                    'brand' => $brand,
+                    'modelo' => $instrument->pivot->modelo
+                ]);
+            }
+        }
+
+        return view('admin.inventory.pdf', compact('inventory'));
+    }
 }

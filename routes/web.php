@@ -121,6 +121,16 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     
     // Inventory
     Route::get('inventory', [\App\Http\Controllers\Admin\InventoryController::class, 'index'])->name('inventory.index');
+    Route::get('inventory/pdf', [\App\Http\Controllers\Admin\InventoryController::class, 'pdf'])->name('inventory.pdf');
+
+    // Sheet Music Catalog
+    Route::get('sheet-music/pdf', [\App\Http\Controllers\Admin\SheetMusicController::class, 'pdf'])->name('sheet-music.pdf');
+    Route::resource('sheet-music', \App\Http\Controllers\Admin\SheetMusicController::class)->parameters([
+        'sheet-music' => 'sheetMusic'
+    ]);
+    Route::get('sheet-music/{sheetMusic}/download', [\App\Http\Controllers\Admin\SheetMusicController::class, 'download'])->name('sheet-music.download');
+    Route::post('sheet-music/{sheetMusic}/upload-part-ajax', [\App\Http\Controllers\Admin\SheetMusicController::class, 'uploadPartAjax'])->name('sheet-music.upload-part-ajax');
+    Route::get('sheet-music-parts/{sheetMusicInstrument}/download', [\App\Http\Controllers\Admin\SheetMusicController::class, 'downloadPart'])->name('sheet-music.download-part');
     
     Route::resource('news', \App\Http\Controllers\Admin\NewsController::class);
     

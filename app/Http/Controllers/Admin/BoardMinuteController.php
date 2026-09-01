@@ -90,7 +90,6 @@ class BoardMinuteController extends Controller
 
     public function downloadPdf(Board $board, BoardMinute $minute)
     {
-        $pdf = Pdf::loadView('admin.board_minutes.pdf', compact('board', 'minute'));
-        return $pdf->download('Acta_' . \Str::slug($minute->title) . '_' . $minute->date->format('Ymd') . '.pdf');
+        return view('admin.board_minutes.pdf', compact('board', 'minute'));
     }
 }

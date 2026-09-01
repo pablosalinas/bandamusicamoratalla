@@ -13,7 +13,30 @@
         </div>
     </x-slot>
 
-    <div class="mt-8 flow-root">
+    <div class="mt-4 flex justify-between items-center bg-gray-800 p-4 rounded-lg shadow no-print">
+        <form action="{{ route('admin.sheet-music.index') }}" method="GET" class="flex items-center gap-4">
+            <label for="work_type" class="text-sm font-medium text-white">Filtrar por tipo:</label>
+            <select name="work_type" id="work_type" class="rounded-md bg-gray-900 border-gray-700 text-white shadow-sm focus:border-amber-500 focus:ring-amber-500 sm:text-sm">
+                <option value="">Todos</option>
+                @foreach($workTypes as $type)
+                    <option value="{{ $type }}" {{ request('work_type') == $type ? 'selected' : '' }}>{{ $type }}</option>
+                @endforeach
+            </select>
+            <button type="submit" class="bg-gray-700 text-white px-3 py-2 rounded-md hover:bg-gray-600 text-sm">Filtrar</button>
+        </form>
+        
+        <div class="flex gap-2">
+            <a href="{{ route('admin.sheet-music.pdf', request()->all()) }}" target="_blank" class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 text-sm font-bold shadow flex items-center">
+                PDF
+            </a>
+            <button onclick="window.print()" class="bg-amber-600 text-white px-4 py-2 rounded-md hover:bg-amber-700 text-sm font-bold shadow flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                Imprimir
+            </button>
+        </div>
+    </div>
+
+    <div class="mt-6 flow-root">
         <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
             <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
                 <div class="overflow-hidden shadow ring-1 ring-white/10 sm:rounded-lg">

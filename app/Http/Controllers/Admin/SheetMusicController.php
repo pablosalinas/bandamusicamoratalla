@@ -13,10 +13,30 @@ use Intervention\Image\Drivers\Gd\Driver;
 
 class SheetMusicController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $sheetMusics = SheetMusic::orderBy('title')->paginate(15);
-        return view('admin.sheet-music.index', compact('sheetMusics'));
+        $query = SheetMusic::query();
+        
+        if ($request->filled('work_type') && $request->work_type !== '') {
+            $query->where('work_type', $request->work_type);
+        }
+        
+        $sheetMusics = $query->orderBy('title')->paginate(15);
+        $workTypes = SheetMusic::whereNotNull('work_type')->distinct()->pluck('work_type')->filter()->sort();
+        
+        return view('admin.sheet-music.index', compact('sheetMusics', 'workTypes'));
+    }
+
+    public function pdf(Request $request)
+    {
+        $query = SheetMusic::query();
+        
+        if ($request->filled('work_type') && $request->work_type !== '') {
+            $query->where('work_type', $request->work_type);
+        }
+        
+        $sheetMusics = $query->orderBy('title')->get();
+        return view('admin.sheet-music.pdf', compact('sheetMusics'));
     }
 
     public function create()
