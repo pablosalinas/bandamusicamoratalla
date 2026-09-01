@@ -182,12 +182,27 @@
     </div>
     
     <script>
-        // Mantener la sesión activa haciendo una pequeña petición cada 15 minutos
+        // Control de inactividad para respetar el temporizador de sesión de la configuración
+        let isUserActive = true;
+        
+        // Detectar cualquier actividad en la página
+        ['mousemove', 'keydown', 'scroll', 'click', 'touchstart'].forEach(evt => {
+            window.addEventListener(evt, () => isUserActive = true, { passive: true });
+        });
+
+        // Mantener la sesión activa haciendo una pequeña petición cada 15 minutos,
+        // PERO solo si el usuario ha interactuado con la página. Si se deja el PC solo, 
+        // la sesión caducará con normalidad según la configuración.
         setInterval(function() {
-            fetch('{{ route('admin.dashboard') }}', { 
-                method: 'GET', 
-                headers: { 'X-Requested-With': 'XMLHttpRequest' } 
-            }).catch(e => console.log('Keep-alive ping failed'));
+            if (isUserActive) {
+                fetch('{{ route('admin.dashboard') }}', { 
+                    method: 'GET', 
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' } 
+                }).catch(e => console.log('Keep-alive ping failed'));
+                
+                // Reseteamos el estado para el siguiente ciclo
+                isUserActive = false;
+            }
         }, 15 * 60 * 1000);
     </script>
 </x-admin-layout>
