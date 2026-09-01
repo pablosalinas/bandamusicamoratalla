@@ -91,6 +91,7 @@
     <!-- Carrusel Section -->
     @if(isset($carouselMedia) && $carouselMedia->count() > 0)
     <section id="carrusel" class="w-full bg-gray-950 border-b border-gray-900 relative pt-24 pb-8"
+        @resize.window="windowWidth = window.innerWidth; currentIndex = Math.min(currentIndex, maxIndex)"
         x-data="{
             slides: [
                 @foreach($carouselMedia as $media)
@@ -106,6 +107,17 @@
             autoplayInterval: null,
             speed: {{ ($carouselSpeed ?? 4) * 1000 }},
             lightboxOpen: false,
+            windowWidth: window.innerWidth,
+            
+            get visibleItems() {
+                if (this.windowWidth < 640) return 1;
+                if (this.windowWidth < 1024) return 2;
+                return 3;
+            },
+            
+            get maxIndex() {
+                return Math.max(0, this.slides.length - this.visibleItems);
+            },
             
             init() {
                 this.startAutoplay();
@@ -115,8 +127,7 @@
                 this.stopAutoplay();
                 
                 let currentSlide = this.slides[this.currentIndex];
-                if (currentSlide.type === 'video') {
-                    // Wait for video to end
+                if (currentSlide && currentSlide.type === 'video') {
                     this.$nextTick(() => {
                         let videoEl = document.getElementById('carousel-video-' + this.currentIndex);
                         if(videoEl) {
@@ -143,7 +154,6 @@
                 if (this.autoplayInterval) {
                     clearTimeout(this.autoplayInterval);
                 }
-                // Pause all videos
                 document.querySelectorAll('.carousel-video').forEach(v => {
                     v.pause();
                     v.onended = null;
@@ -151,20 +161,19 @@
             },
             
             next() {
-                this.currentIndex = (this.currentIndex + 1) % this.slides.length;
+                this.currentIndex = (this.currentIndex + 1 > this.maxIndex) ? 0 : this.currentIndex + 1;
                 this.startAutoplay();
             },
             
             prev() {
-                this.currentIndex = (this.currentIndex - 1 + this.slides.length) % this.slides.length;
+                this.currentIndex = (this.currentIndex - 1 < 0) ? this.maxIndex : this.currentIndex - 1;
                 this.startAutoplay();
             },
             
-            openLightbox() {
+            openLightbox(index) {
+                // Determine actual slide clicked based on visible items
                 this.lightboxOpen = true;
                 document.body.style.overflow = 'hidden';
-                // Stop the main carousel autoplay, but start it in the lightbox if needed, or just let it play.
-                // We will keep startAutoplay running so it passes automatically in lightbox too.
             },
             
             closeLightbox() {
@@ -174,47 +183,49 @@
         }">
         
         <!-- Carrusel Principal -->
-        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="relative w-full h-56 sm:h-80 md:h-[450px] overflow-hidden group cursor-pointer sm:rounded-2xl shadow-2xl ring-1 ring-white/10" @click="openLightbox">
-            <template x-for="(slide, index) in slides" :key="slide.id">
-                <div x-show="currentIndex === index"
-                     x-transition:enter="transition ease-out duration-700"
-                     x-transition:enter-start="opacity-0 scale-95"
-                     x-transition:enter-end="opacity-100 scale-100"
-                     x-transition:leave="transition ease-in duration-500"
-                     x-transition:leave-start="opacity-100 scale-100"
-                     x-transition:leave-end="opacity-0 scale-105"
-                     class="absolute inset-0 flex items-center justify-center bg-gray-900">
-                    
-                    <template x-if="slide.type === 'image'">
-                        <img :src="slide.src" class="w-full h-full object-cover">
-                    </template>
-                    
-                    <template x-if="slide.type === 'video'">
-                        <video :id="'carousel-video-' + index" :src="slide.src" class="carousel-video w-full h-full object-cover" muted playsinline></video>
-                    </template>
-                    
-                    <template x-if="slide.description">
-                        <div class="absolute bottom-12 left-0 right-0 mx-auto w-3/4 max-w-2xl text-center">
-                            <div class="inline-block bg-black/60 backdrop-blur-sm px-6 py-3 rounded-lg border border-white/10 shadow-lg">
-                                <p class="text-white text-lg md:text-xl font-medium tracking-wide drop-shadow-md" x-text="slide.description"></p>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="relative w-full h-56 sm:h-80 md:h-[400px] overflow-hidden group cursor-pointer" @click="openLightbox">
+                
+                <div class="flex h-full transition-transform duration-700 ease-in-out" 
+                     :style="`transform: translateX(-${currentIndex * (100 / visibleItems)}%);`">
+                     
+                    <template x-for="(slide, index) in slides" :key="slide.id">
+                        <div class="h-full flex-none px-2" 
+                             :style="`width: ${100 / visibleItems}%`">
+                             
+                            <div class="relative w-full h-full sm:rounded-2xl shadow-lg ring-1 ring-white/10 overflow-hidden bg-gray-900 hover:shadow-xl transition-shadow">
+                                <template x-if="slide.type === 'image'">
+                                    <img :src="slide.src" class="w-full h-full object-cover">
+                                </template>
+                                
+                                <template x-if="slide.type === 'video'">
+                                    <video :id="'carousel-video-' + index" :src="slide.src" class="carousel-video w-full h-full object-cover" muted playsinline></video>
+                                </template>
+                                
+                                <template x-if="slide.description">
+                                    <div class="absolute bottom-4 left-0 right-0 mx-auto w-11/12 text-center">
+                                        <div class="inline-block bg-black/60 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-white/10 shadow-lg">
+                                            <p class="text-white text-sm md:text-base font-medium tracking-wide drop-shadow-md line-clamp-2" x-text="slide.description"></p>
+                                        </div>
+                                    </div>
+                                </template>
                             </div>
                         </div>
                     </template>
                 </div>
-            </template>
             
-            <!-- Controls (Overlay) -->
-            <button @click.stop="prev" class="absolute left-4 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/70 text-white p-3 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
-            </button>
-            <button @click.stop="next" class="absolute right-4 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/70 text-white p-3 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-            </button>
+                <!-- Controls (Overlay) -->
+                <button @click.stop="prev" class="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/80 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                </button>
+                <button @click.stop="next" class="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/80 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                </button>
+            </div>
             
-            <div class="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2">
-                <template x-for="(slide, index) in slides" :key="slide.id">
-                    <button @click.stop="currentIndex = index; startAutoplay();" :class="{'bg-amber-500 w-6': currentIndex === index, 'bg-white/50 w-2': currentIndex !== index}" class="h-2 rounded-full transition-all duration-300"></button>
+            <div class="mt-6 flex justify-center space-x-2">
+                <template x-for="i in (maxIndex + 1)" :key="i">
+                    <button @click.stop="currentIndex = i - 1; startAutoplay();" :class="{'bg-amber-500 w-6': currentIndex === (i - 1), 'bg-gray-600 hover:bg-gray-400 w-2': currentIndex !== (i - 1)}" class="h-2 rounded-full transition-all duration-300"></button>
                 </template>
             </div>
         </div>
