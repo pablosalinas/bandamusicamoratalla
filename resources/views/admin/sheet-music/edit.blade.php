@@ -49,17 +49,15 @@
                         <div class="mt-2">
                             <input list="work_types" name="work_type" id="work_type" value="{{ old('work_type', $sheetMusic->work_type) }}" placeholder="Selecciona o escribe..." class="block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-blue-500 sm:text-sm sm:leading-6" style="color-scheme: dark;">
                             <datalist id="work_types">
-                                <option value="Pasodoble">
-                                <option value="Marcha Procesión">
-                                <option value="Marcha Fúnebre">
-                                <option value="Marcha Militar">
-                                <option value="Himno">
-                                <option value="Ópera">
-                                <option value="Zarzuela">
-                                <option value="Rock">
-                                <option value="Pop">
-                                <option value="Soul">
-                                <option value="Jazz">
+                                @php
+                                    $defaultTypes = ['Pasodoble', 'Marcha Procesión', 'Marcha Fúnebre', 'Marcha Militar', 'Himno', 'Ópera', 'Zarzuela', 'Rock', 'Pop', 'Soul', 'Jazz'];
+                                    $existingTypes = \App\Models\SheetMusic::whereNotNull('work_type')->where('work_type', '!=', '')->distinct()->pluck('work_type')->toArray();
+                                    $allTypes = array_unique(array_merge($defaultTypes, $existingTypes));
+                                    sort($allTypes);
+                                @endphp
+                                @foreach($allTypes as $wt)
+                                    <option value="{{ $wt }}">
+                                @endforeach
                             </datalist>
                         </div>
                         @error('work_type') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror

@@ -48,17 +48,15 @@
                         <div class="mt-2">
                             <input list="work_types" name="work_type" id="work_type" value="{{ old('work_type') }}" placeholder="Selecciona o escribe..." class="block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-blue-500 sm:text-sm sm:leading-6" style="color-scheme: dark;">
                             <datalist id="work_types">
-                                <option value="Pasodoble">
-                                <option value="Marcha Procesión">
-                                <option value="Marcha Fúnebre">
-                                <option value="Marcha Militar">
-                                <option value="Himno">
-                                <option value="Ópera">
-                                <option value="Zarzuela">
-                                <option value="Rock">
-                                <option value="Pop">
-                                <option value="Soul">
-                                <option value="Jazz">
+                                @php
+                                    $defaultTypes = ['Pasodoble', 'Marcha Procesión', 'Marcha Fúnebre', 'Marcha Militar', 'Himno', 'Ópera', 'Zarzuela', 'Rock', 'Pop', 'Soul', 'Jazz'];
+                                    $existingTypes = \App\Models\SheetMusic::whereNotNull('work_type')->where('work_type', '!=', '')->distinct()->pluck('work_type')->toArray();
+                                    $allTypes = array_unique(array_merge($defaultTypes, $existingTypes));
+                                    sort($allTypes);
+                                @endphp
+                                @foreach($allTypes as $wt)
+                                    <option value="{{ $wt }}">
+                                @endforeach
                             </datalist>
                         </div>
                         @error('work_type') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
@@ -73,23 +71,7 @@
                         @error('pdf_file') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
                     </div>
 
-                    <div class="sm:col-span-6 border-t border-gray-800 pt-6 mt-2">
-                        <label class="block text-base font-semibold leading-6 text-white mb-4">Instrumentación de la Obra</label>
-                        <p class="text-sm text-gray-400 mb-4">Marca los instrumentos que participan en esta obra. Los músicos que toquen estos instrumentos podrán ver la obra en su área privada.</p>
-                        
-                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                            @foreach($instruments as $instrument)
-                                <div class="relative flex items-start">
-                                    <div class="flex h-6 items-center">
-                                        <input id="instrument_{{ $instrument->id }}" name="instruments[]" type="checkbox" value="{{ $instrument->id }}" class="h-4 w-4 rounded border-gray-700 bg-gray-900 text-blue-600 focus:ring-blue-600 focus:ring-offset-gray-900">
-                                    </div>
-                                    <div class="ml-3 text-sm leading-6">
-                                        <label for="instrument_{{ $instrument->id }}" class="font-medium text-gray-300">{{ $instrument->name }}</label>
-                                    </div>
-                                </div>
-                            @endforeach
-                        </div>
-                    </div>
+
 
                 </div>
             </div>
