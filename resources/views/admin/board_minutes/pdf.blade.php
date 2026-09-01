@@ -119,11 +119,6 @@
         <button onclick="window.print()" class="btn-print">Imprimir / Guardar PDF</button>
     </div>
 
-    {{-- Fecha de impresión en pequeño arriba a la derecha --}}
-    <div style="text-align: right; font-size: 11px; color: #888; font-style: italic; margin-bottom: 18px; border-bottom: 1px solid #e5e7eb; padding-bottom: 6px;">
-        Fecha de impresión: {{ $fechaImpresionEsp }}
-    </div>
-
     {{-- Cabecera con título y fecha de junta --}}
     <div class="header">
         <h1>{{ $minute->title }}</h1>
