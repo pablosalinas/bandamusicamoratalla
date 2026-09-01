@@ -124,7 +124,7 @@
                                     <div x-show="expanded" x-transition class="mt-4 border-t border-gray-700 pt-4 grid grid-cols-1 md:grid-cols-2 gap-4" style="display: none;">
                                         @foreach(['1º', '2º', '3º', 'PRINCIPAL', 'TODOS'] as $tipo)
                                             @php
-                                                $pivot = $filesIndexed[$instrument->id][$tipo] ?? null;
+                                                $pivot = isset($filesIndexed[$instrument->id][$tipo]) ? $filesIndexed[$instrument->id][$tipo] : null;
                                             @endphp
                                             <div class="bg-gray-900 p-3 rounded border border-gray-700">
                                                 <div class="flex items-center justify-between mb-2">
