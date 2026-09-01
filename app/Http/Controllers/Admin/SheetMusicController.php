@@ -30,6 +30,7 @@ class SheetMusicController extends Controller
             'title' => ['required', 'string', 'max:255'],
             'composer' => ['nullable', 'string', 'max:255'],
             'arranger' => ['nullable', 'string', 'max:255'],
+            'work_type' => ['nullable', 'string', 'max:255'],
             'pdf_file' => ['nullable', 'file', 'mimes:pdf', 'max:20480'],
             'leave_reason' => ['nullable', 'string', 'max:255'],
         ]);
@@ -43,6 +44,7 @@ class SheetMusicController extends Controller
             'title' => $request->title,
             'composer' => $request->composer,
             'arranger' => $request->arranger,
+            'work_type' => $request->work_type,
             'pdf_file_path' => $path,
             'is_active' => $request->has('is_active'),
             'leave_reason' => $request->leave_reason,
@@ -70,11 +72,12 @@ class SheetMusicController extends Controller
             'title' => ['required', 'string', 'max:255'],
             'composer' => ['nullable', 'string', 'max:255'],
             'arranger' => ['nullable', 'string', 'max:255'],
+            'work_type' => ['nullable', 'string', 'max:255'],
             'pdf_file' => ['nullable', 'file', 'mimes:pdf', 'max:20480'],
             'leave_reason' => ['nullable', 'string', 'max:255'],
         ]);
 
-        $data = $request->only(['title', 'composer', 'arranger', 'leave_reason']);
+        $data = $request->only(['title', 'composer', 'arranger', 'work_type', 'leave_reason']);
         $data['is_active'] = $request->has('is_active');
 
         if ($request->hasFile('pdf_file')) {

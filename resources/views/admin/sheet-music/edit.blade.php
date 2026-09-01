@@ -28,7 +28,7 @@
                         @error('title') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
                     </div>
 
-                    <div class="sm:col-span-3">
+                    <div class="sm:col-span-2">
                         <label for="composer" class="block text-sm font-medium leading-6 text-white">Compositor</label>
                         <div class="mt-2">
                             <input type="text" name="composer" id="composer" value="{{ old('composer', $sheetMusic->composer) }}" class="block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-blue-500 sm:text-sm sm:leading-6">
@@ -36,12 +36,33 @@
                         @error('composer') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
                     </div>
 
-                    <div class="sm:col-span-3">
+                    <div class="sm:col-span-2">
                         <label for="arranger" class="block text-sm font-medium leading-6 text-white">Arreglista</label>
                         <div class="mt-2">
                             <input type="text" name="arranger" id="arranger" value="{{ old('arranger', $sheetMusic->arranger) }}" class="block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-blue-500 sm:text-sm sm:leading-6">
                         </div>
                         @error('arranger') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div class="sm:col-span-2">
+                        <label for="work_type" class="block text-sm font-medium leading-6 text-white">Tipo de obra</label>
+                        <div class="mt-2">
+                            <input list="work_types" name="work_type" id="work_type" value="{{ old('work_type', $sheetMusic->work_type) }}" placeholder="Selecciona o escribe..." class="block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-blue-500 sm:text-sm sm:leading-6" style="color-scheme: dark;">
+                            <datalist id="work_types">
+                                <option value="Pasodoble">
+                                <option value="Marcha Procesión">
+                                <option value="Marcha Fúnebre">
+                                <option value="Marcha Militar">
+                                <option value="Himno">
+                                <option value="Ópera">
+                                <option value="Zarzuela">
+                                <option value="Rock">
+                                <option value="Pop">
+                                <option value="Soul">
+                                <option value="Jazz">
+                            </datalist>
+                        </div>
+                        @error('work_type') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
                     </div>
 
                     <div class="sm:col-span-6">

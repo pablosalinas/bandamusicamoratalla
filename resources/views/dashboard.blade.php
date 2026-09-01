@@ -137,7 +137,12 @@
                             @foreach($availableParts as $part)
                                 <div class="bg-gray-950 border border-gray-800 rounded-lg p-5 shadow-sm hover:border-gray-700 transition-colors">
                                     <h5 class="font-bold text-lg text-amber-500">{{ $part->title }}</h5>
-                                    <p class="text-sm text-gray-400 mb-2">{{ $part->composer ?? 'Compositor desconocido' }}</p>
+                                    <p class="text-sm text-gray-400 mb-1">{{ $part->composer ?? 'Compositor desconocido' }}</p>
+                                    @if($part->work_type)
+                                        <p class="text-xs text-gray-500 mb-2 italic">{{ $part->work_type }}</p>
+                                    @else
+                                        <div class="mb-2"></div>
+                                    @endif
                                     <p class="text-xs text-gray-500 mb-6 font-mono">Tipo: {{ $part->tipo_partitura }}</p>
                                     
                                     <a href="{{ route('musician.sheet-music.download', $part->id) }}" class="inline-flex items-center rounded-md bg-amber-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-amber-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-600 transition-colors">

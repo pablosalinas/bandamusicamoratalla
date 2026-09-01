@@ -31,7 +31,7 @@ class MusicianController extends Controller
             $query = \App\Models\SheetMusicInstrument::query()
                 ->join('sheet_music', 'sheet_music_instruments.sheet_music_id', '=', 'sheet_music.id')
                 ->where('sheet_music.is_active', true)
-                ->select('sheet_music_instruments.*', 'sheet_music.title', 'sheet_music.composer');
+                ->select('sheet_music_instruments.*', 'sheet_music.title', 'sheet_music.composer', 'sheet_music.work_type');
             
             $query->where(function($q) use ($userInstrumentParts) {
                 foreach ($userInstrumentParts as $uip) {

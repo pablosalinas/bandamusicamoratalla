@@ -41,6 +41,9 @@
                                         @if($sheet->arranger)
                                             <br><span class="text-xs text-gray-500">Arr: {{ $sheet->arranger }}</span>
                                         @endif
+                                        @if($sheet->work_type)
+                                            <br><span class="inline-flex items-center rounded-md bg-blue-400/10 px-2 py-0.5 mt-1 text-xs font-medium text-blue-400">{{ $sheet->work_type }}</span>
+                                        @endif
                                     </td>
                                     <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
                                         @if($sheet->pdf_file_path)
