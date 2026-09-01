@@ -17,11 +17,12 @@ class AccountingAccess
     {
         if (auth()->check()) {
             $user = auth()->user();
-            if ($user->isCurrentBoardMember() || in_array($user->role, ['admin', 'treasurer']) || $user->isSuperAdmin()) {
+            $isBoardAdminOrTreasurer = $user->isCurrentBoardMember() && in_array($user->role, ['admin', 'treasurer']);
+            if ($isBoardAdminOrTreasurer || $user->isSuperAdmin()) {
                 return $next($request);
             }
         }
 
-        abort(403, 'No tienes permisos para acceder a esta sección. Solo la junta directiva activa, tesoreros y administradores pueden acceder.');
+        abort(403, 'No tienes permisos. Solo superusuarios, o miembros activos de la junta que sean administradores o tesoreros pueden acceder a contabilidad.');
     }
 }
