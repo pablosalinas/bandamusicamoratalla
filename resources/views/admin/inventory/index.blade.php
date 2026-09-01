@@ -148,7 +148,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="6" class="py-4 text-center text-sm text-gray-400 italic">No se encontraron instrumentos asignados con los filtros actuales.</td>
+                            <td colspan="7" class="py-4 text-center text-sm text-gray-400 italic">No se encontraron instrumentos asignados con los filtros actuales.</td>
                         </tr>
                         @endforelse
                     </tbody>

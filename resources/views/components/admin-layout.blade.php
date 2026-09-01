@@ -49,7 +49,7 @@
         </div>
 
         <!-- Static sidebar for desktop -->
-        <div class="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col">
+        <div class="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col print:hidden">
             <div class="flex grow flex-col gap-y-5 overflow-y-auto bg-gray-900/50 backdrop-blur-xl border-r border-gray-800 px-6">
                 <div class="flex shrink-0 items-center mt-6 mb-4 flex-col gap-2">
                     <x-logo-rotator class="h-24 w-24" />
@@ -65,9 +65,9 @@
         </div>
 
         <!-- Main content -->
-        <div class="flex flex-1 flex-col lg:pl-72 min-w-0">
+        <div class="flex flex-1 flex-col lg:pl-72 min-w-0 print:pl-0">
             <!-- Topbar -->
-            <div class="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-gray-800 bg-gray-900/80 backdrop-blur-sm px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
+            <div class="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-gray-800 bg-gray-900/80 backdrop-blur-sm px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8 print:hidden">
                 <button type="button" class="-m-2.5 p-2.5 text-gray-400 lg:hidden" @click="sidebarOpen = true">
                     <span class="sr-only">Abrir sidebar</span>
                     <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
@@ -104,7 +104,7 @@
             </div>
 
             <!-- Main Content Area -->
-            <main class="flex-1 overflow-y-auto bg-gray-950 p-6 lg:p-8">
+            <main class="flex-1 overflow-y-auto bg-gray-950 p-6 lg:p-8 print:bg-white print:p-0">
                 <div class="mx-auto max-w-7xl">
                     <!-- Page Header -->
                     @if (isset($header))
