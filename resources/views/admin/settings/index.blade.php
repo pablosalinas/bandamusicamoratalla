@@ -206,22 +206,48 @@
         </div>
     </div>
 
-    <!-- CKEditor 5 -->
+    <!-- CKEditor 5 CDN -->
+    <style>
+        .ck-editor__editable_inline {
+            min-height: 300px;
+            background-color: #111827 !important;
+            color: #f3f4f6 !important;
+            border-bottom-left-radius: 0.375rem !important;
+            border-bottom-right-radius: 0.375rem !important;
+        }
+        .ck.ck-toolbar {
+            background-color: #1f2937 !important;
+            border: 1px solid #374151 !important;
+            border-top-left-radius: 0.375rem !important;
+            border-top-right-radius: 0.375rem !important;
+        }
+        .ck.ck-editor__main>.ck-editor__editable {
+            border: 1px solid #374151 !important;
+            border-top: none !important;
+        }
+        .ck.ck-button {
+            color: #d1d5db !important;
+        }
+        .ck.ck-button:hover, .ck.ck-button.ck-on {
+            background-color: #374151 !important;
+            color: #fff !important;
+        }
+        /* Remove the old white override */
+        .ck-editor__editable { background-color: #111827 !important; color: #f3f4f6 !important; }
+    </style>
     <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
+    <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/translations/es.js"></script>
     <script>
         ClassicEditor
             .create( document.querySelector( '#statutes' ), {
-                toolbar: [ 'heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', 'blockQuote', '|', 'undo', 'redo' ]
+                language: 'es'
             } )
             .catch( error => { console.error( error ); } );
             
         ClassicEditor
             .create( document.querySelector( '#band_history' ), {
-                toolbar: [ 'heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', 'blockQuote', '|', 'undo', 'redo' ]
+                language: 'es'
             } )
             .catch( error => { console.error( error ); } );
     </script>
-    <style>
-        .ck-editor__editable { min-height: 250px; background-color: white !important; color: black !important; }
-    </style>
 </x-admin-layout>
