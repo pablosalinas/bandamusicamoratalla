@@ -43,8 +43,9 @@ class SettingsController extends Controller
         ];
         
         $carouselMedia = \App\Models\CarouselMedia::orderBy('sort_order')->get();
+        $bandHistoryImages = \App\Models\BandHistoryImage::orderBy('sort_order')->get();
         
-        return view('admin.settings.index', compact('settings', 'carouselMedia'));
+        return view('admin.settings.index', compact('settings', 'carouselMedia', 'bandHistoryImages'));
     }
 
     public function update(Request $request)

@@ -56,11 +56,13 @@ Route::get('/', function () {
         ->where(function ($query) {
             $query->whereNull('active_to')->orWhere('active_to', '>=', now()->toDateString());
         })
+        ->with(['mainImage', 'newsImages'])
         ->orderBy('created_at', 'desc')
         ->take(3)
         ->get();
         
     $band_history = \App\Models\SiteSetting::getSetting('band_history', '');
+    $bandHistoryImages = \App\Models\BandHistoryImage::orderBy('sort_order')->get();
     
     // Visit counter logic
     $visit_count = (int) \App\Models\SiteSetting::getSetting('visit_count', 0);
@@ -73,7 +75,7 @@ Route::get('/', function () {
     $carouselMedia = \App\Models\CarouselMedia::orderBy('sort_order')->get();
     $carouselSpeed = (int) \App\Models\SiteSetting::getSetting('carousel_speed', 4);
 
-    return view('welcome', compact('news', 'band_history', 'visit_count', 'carouselMedia', 'carouselSpeed'));
+    return view('welcome', compact('news', 'band_history', 'bandHistoryImages', 'visit_count', 'carouselMedia', 'carouselSpeed'));
 });
 
 Route::view('/aviso-legal', 'legal')->name('legal');
@@ -126,6 +128,9 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     Route::get('inventory/pdf', [\App\Http\Controllers\Admin\InventoryController::class, 'pdf'])->name('inventory.pdf');
     
     Route::resource('news', \App\Http\Controllers\Admin\NewsController::class);
+    Route::post('news/{news}/images', [\App\Http\Controllers\Admin\NewsImageController::class, 'store'])->name('news.images.store');
+    Route::put('news-images/{image}', [\App\Http\Controllers\Admin\NewsImageController::class, 'update'])->name('news.images.update');
+    Route::delete('news-images/{image}', [\App\Http\Controllers\Admin\NewsImageController::class, 'destroy'])->name('news.images.destroy');
     
     Route::resource('events', \App\Http\Controllers\Admin\EventController::class);
     Route::get('events/{event}/attendance', [\App\Http\Controllers\Admin\EventController::class, 'attendance'])->name('events.attendance');
@@ -148,6 +153,11 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
         Route::post('settings/carousel', [\App\Http\Controllers\Admin\SettingsController::class, 'storeCarouselMedia'])->name('settings.carousel.store');
         Route::put('settings/carousel/{media}', [\App\Http\Controllers\Admin\SettingsController::class, 'updateCarouselMedia'])->name('settings.carousel.update');
         Route::delete('settings/carousel/{media}', [\App\Http\Controllers\Admin\SettingsController::class, 'destroyCarouselMedia'])->name('settings.carousel.destroy');
+        
+        // Band History Images
+        Route::post('settings/band-history-images', [\App\Http\Controllers\Admin\BandHistoryImageController::class, 'store'])->name('settings.band-history-images.store');
+        Route::put('settings/band-history-images/{image}', [\App\Http\Controllers\Admin\BandHistoryImageController::class, 'update'])->name('settings.band-history-images.update');
+        Route::delete('settings/band-history-images/{image}', [\App\Http\Controllers\Admin\BandHistoryImageController::class, 'destroy'])->name('settings.band-history-images.destroy');
         
         // Logos
         Route::post('settings/logos', [\App\Http\Controllers\Admin\SettingsController::class, 'storeLogo'])->name('settings.logos.store');

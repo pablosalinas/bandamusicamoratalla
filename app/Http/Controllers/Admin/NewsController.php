@@ -9,7 +9,7 @@ class NewsController extends Controller
 {
     public function index()
     {
-        $news = \App\Models\NewsActivity::orderBy('created_at', 'desc')->paginate(10);
+        $news = \App\Models\NewsActivity::with('mainImage')->orderBy('created_at', 'desc')->paginate(10);
         return view('admin.news.index', compact('news'));
     }
 
@@ -32,9 +32,9 @@ class NewsController extends Controller
         $validated['slug'] = \Illuminate\Support\Str::slug($validated['title']) . '-' . time();
         $validated['is_published'] = $request->has('is_published');
 
-        \App\Models\NewsActivity::create($validated);
+        $news = \App\Models\NewsActivity::create($validated);
 
-        return redirect()->route('admin.news.index')->with('success', 'Noticia creada exitosamente.');
+        return redirect()->route('admin.news.edit', $news)->with('success', 'Noticia creada exitosamente. Ahora puedes añadir imágenes.');
     }
 
     public function edit(\App\Models\NewsActivity $news)

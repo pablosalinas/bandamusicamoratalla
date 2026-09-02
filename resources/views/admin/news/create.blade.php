@@ -81,6 +81,14 @@
             </div>
         </form>
     </div>
+
+    <!-- Note about images -->
+    <div class="mt-4 max-w-2xl bg-amber-900/30 border border-amber-600/30 rounded-xl p-4 text-amber-200/80 text-sm">
+        <div class="flex">
+            <svg class="h-5 w-5 flex-shrink-0 mr-2 text-amber-500" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z" clip-rule="evenodd" /></svg>
+            <p><strong>Nota:</strong> Para subir la imagen principal y el carrusel de imágenes para esta noticia, primero debes guardarla. Podrás añadir las imágenes en la pantalla siguiente.</p>
+        </div>
+    </div>
     
     <!-- CKEditor 4 Full (fuente HTML + enlaces en nueva pestaña) -->
     <script src="https://cdn.ckeditor.com/4.22.1/full/ckeditor.js"></script>

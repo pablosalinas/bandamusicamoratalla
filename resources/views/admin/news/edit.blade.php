@@ -82,7 +82,71 @@
             </div>
         </form>
     </div>
-    
+
+    <!-- News Images Section -->
+    <div class="mt-8 max-w-2xl">
+        <div class="bg-gray-900 shadow-sm ring-1 ring-gray-800 sm:rounded-xl">
+            <div class="px-4 py-6 sm:p-8">
+                <h3 class="text-xl font-bold leading-tight tracking-tight text-white mb-6">Imágenes de la Noticia</h3>
+                <p class="text-sm text-gray-400 mb-6">La imagen con el <b>Orden</b> más bajo será la portada de la noticia. El resto formarán un carrusel que se mostrará al ver el detalle.</p>
+                
+                <form action="{{ route('admin.news.images.store', $news) }}" method="POST" enctype="multipart/form-data" class="mb-8">
+                    @csrf
+                    <div class="sm:col-span-6">
+                        <label for="news_image" class="block text-sm font-medium leading-6 text-white">Subir nueva imagen</label>
+                        <div class="mt-2 flex items-center gap-4">
+                            <input type="file" name="image" id="news_image" accept="image/*" required class="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-gray-800 file:text-amber-500 hover:file:bg-gray-700">
+                            <button type="submit" class="rounded-md bg-amber-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-amber-500">
+                                Añadir Imagen
+                            </button>
+                        </div>
+                        @error('image') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
+                    </div>
+                </form>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-6">
+                    @forelse($news->newsImages as $image)
+                        <div class="flex flex-col bg-gray-800 rounded-lg overflow-hidden shadow-sm border border-gray-700">
+                            <div class="relative group aspect-video">
+                                <img src="{{ $image->url }}" class="w-full h-full object-cover">
+                                
+                                <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                    <form action="{{ route('admin.news.images.destroy', $image) }}" method="POST" onsubmit="return confirm('¿Seguro que deseas eliminar esta imagen de forma definitiva?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="p-2 bg-red-600 text-white rounded-full hover:bg-red-500 focus:outline-none">
+                                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                        </button>
+                                    </form>
+                                </div>
+                                @if($loop->first)
+                                    <div class="absolute top-2 left-2 bg-amber-500 text-white text-xs font-bold px-2 py-1 rounded shadow">
+                                        IMAGEN PRINCIPAL
+                                    </div>
+                                @endif
+                            </div>
+                            <div class="p-3 border-t border-gray-700">
+                                <form action="{{ route('admin.news.images.update', $image) }}" method="POST" class="flex flex-col gap-2">
+                                    @csrf
+                                    @method('PUT')
+                                    <div class="flex items-center gap-2">
+                                        <label class="text-xs text-gray-400 w-12">Orden:</label>
+                                        <input type="number" name="sort_order" value="{{ $image->sort_order }}" class="block w-16 rounded-md border-0 bg-gray-900 py-1 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-xs text-center" title="Orden de aparición (menor = primero)">
+                                    </div>
+                                    <input type="text" name="description" value="{{ $image->description }}" placeholder="Descripción de la imagen..." class="block w-full rounded-md border-0 bg-gray-900 py-1 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-xs">
+                                    <button type="submit" class="rounded-md bg-amber-600 px-2 py-1 text-xs font-semibold text-white shadow-sm hover:bg-amber-500 mt-1">
+                                        Guardar cambios
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    @empty
+                        <p class="col-span-full text-sm text-gray-500 italic">No hay imágenes en esta noticia.</p>
+                    @endforelse
+                </div>
+            </div>
+        </div>
+    </div>
     <!-- CKEditor 4 Full (fuente HTML + enlaces en nueva pestaña) -->
     <script src="https://cdn.ckeditor.com/4.22.1/full/ckeditor.js"></script>
     <script>

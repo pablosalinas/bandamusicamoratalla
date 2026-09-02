@@ -22,4 +22,14 @@ class NewsActivity extends Model
     {
         return $this->hasMany(Media::class);
     }
+
+    public function newsImages()
+    {
+        return $this->hasMany(NewsImage::class)->orderBy('sort_order');
+    }
+
+    public function mainImage()
+    {
+        return $this->hasOne(NewsImage::class)->orderBy('sort_order');
+    }
 }
