@@ -42,7 +42,7 @@
 
     <div class="mb-6 flex justify-between items-center no-print">
         <h1 class="text-2xl font-bold">Informe de Trazabilidad</h1>
-        <button onclick="window.print()" class="bg-amber-600 text-white px-4 py-2 rounded">Imprimir / Guardar PDF</button>
+        <div class="flex gap-2"><button onclick="window.close()" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded">Cerrar y Regresar</button><button onclick="window.print()" class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded">Imprimir / Guardar PDF</button></div>
     </div>
 
     <h1 class="text-2xl font-bold mb-2 text-center">Informe de Trazabilidad</h1>

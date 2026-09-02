@@ -69,7 +69,10 @@
                 <h1 class="text-3xl font-bold uppercase tracking-widest text-gray-900">Planning de Actividades</h1>
                 <p class="text-sm text-gray-500 mt-1">Generado el {{ now()->format('d/m/Y') }}</p>
             </div>
-            <div class="text-right no-print">
+            <div class="text-right no-print flex gap-2 justify-end">
+                <button onclick="window.close()" class="px-4 py-2 bg-gray-600 text-white rounded shadow hover:bg-gray-500 font-semibold">
+                    Cerrar y Regresar
+                </button>
                 <button onclick="window.print()" class="px-4 py-2 bg-amber-600 text-white rounded shadow hover:bg-amber-500 font-semibold">
                     Imprimir / Guardar como PDF
                 </button>
