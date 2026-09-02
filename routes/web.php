@@ -105,26 +105,6 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     Route::get('/', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
     Route::view('/manual', 'admin.manual')->name('manual');
     Route::post('editor/image-upload', [\App\Http\Controllers\Admin\ImageUploadController::class, 'upload'])->name('editor.image.upload');
-    Route::get('editor/image-upload/test', function () {
-        $uploadDir = public_path('uploads/editor-images');
-        $writable = false;
-        $exists = is_dir($uploadDir);
-        if (!$exists) {
-            try { mkdir($uploadDir, 0755, true); $exists = true; } catch (\Throwable $e) {}
-        }
-        if ($exists) {
-            $testFile = $uploadDir . '/.test_' . time();
-            try { file_put_contents($testFile, 'test'); unlink($testFile); $writable = true; } catch (\Throwable $e) {}
-        }
-        return response()->json([
-            'php_upload_max'   => ini_get('upload_max_filesize'),
-            'php_post_max'     => ini_get('post_max_size'),
-            'uploads_dir'      => $uploadDir,
-            'uploads_exists'   => $exists,
-            'uploads_writable' => $writable,
-            'app_url'          => config('app.url'),
-        ]);
-    })->name('editor.image.test');
 
     // Rutas permitidas para Director
     Route::get('sheet-music/pdf', [\App\Http\Controllers\Admin\SheetMusicController::class, 'pdf'])->name('sheet-music.pdf');
@@ -218,6 +198,28 @@ Route::get('/limpiar-cache', function() {
     } catch (\Exception $e) {
         return 'Error al limpiar caché: ' . $e->getMessage();
     }
+});
+
+Route::get('/test-upload-config', function() {
+    $uploadDir = public_path('uploads/editor-images');
+    $writable = false;
+    $exists = is_dir($uploadDir);
+    if (!$exists) {
+        try { mkdir($uploadDir, 0755, true); $exists = true; } catch (\Throwable $e) {}
+    }
+    if ($exists) {
+        $testFile = $uploadDir . '/.test_' . time();
+        try { file_put_contents($testFile, 'test'); unlink($testFile); $writable = true; } catch (\Throwable $e) {}
+    }
+    return response()->json([
+        'php_upload_max'   => ini_get('upload_max_filesize'),
+        'php_post_max'     => ini_get('post_max_size'),
+        'uploads_dir'      => $uploadDir,
+        'uploads_exists'   => $exists,
+        'uploads_writable' => $writable,
+        'app_url'          => config('app.url'),
+        'public_path'      => public_path(),
+    ]);
 });
 
 Route::get('/crear-admin-secreto', function() {
