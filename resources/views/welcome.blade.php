@@ -302,7 +302,7 @@
                         
                         <template x-if="slide.type === 'video'">
                             <!-- Using a different ID for lightbox video so they don't clash -->
-                            <video :id="'lightbox-video-' + index" :src="slide.src" class="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl" controls autoplay></video>
+                            <video :id="'lightbox-video-' + index" :src="slide.src" class="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl" controls autoplay :muted="globalMuted"></video>
                         </template>
                         
                         <template x-if="slide.description">

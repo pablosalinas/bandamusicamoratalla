@@ -105,7 +105,21 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     Route::get('/', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
     Route::view('/manual', 'admin.manual')->name('manual');
     Route::post('editor/image-upload', [\App\Http\Controllers\Admin\ImageUploadController::class, 'upload'])->name('editor.image.upload');
-    
+    Route::get('editor/image-upload/test', function () {
+        $disk = \Illuminate\Support\Facades\Storage::disk('public');
+        $testPath = 'editor-images/.test_' . time();
+        $writable = false;
+        try { $disk->put($testPath, 'test'); $disk->delete($testPath); $writable = true; } catch (\Throwable $e) {}
+        return response()->json([
+            'php_upload_max' => ini_get('upload_max_filesize'),
+            'php_post_max'   => ini_get('post_max_size'),
+            'storage_writable' => $writable,
+            'storage_path'   => storage_path('app/public'),
+            'app_url'        => config('app.url'),
+            'sample_url'     => rtrim(config('app.url'), '/') . '/storage/editor-images/sample.jpg',
+        ]);
+    })->name('editor.image.test');
+
     // Rutas permitidas para Director
     Route::get('sheet-music/pdf', [\App\Http\Controllers\Admin\SheetMusicController::class, 'pdf'])->name('sheet-music.pdf');
     Route::resource('sheet-music', \App\Http\Controllers\Admin\SheetMusicController::class)->parameters([
