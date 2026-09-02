@@ -89,7 +89,7 @@
             height: 300,
             allowedContent: true,
             versionCheck: false,
-            filebrowserImageUploadUrl: '{{ route("admin.editor.image.upload") }}?_token={{ csrf_token() }}'
+            filebrowserImageUploadUrl: '/admin/editor/image-upload?_token={{ csrf_token() }}'
         });
     </script>
 </x-admin-layout>

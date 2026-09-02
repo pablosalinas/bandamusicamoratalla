@@ -220,14 +220,14 @@
             height: 350,
             allowedContent: true,
             versionCheck: false,
-            filebrowserImageUploadUrl: '{{ route("admin.editor.image.upload") }}?_token={{ csrf_token() }}'
+            filebrowserImageUploadUrl: '/admin/editor/image-upload?_token={{ csrf_token() }}'
         });
         CKEDITOR.replace('band_history', {
             language: 'es',
             height: 350,
             allowedContent: true,
             versionCheck: false,
-            filebrowserImageUploadUrl: '{{ route("admin.editor.image.upload") }}?_token={{ csrf_token() }}'
+            filebrowserImageUploadUrl: '/admin/editor/image-upload?_token={{ csrf_token() }}'
         });
     </script>
 </x-admin-layout>

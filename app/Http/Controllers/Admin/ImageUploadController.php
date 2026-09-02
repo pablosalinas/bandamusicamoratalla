@@ -47,8 +47,8 @@ class ImageUploadController extends Controller
             $filename = uniqid('img_') . '.' . $ext;
             $file->move($uploadDir, $filename);
 
-            // URL pública directa
-            $url = rtrim(config('app.url'), '/') . '/uploads/editor-images/' . $filename;
+            // URL pública usando el host real de la petición (no APP_URL, que puede diferir)
+            $url = $request->getSchemeAndHttpHost() . '/uploads/editor-images/' . $filename;
 
             return $this->ckResponse($funcNum, $url, '');
 
