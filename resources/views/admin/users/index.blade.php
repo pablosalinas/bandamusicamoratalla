@@ -63,8 +63,8 @@
                                         @endif
                                     </td>
                                     <td class="px-3 py-4 text-sm text-gray-300 max-w-xs truncate">
-                                        @if($user->instruments->count() > 0)
-                                            {{ $user->instruments->pluck('name')->implode(', ') }}
+                                        @if($user->inventories->count() > 0)
+                                            {{ $user->inventories->map(fn($inv) => $inv->instrument->name ?? 'Desconocido')->implode(', ') }}
                                         @else
                                             <span class="text-gray-600 italic">Ninguno asignado</span>
                                         @endif

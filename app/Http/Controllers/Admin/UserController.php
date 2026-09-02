@@ -13,7 +13,7 @@ class UserController extends Controller
 {
     public function index()
     {
-        $users = User::with('instruments')->orderBy('name')->paginate(15);
+        $users = User::with('inventories.instrument')->orderBy('name')->paginate(15);
         return view('admin.users.index', compact('users'));
     }
 
