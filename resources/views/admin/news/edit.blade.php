@@ -95,7 +95,8 @@
         CKEDITOR.replace('content', {
             language: 'es',
             height: 450,
-            allowedContent: true
+            allowedContent: true,
+            filebrowserImageUploadUrl: '{{ route("admin.editor.image.upload") }}?_token={{ csrf_token() }}'
         });
     </script>
 </x-admin-layout>

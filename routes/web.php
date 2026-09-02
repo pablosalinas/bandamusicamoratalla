@@ -104,6 +104,7 @@ Route::middleware('auth')->group(function () {
 Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
     Route::view('/manual', 'admin.manual')->name('manual');
+    Route::post('editor/image-upload', [\App\Http\Controllers\Admin\ImageUploadController::class, 'upload'])->name('editor.image.upload');
     
     // Rutas permitidas para Director
     Route::get('sheet-music/pdf', [\App\Http\Controllers\Admin\SheetMusicController::class, 'pdf'])->name('sheet-music.pdf');
