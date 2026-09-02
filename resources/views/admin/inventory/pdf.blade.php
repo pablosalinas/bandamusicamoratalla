@@ -61,16 +61,22 @@
         <tbody>
             @foreach($inventory as $item)
                 <tr class="border-b">
-                    <td class="p-2">{{ $item->musician->name }} {{ $item->musician->lastname }}</td>
-                    <td class="p-2">{{ $item->instrument->name }}</td>
+                    <td class="p-2">
+                        @if($item->currentUser)
+                            {{ $item->currentUser->name }} {{ $item->currentUser->last_name }}
+                        @else
+                            <span class="text-gray-500 italic">En stock</span>
+                        @endif
+                    </td>
+                    <td class="p-2">{{ $item->instrument->name ?? 'Desconocido' }}</td>
                     <td class="p-2">
                         {{ $item->brand ? $item->brand->name : '' }} 
-                        {{ $item->modelo }}
+                        {{ $item->model }}
                     </td>
-                    <td class="p-2">{{ $item->pivot->serial_number }}</td>
-                    <td class="p-2">{{ ucfirst($item->pivot->propiedad) }}</td>
+                    <td class="p-2">{{ $item->serial_number }}</td>
+                    <td class="p-2">{{ ucfirst($item->propiedad) }}</td>
                     <td class="p-2">
-                        @if($item->pivot->is_active)
+                        @if($item->is_active)
                             <span class="text-green-600 font-bold">Activo</span>
                         @else
                             <span class="text-red-600 font-bold">Inactivo</span>
