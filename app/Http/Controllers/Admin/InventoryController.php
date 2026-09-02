@@ -188,7 +188,9 @@ class InventoryController extends Controller
             'from_user_id' => $oldUser,
             'to_user_id' => null,
             'type' => 'returned',
-            'notes' => 'Devolución automática por transferencia. ' . $request->notes
+            'notes' => 'Devolución automática por transferencia. ' . $request->notes,
+            'created_at' => now()->subSecond(),
+            'updated_at' => now()->subSecond(),
         ]);
 
         // 2. Assign

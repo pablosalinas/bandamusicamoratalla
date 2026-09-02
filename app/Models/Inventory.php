@@ -36,6 +36,6 @@ class Inventory extends Model
 
     public function movements()
     {
-        return $this->hasMany(InventoryMovement::class, 'inventory_id')->orderBy('created_at', 'desc');
+        return $this->hasMany(InventoryMovement::class, 'inventory_id')->orderBy('created_at', 'asc')->orderBy('id', 'asc');
     }
 }
