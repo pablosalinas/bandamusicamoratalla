@@ -106,17 +106,23 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     Route::view('/manual', 'admin.manual')->name('manual');
     Route::post('editor/image-upload', [\App\Http\Controllers\Admin\ImageUploadController::class, 'upload'])->name('editor.image.upload');
     Route::get('editor/image-upload/test', function () {
-        $disk = \Illuminate\Support\Facades\Storage::disk('public');
-        $testPath = 'editor-images/.test_' . time();
+        $uploadDir = public_path('uploads/editor-images');
         $writable = false;
-        try { $disk->put($testPath, 'test'); $disk->delete($testPath); $writable = true; } catch (\Throwable $e) {}
+        $exists = is_dir($uploadDir);
+        if (!$exists) {
+            try { mkdir($uploadDir, 0755, true); $exists = true; } catch (\Throwable $e) {}
+        }
+        if ($exists) {
+            $testFile = $uploadDir . '/.test_' . time();
+            try { file_put_contents($testFile, 'test'); unlink($testFile); $writable = true; } catch (\Throwable $e) {}
+        }
         return response()->json([
-            'php_upload_max' => ini_get('upload_max_filesize'),
-            'php_post_max'   => ini_get('post_max_size'),
-            'storage_writable' => $writable,
-            'storage_path'   => storage_path('app/public'),
-            'app_url'        => config('app.url'),
-            'sample_url'     => rtrim(config('app.url'), '/') . '/storage/editor-images/sample.jpg',
+            'php_upload_max'   => ini_get('upload_max_filesize'),
+            'php_post_max'     => ini_get('post_max_size'),
+            'uploads_dir'      => $uploadDir,
+            'uploads_exists'   => $exists,
+            'uploads_writable' => $writable,
+            'app_url'          => config('app.url'),
         ]);
     })->name('editor.image.test');
 
