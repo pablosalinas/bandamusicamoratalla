@@ -12,15 +12,15 @@ class MusicianController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $user->load('instruments');
+        $user->load('inventories.instrument');
         
         // Find which (instrument, tipo) the user has
         $userInstrumentParts = [];
-        foreach ($user->instruments as $inst) {
-            if ($inst->pivot->is_active) {
+        foreach ($user->inventories as $inv) {
+            if ($inv->is_active) {
                 $userInstrumentParts[] = [
-                    'id' => $inst->id,
-                    'tipo' => $inst->pivot->tipo_partitura ?: 'TODOS'
+                    'id' => $inv->instrument_catalog_id,
+                    'tipo' => $inv->tipo_partitura ?: 'TODOS'
                 ];
             }
         }
@@ -66,11 +66,12 @@ class MusicianController extends Controller
     public function download(\App\Models\SheetMusicInstrument $sheetMusicInstrument)
     {
         $user = Auth::user();
+        $user->load('inventories');
         
         $hasAccess = false;
-        foreach ($user->instruments as $inst) {
-            if ($inst->pivot->is_active && $inst->id == $sheetMusicInstrument->instrument_catalog_id) {
-                $userTipo = $inst->pivot->tipo_partitura ?: 'TODOS';
+        foreach ($user->inventories as $inv) {
+            if ($inv->is_active && $inv->instrument_catalog_id == $sheetMusicInstrument->instrument_catalog_id) {
+                $userTipo = $inv->tipo_partitura ?: 'TODOS';
                 if (in_array($sheetMusicInstrument->tipo_partitura, [$userTipo, 'TODOS'])) {
                     $hasAccess = true;
                     break;
