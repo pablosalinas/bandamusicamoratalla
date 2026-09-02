@@ -125,38 +125,31 @@
             },
 
             init() {
-                let firstVideoIdx = this.slides.findIndex(s => s.type === 'video');
-                if (firstVideoIdx !== -1 && firstVideoIdx <= this.maxIndex) {
-                    this.currentIndex = firstVideoIdx;
-                }
                 this.$nextTick(() => {
-                    this.playAllVisibleVideos();
                     this.startAutoplay();
                 });
             },
 
-            playAllVisibleVideos() {
-                for (let i = this.currentIndex; i < this.currentIndex + this.visibleItems; i++) {
-                    if (this.slides[i] && this.slides[i].type === 'video') {
-                        let vid = document.getElementById('carousel-video-' + i);
-                        if (vid) {
-                            vid.muted = this.globalMuted;
-                            vid.play().catch(() => {});
-                        }
-                    }
-                }
+            stopAllVideos() {
+                document.querySelectorAll('.carousel-video').forEach(v => {
+                    v.pause();
+                    v.currentTime = 0;
+                    v.onended = null;
+                });
             },
             
             startAutoplay() {
                 this.stopAutoplay();
                 this.$nextTick(() => {
-                    this.playAllVisibleVideos();
                     let currentSlide = this.slides[this.currentIndex];
                     if (!currentSlide || currentSlide.type !== 'video') {
                         this.scheduleNext();
                     } else {
                         let videoEl = document.getElementById('carousel-video-' + this.currentIndex);
                         if (videoEl) {
+                            videoEl.muted = this.globalMuted;
+                            videoEl.currentTime = 0;
+                            videoEl.play().catch(() => {});
                             videoEl.onended = () => { this.next(); };
                         } else {
                             this.scheduleNext();
@@ -175,27 +168,28 @@
                 if (this.autoplayInterval) {
                     clearTimeout(this.autoplayInterval);
                 }
-                document.querySelectorAll('.carousel-video').forEach(v => {
-                    v.onended = null;
-                });
+                this.stopAllVideos();
             },
             
             next() {
+                this.stopAllVideos();
                 this.currentIndex = (this.currentIndex + 1 > this.maxIndex) ? 0 : this.currentIndex + 1;
                 this.startAutoplay();
             },
             
             prev() {
+                this.stopAllVideos();
                 this.currentIndex = (this.currentIndex - 1 < 0) ? this.maxIndex : this.currentIndex - 1;
                 this.startAutoplay();
             },
 
             toggleMute() {
                 this.globalMuted = !this.globalMuted;
-                document.querySelectorAll('.carousel-video').forEach(v => {
-                    v.muted = this.globalMuted;
-                    if (!this.globalMuted) v.play().catch(() => {});
-                });
+                let videoEl = document.getElementById('carousel-video-' + this.currentIndex);
+                if (videoEl) {
+                    videoEl.muted = this.globalMuted;
+                    if (!this.globalMuted) videoEl.play().catch(() => {});
+                }
             },
             
             openLightbox(index) {
@@ -231,9 +225,7 @@
                                                :src="slide.src"
                                                class="carousel-video w-full h-full object-cover"
                                                muted
-                                               playsinline
-                                               loop
-                                               autoplay>
+                                               playsinline>
                                         </video>
                                         <button @click.stop="toggleMute()"
                                                 class="absolute bottom-3 right-3 z-20 bg-black/60 hover:bg-black/90 text-white rounded-full p-2 transition-all"
