@@ -120,12 +120,16 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     // Instrument Catalog
     Route::resource('instruments', \App\Http\Controllers\Admin\InstrumentController::class)->except(['show']);
     Route::resource('instrument-brands', \App\Http\Controllers\Admin\InstrumentBrandController::class)->only(['index', 'store', 'destroy']);
+    Route::post('instrument-photos', [\App\Http\Controllers\Admin\InstrumentPhotoController::class, 'store'])->name('instrument-photos.store');
     Route::put('instrument-photos/{photo}', [\App\Http\Controllers\Admin\InstrumentPhotoController::class, 'update'])->name('instrument-photos.update');
     Route::delete('instrument-photos/{photo}', [\App\Http\Controllers\Admin\InstrumentPhotoController::class, 'destroy'])->name('instrument-photos.destroy');
     
     // Inventory
-    Route::get('inventory', [\App\Http\Controllers\Admin\InventoryController::class, 'index'])->name('inventory.index');
     Route::get('inventory/pdf', [\App\Http\Controllers\Admin\InventoryController::class, 'pdf'])->name('inventory.pdf');
+    Route::resource('inventory', \App\Http\Controllers\Admin\InventoryController::class);
+    Route::post('inventory/{inventory}/assign', [\App\Http\Controllers\Admin\InventoryController::class, 'assign'])->name('inventory.assign');
+    Route::post('inventory/{inventory}/return', [\App\Http\Controllers\Admin\InventoryController::class, 'returnInstrument'])->name('inventory.return');
+    Route::post('inventory/{inventory}/transfer', [\App\Http\Controllers\Admin\InventoryController::class, 'transfer'])->name('inventory.transfer');
     
     Route::resource('news', \App\Http\Controllers\Admin\NewsController::class);
     Route::post('news/{news}/images', [\App\Http\Controllers\Admin\NewsImageController::class, 'store'])->name('news.images.store');

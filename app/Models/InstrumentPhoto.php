@@ -9,10 +9,10 @@ class InstrumentPhoto extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['musician_instrument_id', 'photo_path', 'description'];
+    protected $fillable = ['inventory_id', 'photo_path', 'description'];
 
-    public function musicianInstrument()
+    public function inventory()
     {
-        return $this->belongsTo(MusicianInstrument::class, 'musician_instrument_id');
+        return $this->belongsTo(Inventory::class, 'inventory_id');
     }
 }

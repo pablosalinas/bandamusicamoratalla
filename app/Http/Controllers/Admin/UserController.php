@@ -59,36 +59,7 @@ class UserController extends Controller
             'iban' => auth()->user()->canViewIban() ? $request->iban : null,
         ]);
 
-        if ($request->has('instruments')) {
-            $syncData = [];
-            foreach ($request->instruments as $instrumentId) {
-                $syncData[$instrumentId] = [
-                    'serial_number' => $request->input("serial_numbers.{$instrumentId}"),
-                    'tipo_partitura' => $request->input("tipo_partitura.{$instrumentId}"),
-                    'propiedad' => $request->input("propiedad.{$instrumentId}"),
-                    'is_active' => $request->has("is_active_instrument.{$instrumentId}"),
-                    'instrument_brand_id' => $request->input("instrument_brand_id.{$instrumentId}"),
-                    'modelo' => $request->input("modelo.{$instrumentId}")
-                ];
-            }
-            $user->instruments()->sync($syncData);
-            
-            // Handle photos
-            foreach ($request->instruments as $instrumentId) {
-                if ($request->hasFile("photos.{$instrumentId}")) {
-                    $pivot = \App\Models\MusicianInstrument::where('user_id', $user->id)
-                                ->where('instrument_catalog_id', $instrumentId)
-                                ->first();
-                    if ($pivot) {
-                        foreach ($request->file("photos.{$instrumentId}") as $file) {
-                            $path = $file->store('instrument_photos', 'public');
-                            \App\Services\ImageWatermarkService::applyWatermark(storage_path('app/public/' . $path));
-                            $pivot->photos()->create(['photo_path' => $path]);
-                        }
-                    }
-                }
-            }
-        }
+        // Note: Instruments and photos are now handled via the Inventory system after user creation.
 
         return redirect()->route('admin.users.index')->with('success', 'Usuario creado correctamente.');
     }
@@ -114,8 +85,7 @@ class UserController extends Controller
                 return $attendance->event->event_date;
             });
 
-        $userInstruments = $user->instruments->pluck('id')->toArray();
-        $userInstrumentsData = $user->instruments->keyBy('id');
+        $userInstruments = $user->inventories;
 
         $brands = \App\Models\InstrumentBrand::orderBy('name')->get();
 
@@ -165,38 +135,7 @@ class UserController extends Controller
             $user->update(['password' => Hash::make($request->password)]);
         }
 
-        if ($request->has('instruments')) {
-            $syncData = [];
-            foreach ($request->instruments as $instrumentId) {
-                $syncData[$instrumentId] = [
-                    'serial_number' => $request->input("serial_numbers.{$instrumentId}"),
-                    'tipo_partitura' => $request->input("tipo_partitura.{$instrumentId}"),
-                    'propiedad' => $request->input("propiedad.{$instrumentId}"),
-                    'is_active' => $request->has("is_active_instrument.{$instrumentId}"),
-                    'instrument_brand_id' => $request->input("instrument_brand_id.{$instrumentId}"),
-                    'modelo' => $request->input("modelo.{$instrumentId}")
-                ];
-            }
-            $user->instruments()->sync($syncData);
-
-            // Handle photos
-            foreach ($request->instruments as $instrumentId) {
-                if ($request->hasFile("photos.{$instrumentId}")) {
-                    $pivot = \App\Models\MusicianInstrument::where('user_id', $user->id)
-                                ->where('instrument_catalog_id', $instrumentId)
-                                ->first();
-                    if ($pivot) {
-                        foreach ($request->file("photos.{$instrumentId}") as $file) {
-                            $path = $file->store('instrument_photos', 'public');
-                            \App\Services\ImageWatermarkService::applyWatermark(storage_path('app/public/' . $path));
-                            $pivot->photos()->create(['photo_path' => $path]);
-                        }
-                    }
-                }
-            }
-        } else {
-            $user->instruments()->detach();
-        }
+        // Note: Instruments and photos are now handled via the Inventory system.
 
         return redirect()->route('admin.users.index')->with('success', 'Usuario actualizado correctamente.');
     }

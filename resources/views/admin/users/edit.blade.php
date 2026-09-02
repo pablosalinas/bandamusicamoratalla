@@ -170,185 +170,39 @@
                         @endif
                     </div>
 
-                    <div class="sm:col-span-6 border-t border-gray-800 pt-6 mt-2" 
-                         x-data="{
-                            availableInstruments: {{ $instruments->map(fn($i) => ['id' => $i->id, 'name' => $i->name])->toJson() }},
-                            selectedInstruments: [
-                                @foreach($instruments as $instrument)
-                                    @php
-                                        $isChecked = in_array($instrument->id, old('instruments', $userInstruments ?? []));
-                                        $serialValue = old('serial_numbers.'.$instrument->id, isset($userInstrumentsData) && $userInstrumentsData->has($instrument->id) ? $userInstrumentsData[$instrument->id]->pivot->serial_number : '');
-                                        $tipoValue = old('tipo_partitura.'.$instrument->id, isset($userInstrumentsData) && $userInstrumentsData->has($instrument->id) ? $userInstrumentsData[$instrument->id]->pivot->tipo_partitura : '');
-                                        $propiedadValue = old('propiedad.'.$instrument->id, isset($userInstrumentsData) && $userInstrumentsData->has($instrument->id) ? $userInstrumentsData[$instrument->id]->pivot->propiedad : '');
-                                        $brandValue = old('instrument_brand_id.'.$instrument->id, isset($userInstrumentsData) && $userInstrumentsData->has($instrument->id) ? $userInstrumentsData[$instrument->id]->pivot->instrument_brand_id : '');
-                                        $modeloValue = old('modelo.'.$instrument->id, isset($userInstrumentsData) && $userInstrumentsData->has($instrument->id) ? $userInstrumentsData[$instrument->id]->pivot->modelo : '');
-                                        $isActiveValue = old('is_active_instrument.'.$instrument->id, isset($userInstrumentsData) && $userInstrumentsData->has($instrument->id) ? $userInstrumentsData[$instrument->id]->pivot->is_active : true);
-                                        
-                                        $photosData = [];
-                                        if (isset($userInstrumentsData) && $userInstrumentsData->has($instrument->id)) {
-                                            $pivotId = $userInstrumentsData[$instrument->id]->pivot->id;
-                                            $photosData = \App\Models\InstrumentPhoto::where('musician_instrument_id', $pivotId)->get()->map(function($p) {
-                                                return [
-                                                    'id' => $p->id,
-                                                    'url' => asset('storage/' . $p->photo_path),
-                                                    'description' => $p->description ?? ''
-                                                ];
-                                            })->toArray();
-                                        }
-                                    @endphp
-                                    @if($isChecked)
-                                    { 
-                                        id: {{ $instrument->id }}, 
-                                        name: {{ json_encode($instrument->name) }}, 
-                                        serial: {{ json_encode($serialValue) }}, 
-                                        tipo: {{ json_encode($tipoValue) }}, 
-                                        propiedad: {{ json_encode($propiedadValue) }}, 
-                                        brand_id: {{ json_encode($brandValue) }}, 
-                                        modelo: {{ json_encode($modeloValue) }}, 
-                                        active: {{ $isActiveValue ? 'true' : 'false' }},
-                                        photos: {{ json_encode($photosData) }}
-                                    },
-                                    @endif
-                                @endforeach
-                            ],
-                            brands: {{ $brands->map(fn($b) => ['id' => $b->id, 'name' => $b->name])->toJson() }},
-                            selectedToAdd: '',
-                            addInstrument() {
-                                if (!this.selectedToAdd) return;
-                                const id = parseInt(this.selectedToAdd);
-                                if (!this.selectedInstruments.find(i => i.id === id)) {
-                                    const inst = this.availableInstruments.find(i => i.id === id);
-                                    if (inst) {
-                                        this.selectedInstruments.push({ id: inst.id, name: inst.name, serial: '', tipo: '', propiedad: '', brand_id: '', modelo: '', active: true, photos: [] });
-                                    }
-                                }
-                                this.selectedToAdd = '';
-                            },
-                            removeInstrument(id) {
-                                this.selectedInstruments = this.selectedInstruments.filter(i => i.id !== id);
-                            }
-                         }">
-                         
-                        <label class="block text-base font-semibold leading-6 text-white mb-4">Instrumentos Asignados</label>
-                        <p class="text-sm text-gray-400 mb-4">Selecciona los instrumentos que toca este músico e indica sus detalles adicionales.</p>
-                        
-                        <div class="flex items-center gap-4 mb-6">
-                            <select x-model="selectedToAdd" class="block w-full sm:w-1/2 rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6">
-                                <option value="">-- Añadir instrumento --</option>
-                                <template x-for="inst in availableInstruments" :key="inst.id">
-                                    <option :value="inst.id" x-text="inst.name" x-show="!selectedInstruments.find(s => s.id === inst.id)"></option>
-                                </template>
-                            </select>
-                            <button type="button" @click="addInstrument" class="rounded-md bg-amber-600 px-3 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-amber-500">
-                                Añadir
-                            </button>
+                    <div class="sm:col-span-6 border-t border-gray-800 pt-6 mt-2">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <label class="block text-base font-semibold leading-6 text-white">Instrumentos Asignados</label>
+                                <p class="text-sm text-gray-400">Los instrumentos ahora se gestionan desde el Inventario Central.</p>
+                            </div>
+                            <a href="{{ route('admin.inventory.index', ['musician_id' => $user->id]) }}" class="rounded-md bg-amber-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-amber-500">
+                                Gestionar en Inventario
+                            </a>
                         </div>
-
+                        
                         <div class="flex flex-col gap-4">
-                            <template x-for="(inst, index) in selectedInstruments" :key="inst.id">
-                                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-gray-950 rounded-lg border border-gray-800 gap-4 relative">
-                                    <button type="button" @click="removeInstrument(inst.id)" class="absolute top-2 right-2 text-red-500 hover:text-red-400 p-1">
-                                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                                        </svg>
-                                    </button>
-                                    
-                                    <div class="flex-1 w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4 sm:mt-0">
-                                        <div class="col-span-full">
-                                            <p class="text-lg font-bold text-amber-500 mb-2" x-text="inst.name"></p>
-                                            <input type="hidden" name="instruments[]" :value="inst.id">
-                                        </div>
-                                        
-                                        <div>
-                                            <label class="block text-xs font-medium text-gray-400">Tipo de Partitura</label>
-                                            <select :name="'tipo_partitura[' + inst.id + ']'" x-model="inst.tipo" class="mt-1 block w-full rounded-md border-0 bg-gray-800 py-1 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-xs">
-                                                <option value="">Selecciona...</option>
-                                                <option value="1º">1º</option>
-                                                <option value="2º">2º</option>
-                                                <option value="3º">3º</option>
-                                                <option value="PRINCIPAL">PRINCIPAL</option>
-                                                <option value="TODOS">TODOS</option>
-                                            </select>
-                                        </div>
-
-                                        <div>
-                                            <label class="block text-xs font-medium text-gray-400">Propiedad</label>
-                                            <select :name="'propiedad[' + inst.id + ']'" x-model="inst.propiedad" class="mt-1 block w-full rounded-md border-0 bg-gray-800 py-1 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-xs">
-                                                <option value="">Selecciona...</option>
-                                                <option value="Propio">Propio</option>
-                                                <option value="De la banda">De la banda</option>
-                                                <option value="Prestado">Prestado</option>
-                                                <option value="Reliquia">Reliquia</option>
-                                                <option value="Alquilado">Alquilado</option>
-                                            </select>
-                                        </div>
-                                        
-                                        <div>
-                                            <label class="block text-xs font-medium text-gray-400">Marca</label>
-                                            <select :name="'instrument_brand_id[' + inst.id + ']'" x-model="inst.brand_id" class="mt-1 block w-full rounded-md border-0 bg-gray-800 py-1 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-xs">
-                                                <option value="">Selecciona marca...</option>
-                                                <template x-for="brand in brands" :key="brand.id">
-                                                    <option :value="brand.id" x-text="brand.name"></option>
-                                                </template>
-                                            </select>
-                                        </div>
-
-                                        <div>
-                                            <label class="block text-xs font-medium text-gray-400">Modelo</label>
-                                            <input type="text" :name="'modelo[' + inst.id + ']'" x-model="inst.modelo" class="mt-1 block w-full rounded-md border-0 bg-gray-800 py-1 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-xs">
-                                        </div>
-                                        
-                                        <div>
-                                            <label class="block text-xs font-medium text-gray-400">Nº Serie (Opcional)</label>
-                                            <input type="text" :name="'serial_numbers[' + inst.id + ']'" x-model="inst.serial" class="mt-1 block w-full rounded-md border-0 bg-gray-800 py-1 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-xs">
-                                        </div>
-                                        
-                                        <div class="col-span-full">
-                                            <label class="block text-xs font-medium text-gray-400">Subir Fotos (Múltiples)</label>
-                                            <input type="file" :name="'photos[' + inst.id + '][]'" multiple accept="image/*" class="mt-1 block w-full text-sm text-gray-400 file:mr-4 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-gray-800 file:text-amber-500 hover:file:bg-gray-700">
-                                        </div>
-
-                                        <!-- Photo Gallery -->
-                                        <template x-if="inst.photos && inst.photos.length > 0">
-                                            <div class="col-span-full mt-4 bg-gray-900 rounded p-4 border border-gray-700">
-                                                <h4 class="text-sm font-semibold text-white mb-3">Fotos guardadas</h4>
-                                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                                    <template x-for="photo in inst.photos" :key="photo.id">
-                                                        <div class="flex flex-col sm:flex-row items-center gap-3 bg-gray-950 p-2 rounded border border-gray-800">
-                                                            <a :href="photo.url" target="_blank" class="flex-shrink-0">
-                                                                <img :src="photo.url" class="h-16 w-16 object-cover rounded border border-gray-700" alt="Foto">
-                                                            </a>
-                                                            <div class="flex-1 w-full">
-                                                                <form method="POST" :action="'{{ url('admin/instrument-photos') }}/' + photo.id" class="flex gap-2">
-                                                                    @csrf @method('PUT')
-                                                                    <input type="text" name="description" :value="photo.description" placeholder="Descripción de la foto..." class="block w-full rounded-md border-0 bg-gray-800 py-1 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-xs">
-                                                                    <button type="submit" class="bg-amber-600 hover:bg-amber-500 text-white rounded px-2 py-1 text-xs font-semibold">Guardar</button>
-                                                                </form>
-                                                            </div>
-                                                            <div class="flex-shrink-0">
-                                                                <form method="POST" :action="'{{ url('admin/instrument-photos') }}/' + photo.id" onsubmit="return confirm('¿Seguro que quieres borrar esta foto?');">
-                                                                    @csrf @method('DELETE')
-                                                                    <button type="submit" class="text-red-500 hover:text-red-400 p-1">
-                                                                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                                                            <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                                                                        </svg>
-                                                                    </button>
-                                                                </form>
-                                                            </div>
-                                                        </div>
-                                                    </template>
-                                                </div>
-                                            </div>
-                                        </template>
-                                        
-                                        <div class="col-span-full flex items-center mt-4">
-                                            <input type="checkbox" :name="'is_active_instrument[' + inst.id + ']'" x-model="inst.active" value="1" class="h-4 w-4 rounded border-gray-700 bg-gray-900 text-amber-600 focus:ring-amber-600 focus:ring-offset-gray-900">
-                                            <label class="ml-2 block text-xs font-medium text-gray-300">Instrumento Activo</label>
-                                        </div>
+                            @forelse($userInstruments as $inst)
+                                <div class="flex flex-col sm:flex-row items-center justify-between p-4 bg-gray-950 rounded-lg border {{ $inst->is_active ? 'border-gray-800' : 'border-red-900/50 opacity-70' }}">
+                                    <div class="flex-1">
+                                        <p class="text-lg font-bold text-amber-500">
+                                            {{ $inst->instrument->name ?? 'Desconocido' }}
+                                            @if(!$inst->is_active) <span class="text-xs text-red-500 ml-2">(Dado de baja)</span> @endif
+                                        </p>
+                                        <p class="text-sm text-gray-400 mt-1">
+                                            Marca/Modelo: {{ $inst->brand->name ?? '-' }} {{ $inst->model ? ' / ' . $inst->model : '' }} | 
+                                            Nº Serie: {{ $inst->serial_number ?: 'N/A' }}
+                                        </p>
+                                    </div>
+                                    <div class="mt-4 sm:mt-0 flex gap-2">
+                                        <a href="{{ route('admin.inventory.show', $inst) }}" class="text-xs bg-gray-800 hover:bg-gray-700 text-white px-3 py-1.5 rounded transition-colors">
+                                            Ver Ficha y Trazabilidad
+                                        </a>
                                     </div>
                                 </div>
-                            </template>
-                            <p x-show="selectedInstruments.length === 0" class="text-sm text-gray-500 italic">No hay instrumentos asignados a este músico.</p>
+                            @empty
+                                <p class="text-sm text-gray-500 italic">No hay instrumentos asignados a este músico.</p>
+                            @endforelse
                         </div>
                     </div>
 
