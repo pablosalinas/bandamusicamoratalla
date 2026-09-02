@@ -89,7 +89,7 @@ class UserController extends Controller
 
         $brands = \App\Models\InstrumentBrand::orderBy('name')->get();
 
-        return view('admin.users.edit', compact('user', 'instruments', 'attendances', 'filter', 'userInstruments', 'userInstrumentsData', 'brands'));
+        return view('admin.users.edit', compact('user', 'instruments', 'attendances', 'filter', 'userInstruments', 'brands'));
     }
 
     public function update(Request $request, User $user)
