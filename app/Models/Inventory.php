@@ -24,9 +24,9 @@ class Inventory extends Model
         return $this->belongsTo(InstrumentBrand::class, 'instrument_brand_id');
     }
 
-    public function currentUser()
+    public function users()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsToMany(User::class, 'inventory_user', 'inventory_id', 'user_id')->withTimestamps();
     }
 
     public function photos()

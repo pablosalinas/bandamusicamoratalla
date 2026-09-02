@@ -14,11 +14,13 @@ class InventoryController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Inventory::with(['instrument', 'brand', 'currentUser', 'photos']);
+        $query = Inventory::with(['instrument', 'brand', 'users', 'photos']);
 
         // Filters
         if ($request->filled('musician_id')) {
-            $query->where('user_id', $request->musician_id);
+            $query->whereHas('users', function($q) use ($request) {
+                $q->where('users.id', $request->musician_id);
+            });
         }
         
         if ($request->filled('propiedad')) {
@@ -36,9 +38,9 @@ class InventoryController extends Controller
 
         if ($request->filled('status')) {
             if ($request->status === 'assigned') {
-                $query->whereNotNull('user_id')->where('is_active', true);
+                $query->whereHas('users')->where('is_active', true);
             } elseif ($request->status === 'available') {
-                $query->whereNull('user_id')->where('is_active', true);
+                $query->whereDoesntHave('users')->where('is_active', true);
             }
         }
 
@@ -76,13 +78,17 @@ class InventoryController extends Controller
         ]);
 
         $data['is_active'] = $request->has('is_active');
+        $userId = $request->user_id;
+        unset($data['user_id']); // No longer in the schema
+
         $inventory = Inventory::create($data);
 
-        if ($inventory->user_id) {
+        if ($userId) {
+            $inventory->users()->attach($userId);
             InventoryMovement::create([
                 'inventory_id' => $inventory->id,
                 'from_user_id' => null,
-                'to_user_id' => $inventory->user_id,
+                'to_user_id' => $userId,
                 'type' => 'assigned',
                 'notes' => 'Asignación inicial al crear.'
             ]);
@@ -121,7 +127,7 @@ class InventoryController extends Controller
 
     public function show(Inventory $inventory)
     {
-        $inventory->load(['movements.fromUser', 'movements.toUser', 'photos']);
+        $inventory->load(['movements.fromUser', 'movements.toUser', 'photos', 'users']);
         $musicians = User::orderBy('name')->get();
         return view('admin.inventory.show', compact('inventory', 'musicians'));
     }
@@ -137,11 +143,11 @@ class InventoryController extends Controller
     {
         $request->validate(['user_id' => 'required|exists:users,id', 'notes' => 'nullable|string']);
         
-        if ($inventory->user_id) {
-            return back()->with('error', 'El instrumento ya está asignado.');
+        if ($inventory->users()->where('users.id', $request->user_id)->exists()) {
+            return back()->with('error', 'El instrumento ya está asignado a este músico.');
         }
 
-        $inventory->update(['user_id' => $request->user_id]);
+        $inventory->users()->attach($request->user_id);
         
         InventoryMovement::create([
             'inventory_id' => $inventory->id,
@@ -156,18 +162,22 @@ class InventoryController extends Controller
 
     public function returnInstrument(Request $request, Inventory $inventory)
     {
-        $request->validate(['notes' => 'nullable|string']);
+        $request->validate([
+            'notes' => 'nullable|string',
+            'user_id' => 'required|exists:users,id' // Especificamos qué músico lo devuelve
+        ]);
 
-        if (!$inventory->user_id) {
-            return back()->with('error', 'El instrumento no está asignado actualmente.');
+        $userId = $request->user_id;
+
+        if (!$inventory->users()->where('users.id', $userId)->exists()) {
+            return back()->with('error', 'El instrumento no está asignado a este músico actualmente.');
         }
 
-        $oldUser = $inventory->user_id;
-        $inventory->update(['user_id' => null]);
+        $inventory->users()->detach($userId);
         
         InventoryMovement::create([
             'inventory_id' => $inventory->id,
-            'from_user_id' => $oldUser,
+            'from_user_id' => $userId,
             'to_user_id' => null,
             'type' => 'returned',
             'notes' => $request->notes
@@ -178,18 +188,22 @@ class InventoryController extends Controller
 
     public function transfer(Request $request, Inventory $inventory)
     {
-        $request->validate(['user_id' => 'required|exists:users,id', 'notes' => 'nullable|string']);
+        $request->validate([
+            'user_id' => 'required|exists:users,id', // to user
+            'from_user_id' => 'required|exists:users,id', // from user
+            'notes' => 'nullable|string'
+        ]);
 
-        if (!$inventory->user_id) {
-            return back()->with('error', 'El instrumento no está asignado actualmente. Usa la opción de Asignar.');
+        $oldUser = $request->from_user_id;
+        $newUser = $request->user_id;
+
+        if (!$inventory->users()->where('users.id', $oldUser)->exists()) {
+            return back()->with('error', 'El instrumento no está asignado al músico de origen.');
         }
         
-        if ($inventory->user_id == $request->user_id) {
-            return back()->with('error', 'El instrumento ya está asignado a este músico.');
+        if ($oldUser == $newUser || $inventory->users()->where('users.id', $newUser)->exists()) {
+            return back()->with('error', 'El instrumento ya está asignado a este músico de destino.');
         }
-
-        $oldUser = $inventory->user_id;
-        $newUser = $request->user_id;
 
         // 1. Return
         InventoryMovement::create([
@@ -201,9 +215,11 @@ class InventoryController extends Controller
             'created_at' => now()->subSecond(),
             'updated_at' => now()->subSecond(),
         ]);
+        
+        $inventory->users()->detach($oldUser);
 
         // 2. Assign
-        $inventory->update(['user_id' => $newUser]);
+        $inventory->users()->attach($newUser);
         
         InventoryMovement::create([
             'inventory_id' => $inventory->id,
@@ -218,13 +234,31 @@ class InventoryController extends Controller
 
     public function pdf(Request $request)
     {
-        $query = Inventory::with(['instrument', 'brand', 'currentUser']);
+        $query = Inventory::with(['instrument', 'brand', 'users']);
 
         if ($request->filled('musician_id')) {
-            $query->where('user_id', $request->musician_id);
+            $query->whereHas('users', function($q) use ($request) {
+                $q->where('users.id', $request->musician_id);
+            });
         }
         if ($request->filled('propiedad')) {
-            $query->where('propiedad', $request->propiedad);
+            if ($request->propiedad === 'banda') {
+                $query->where('propiedad', 'like', '%banda%');
+            } else {
+                $query->where(function($q) {
+                    $q->where('propiedad', 'not like', '%banda%')
+                      ->orWhere('propiedad', 'like', '%propio%')
+                      ->orWhere('propiedad', 'like', '%musico%')
+                      ->orWhere('propiedad', 'like', '%músico%');
+                });
+            }
+        }
+        if ($request->filled('status')) {
+            if ($request->status === 'assigned') {
+                $query->whereHas('users')->where('is_active', true);
+            } elseif ($request->status === 'available') {
+                $query->whereDoesntHave('users')->where('is_active', true);
+            }
         }
         if (!$request->has('show_inactive')) {
             $query->where('is_active', true);
@@ -233,9 +267,10 @@ class InventoryController extends Controller
         $inventory = $query->orderBy('created_at', 'desc')->get();
         return view('admin.inventory.pdf', compact('inventory'));
     }
+
     public function traceabilityPdf(Inventory $inventory)
     {
-        $inventory->load(['instrument', 'brand', 'currentUser', 'movements.fromUser', 'movements.toUser']);
+        $inventory->load(['instrument', 'brand', 'users', 'movements.fromUser', 'movements.toUser']);
         return view('admin.inventory.traceability_pdf', compact('inventory'));
     }
 }

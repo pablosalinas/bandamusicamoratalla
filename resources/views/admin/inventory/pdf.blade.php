@@ -62,8 +62,8 @@
             @foreach($inventory as $item)
                 <tr class="border-b">
                     <td class="p-2">
-                        @if($item->currentUser)
-                            {{ $item->currentUser->name }} {{ $item->currentUser->last_name }}
+                        @if($item->users->count() > 0)
+                            {{ $item->users->map(fn($u) => $u->name . ' ' . $u->last_name)->implode(', ') }}
                         @else
                             <span class="text-gray-500 italic">En stock</span>
                         @endif

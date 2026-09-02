@@ -73,33 +73,41 @@
             <div class="mt-8 bg-gray-900 shadow-sm ring-1 ring-gray-800 sm:rounded-xl p-6">
                 <h3 class="text-lg font-bold text-white mb-4">Gestión de Asignación</h3>
                 
-                @if($inventory->user_id)
-                    <!-- Asignado actualmente -->
+                @if($inventory->users->count() > 0)
+                    <!-- Asignado actualmente a -->
                     <div class="bg-amber-900/20 border border-amber-600/30 rounded p-4 mb-6">
-                        <p class="text-sm text-amber-200/80 mb-2">Asignado actualmente a:</p>
-                        <p class="text-lg font-bold text-amber-500">{{ $inventory->currentUser->name }} {{ $inventory->currentUser->last_name }}</p>
+                        <p class="text-sm text-amber-200/80 mb-3">Asignado actualmente a:</p>
+                        <div class="space-y-3">
+                            @foreach($inventory->users as $user)
+                                <div class="flex items-center justify-between bg-gray-950 p-2 rounded border border-gray-800">
+                                    <p class="text-md font-bold text-amber-500">{{ $user->name }} {{ $user->last_name }}</p>
+                                    
+                                    <form action="{{ route('admin.inventory.return', $inventory) }}" method="POST" onsubmit="return confirm('¿Seguro que deseas registrar la devolución de este instrumento por parte de {{ $user->name }}?');">
+                                        @csrf
+                                        <input type="hidden" name="user_id" value="{{ $user->id }}">
+                                        <button type="submit" class="text-xs rounded bg-red-900/50 px-2 py-1 text-red-400 hover:bg-red-900 border border-red-800/50">
+                                            Quitar (Devolver)
+                                        </button>
+                                    </form>
+                                </div>
+                            @endforeach
+                        </div>
                     </div>
 
-                    <!-- Botón de Devolver -->
-                    <form action="{{ route('admin.inventory.return', $inventory) }}" method="POST" class="mb-6 border-b border-gray-800 pb-6" onsubmit="return confirm('¿Seguro que deseas registrar la devolución de este instrumento al inventario?');">
-                        @csrf
-                        <div class="mb-3">
-                            <label class="block text-xs font-medium text-gray-400 mb-1">Notas de la devolución (opcional)</label>
-                            <input type="text" name="notes" class="block w-full rounded-md border-0 bg-gray-950 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 sm:text-sm">
-                        </div>
-                        <button type="submit" class="w-full rounded-md bg-gray-700 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-600">
-                            Devolver al Stock de la Banda
-                        </button>
-                    </form>
-
                     <!-- Form de Transferencia directa -->
-                    <form action="{{ route('admin.inventory.transfer', $inventory) }}" method="POST" onsubmit="return confirm('Esto registrará la devolución por parte del músico actual y se lo asignará al nuevo músico. ¿Continuar?');">
+                    <form action="{{ route('admin.inventory.transfer', $inventory) }}" method="POST" class="mb-6 border-b border-gray-800 pb-6" onsubmit="return confirm('Esto registrará la devolución y se lo asignará al nuevo músico. ¿Continuar?');">
                         @csrf
-                        <label class="block text-sm font-medium text-white mb-2">O transferir directamente a otro músico:</label>
+                        <label class="block text-sm font-medium text-white mb-2">Traspasar a otro músico:</label>
+                        <select name="from_user_id" required class="block w-full rounded-md border-0 bg-gray-950 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm mb-2">
+                            <option value="">-- Músico que lo devuelve --</option>
+                            @foreach($inventory->users as $u)
+                                <option value="{{ $u->id }}">{{ $u->name }} {{ $u->last_name }}</option>
+                            @endforeach
+                        </select>
                         <select name="user_id" required class="block w-full rounded-md border-0 bg-gray-950 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm mb-3">
-                            <option value="">-- Seleccionar nuevo músico --</option>
+                            <option value="">-- Nuevo músico que lo recibe --</option>
                             @foreach($musicians as $mus)
-                                @if($mus->id != $inventory->user_id && $mus->is_active)
+                                @if(!$inventory->users->contains($mus->id) && $mus->is_active)
                                     <option value="{{ $mus->id }}">{{ $mus->name }} {{ $mus->last_name }}</option>
                                 @endif
                             @endforeach
@@ -112,36 +120,35 @@
                             Transferir Instrumento
                         </button>
                     </form>
-
                 @else
                     <!-- En Stock -->
                     <div class="bg-green-900/20 border border-green-600/30 rounded p-4 mb-6">
                         <p class="text-green-400 font-semibold flex items-center">
                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                            Disponible en Inventario
+                            Disponible en Inventario (No asignado)
                         </p>
                     </div>
-
-                    <form action="{{ route('admin.inventory.assign', $inventory) }}" method="POST">
-                        @csrf
-                        <label class="block text-sm font-medium text-white mb-2">Asignar a músico:</label>
-                        <select name="user_id" required class="block w-full rounded-md border-0 bg-gray-950 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm mb-3">
-                            <option value="">-- Seleccionar músico --</option>
-                            @foreach($musicians as $mus)
-                                @if($mus->is_active)
-                                    <option value="{{ $mus->id }}">{{ $mus->name }} {{ $mus->last_name }}</option>
-                                @endif
-                            @endforeach
-                        </select>
-                        <div class="mb-4">
-                            <label class="block text-xs font-medium text-gray-400 mb-1">Notas de asignación</label>
-                            <input type="text" name="notes" class="block w-full rounded-md border-0 bg-gray-950 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 sm:text-sm">
-                        </div>
-                        <button type="submit" class="w-full rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-500">
-                            Asignar Instrumento
-                        </button>
-                    </form>
                 @endif
+
+                <form action="{{ route('admin.inventory.assign', $inventory) }}" method="POST">
+                    @csrf
+                    <label class="block text-sm font-medium text-white mb-2">Asignar a un músico @if($inventory->users->count() > 0) (Compartir) @endif:</label>
+                    <select name="user_id" required class="block w-full rounded-md border-0 bg-gray-950 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm mb-3">
+                        <option value="">-- Seleccionar músico --</option>
+                        @foreach($musicians as $mus)
+                            @if(!$inventory->users->contains($mus->id) && $mus->is_active)
+                                <option value="{{ $mus->id }}">{{ $mus->name }} {{ $mus->last_name }}</option>
+                            @endif
+                        @endforeach
+                    </select>
+                    <div class="mb-4">
+                        <label class="block text-xs font-medium text-gray-400 mb-1">Notas de asignación</label>
+                        <input type="text" name="notes" class="block w-full rounded-md border-0 bg-gray-950 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 sm:text-sm">
+                    </div>
+                    <button type="submit" class="w-full rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-500">
+                        @if($inventory->users->count() > 0) Añadir Nuevo Músico @else Asignar Instrumento @endif
+                    </button>
+                </form>
             </div>
         </div>
 

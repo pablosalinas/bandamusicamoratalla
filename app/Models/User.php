@@ -55,7 +55,7 @@ class User extends Authenticatable
 
     public function inventories()
     {
-        return $this->hasMany(Inventory::class, 'user_id');
+        return $this->belongsToMany(Inventory::class, 'inventory_user', 'user_id', 'inventory_id')->withTimestamps();
     }
 
     public function getPhotoUrlAttribute()

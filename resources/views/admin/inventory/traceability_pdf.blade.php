@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ï»¿<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -51,13 +51,13 @@
     <div class="mb-8 border border-gray-300 p-4 rounded bg-gray-50">
         <h3 class="font-bold text-lg mb-2">Datos del Instrumento</h3>
         <table class="w-full text-left">
-            <tr><th class="py-1">Nº Serie:</th><td>{{ $inventory->serial_number ?: 'No especificado' }}</td></tr>
+            <tr><th class="py-1">NÂº Serie:</th><td>{{ $inventory->serial_number ?: 'No especificado' }}</td></tr>
             <tr><th class="py-1">Propiedad:</th><td class="capitalize">{{ $inventory->propiedad }}</td></tr>
-            <tr><th class="py-1">Estado Físico:</th><td>{{ ucfirst($inventory->status) }}</td></tr>
-            <tr><th class="py-1">Situación Actual:</th>
+            <tr><th class="py-1">Estado FÃ­sico:</th><td>{{ ucfirst($inventory->status) }}</td></tr>
+            <tr><th class="py-1">SituaciÃ³n Actual:</th>
                 <td>
-                    @if($inventory->currentUser)
-                        Asignado a: <span class="font-bold">{{ $inventory->currentUser->name }} {{ $inventory->currentUser->last_name }}</span>
+                    @if($inventory->users->count() > 0)
+                        Asignado a: <span class="font-bold">{{ $inventory->users->map(fn($u) => $u->name . ' ' . $u->last_name)->implode(', ') }}</span>
                     @else
                         <span class="font-bold text-green-600">En stock (Disponible)</span>
                     @endif
@@ -72,7 +72,7 @@
         <thead>
             <tr class="border-b-2 border-gray-400">
                 <th class="p-2">Fecha y Hora</th>
-                <th class="p-2">Acción</th>
+                <th class="p-2">AcciÃ³n</th>
                 <th class="p-2">Detalles / Notas</th>
             </tr>
         </thead>

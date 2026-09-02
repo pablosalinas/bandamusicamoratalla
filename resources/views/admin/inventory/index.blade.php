@@ -69,13 +69,19 @@
                     <tbody class="divide-y divide-gray-800 bg-gray-900">
                         @forelse($inventory as $item)
                         <tr class="{{ !$item->is_active ? 'opacity-50' : '' }}">
-                            <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-white sm:pl-0">
-                                @if($item->currentUser)
-                                    {{ $item->currentUser->name }} {{ $item->currentUser->last_name }}
-                                @else
-                                    <span class="text-amber-500 italic">En Stock</span>
-                                @endif
-                                
+                            <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-0">
+                                <div class="flex items-center">
+                                    <div class="ml-4">
+                                        @if($item->users->count() > 0)
+                                            @foreach($item->users as $u)
+                                                <div class="font-medium text-white">{{ $u->name }} {{ $u->last_name }}</div>
+                                                @if(!$loop->last) <br> @endif
+                                            @endforeach
+                                        @else
+                                            <div class="font-medium text-gray-500 italic">En stock (Disponible)</div>
+                                        @endif
+                                    </div>
+                                </div>
                                 @if(!$item->is_active)
                                     <span class="ml-2 inline-flex items-center rounded-md bg-red-400/10 px-2 py-1 text-xs font-medium text-red-400 ring-1 ring-inset ring-red-400/20">Dado de baja</span>
                                 @endif
