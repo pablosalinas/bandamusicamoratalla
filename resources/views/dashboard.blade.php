@@ -90,15 +90,15 @@
                     </div>
                 </div>
                 
-                @if($user->instruments->count() > 0)
+                @if($user->inventories->count() > 0)
                     <div class="mb-8 bg-gray-950 p-6 rounded-lg border border-gray-800">
                         <h4 class="text-lg font-semibold mb-4 border-b border-gray-800 pb-2 text-white">Tus Instrumentos</h4>
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            @foreach($user->instruments as $instrument)
+                            @foreach($user->inventories as $inventory)
                                 <div class="bg-gray-900 border border-gray-800 rounded-lg p-4 shadow-sm">
                                     <div class="flex justify-between items-start mb-2">
-                                        <h5 class="font-bold text-amber-500">{{ $instrument->name }}</h5>
-                                        @if($instrument->pivot->is_active)
+                                        <h5 class="font-bold text-amber-500">{{ $inventory->instrument->name ?? 'Desconocido' }}</h5>
+                                        @if($inventory->is_active)
                                             <span class="inline-flex items-center rounded-md bg-green-400/10 px-2 py-1 text-xs font-medium text-green-400 ring-1 ring-inset ring-green-400/20">Activo</span>
                                         @else
                                             <span class="inline-flex items-center rounded-md bg-red-400/10 px-2 py-1 text-xs font-medium text-red-400 ring-1 ring-inset ring-red-400/20">Inactivo</span>
@@ -106,15 +106,15 @@
                                     </div>
                                     <ul class="text-xs text-gray-400 space-y-1">
                                         @php
-                                            $brand = $instrument->pivot->instrument_brand_id ? \App\Models\InstrumentBrand::find($instrument->pivot->instrument_brand_id) : null;
+                                            $brand = $inventory->instrument_brand_id ? \App\Models\InstrumentBrand::find($inventory->instrument_brand_id) : null;
                                         @endphp
-                                        <li><strong class="text-gray-300">Marca/Modelo:</strong> {{ $brand ? $brand->name : '-' }} {{ $instrument->pivot->modelo ? ' / ' . $instrument->pivot->modelo : '' }}</li>
-                                        <li><strong class="text-gray-300">Nº Serie:</strong> {{ $instrument->pivot->serial_number ?: '-' }}</li>
-                                        <li><strong class="text-gray-300">Propiedad:</strong> <span class="capitalize">{{ $instrument->pivot->propiedad ?: '-' }}</span></li>
-                                        <li><strong class="text-gray-300">Partitura:</strong> {{ $instrument->pivot->tipo_partitura ?: '-' }}</li>
+                                        <li><strong class="text-gray-300">Marca/Modelo:</strong> {{ $brand ? $brand->name : '-' }} {{ $inventory->model ? ' / ' . $inventory->model : '' }}</li>
+                                        <li><strong class="text-gray-300">Nº Serie:</strong> {{ $inventory->serial_number ?: '-' }}</li>
+                                        <li><strong class="text-gray-300">Propiedad:</strong> <span class="capitalize">{{ $inventory->propiedad ?: '-' }}</span></li>
+                                        <li><strong class="text-gray-300">Partitura:</strong> {{ $inventory->tipo_partitura ?: '-' }}</li>
                                     </ul>
                                     @php
-                                        $instrumentPhotos = \App\Models\InstrumentPhoto::where('musician_instrument_id', $instrument->pivot->id)->get();
+                                        $instrumentPhotos = \App\Models\InstrumentPhoto::where('inventory_id', $inventory->id)->get();
                                     @endphp
                                     @if($instrumentPhotos->count() > 0)
                                         <div class="mt-3 pt-3 border-t border-gray-800 flex gap-2 overflow-x-auto pb-1">

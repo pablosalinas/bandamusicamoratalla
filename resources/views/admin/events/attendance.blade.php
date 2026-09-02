@@ -54,7 +54,7 @@
                                     <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-white sm:pl-6">
                                         {{ $user->name }} {{ $user->last_name }}
                                         <div class="text-xs text-gray-500 font-normal">
-                                            {{ $user->instruments->pluck('name')->implode(', ') }}
+                                            {{ $user->inventories->map(fn($inv) => $inv->instrument->name ?? 'Desconocido')->implode(', ') }}
                                         </div>
                                     </td>
                                     
