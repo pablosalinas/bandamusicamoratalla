@@ -148,7 +148,15 @@
         <!-- Trazabilidad / Histórico -->
         <div class="lg:col-span-2">
             <div class="bg-gray-900 shadow-sm ring-1 ring-gray-800 sm:rounded-xl p-6">
-                <h3 class="text-xl font-bold text-white mb-6">Trazabilidad (Historial de Movimientos)</h3>
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-bold text-white">Trazabilidad (Historial de Movimientos)</h3>
+                    <a href="{{ route('admin.inventory.traceability-pdf', $inventory) }}" target="_blank" class="rounded-md bg-amber-600 px-3 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-amber-500 inline-flex items-center">
+                        <svg class="mr-1.5 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                        </svg>
+                        Informe PDF
+                    </a>
+                </div>
                 
                 @if($inventory->movements->count() > 0)
                     <div class="flow-root">

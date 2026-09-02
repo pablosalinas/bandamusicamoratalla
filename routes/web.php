@@ -126,6 +126,7 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     
     // Inventory
     Route::get('inventory/pdf', [\App\Http\Controllers\Admin\InventoryController::class, 'pdf'])->name('inventory.pdf');
+    Route::get('inventory/{inventory}/traceability-pdf', [\App\Http\Controllers\Admin\InventoryController::class, 'traceabilityPdf'])->name('inventory.traceability-pdf');
     Route::resource('inventory', \App\Http\Controllers\Admin\InventoryController::class);
     Route::post('inventory/{inventory}/assign', [\App\Http\Controllers\Admin\InventoryController::class, 'assign'])->name('inventory.assign');
     Route::post('inventory/{inventory}/return', [\App\Http\Controllers\Admin\InventoryController::class, 'returnInstrument'])->name('inventory.return');

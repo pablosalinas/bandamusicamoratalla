@@ -22,7 +22,16 @@ class InventoryController extends Controller
         }
         
         if ($request->filled('propiedad')) {
-            $query->where('propiedad', $request->propiedad);
+            if ($request->propiedad === 'banda') {
+                $query->where('propiedad', 'like', '%banda%');
+            } else {
+                $query->where(function($q) {
+                    $q->where('propiedad', 'not like', '%banda%')
+                      ->orWhere('propiedad', 'like', '%propio%')
+                      ->orWhere('propiedad', 'like', '%musico%')
+                      ->orWhere('propiedad', 'like', '%músico%');
+                });
+            }
         }
 
         if ($request->filled('status')) {
@@ -223,5 +232,10 @@ class InventoryController extends Controller
 
         $inventory = $query->orderBy('created_at', 'desc')->get();
         return view('admin.inventory.pdf', compact('inventory'));
+    }
+    public function traceabilityPdf(Inventory $inventory)
+    {
+        $inventory->load(['instrument', 'brand', 'currentUser', 'movements.fromUser', 'movements.toUser']);
+        return view('admin.inventory.traceability_pdf', compact('inventory'));
     }
 }
