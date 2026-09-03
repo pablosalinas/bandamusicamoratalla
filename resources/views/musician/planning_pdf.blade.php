@@ -24,6 +24,7 @@
     <style>
         body { font-family: 'Outfit', sans-serif; background: white; color: black; }
         @media print {
+            @page { margin: 0; }
             body { padding: 0; margin: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .no-print { display: none !important; }
             .print-container { padding: 1cm; }

@@ -23,7 +23,10 @@
                 page-break-inside: avoid;
             }
             @page {
-                margin: 1.5cm;
+                margin: 0;
+            }
+            body {
+                padding: 1.5cm !important;
             }
             /* Optimizaciones para imprimir bordes finos y colores */
             table {

@@ -77,8 +77,9 @@
         .btn-print { background-color: #d97706; }
         
         @media print {
+            @page { margin: 0; }
             .no-print { display: none !important; }
-            body { padding: 0; }
+            body { padding: 1.5cm; }
         }
     </style>
 </head>

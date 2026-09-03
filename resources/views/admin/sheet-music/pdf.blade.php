@@ -46,8 +46,9 @@
             text-transform: uppercase;
         }
         @media print {
+            @page { margin: 0; }
             .no-print { display: none !important; }
-            body { padding: 0; }
+            body { padding: 1.5cm; }
         }
         .instruments-list {
             margin-top: 4px;
