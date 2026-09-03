@@ -11,7 +11,7 @@
             <div class="px-4 py-6 sm:p-8">
                 <h3 class="text-xl font-bold leading-tight tracking-tight text-white mb-6">Añadir Nuevo Archivo (Audio o Vídeo)</h3>
                 
-                <form action="{{ route('admin.media-archive.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
+                <form id="media-upload-form" action="{{ route('admin.media-archive.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
                     @csrf
                     
                     <div class="grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-2">
@@ -218,3 +218,72 @@
         </div>
     </div>
 </x-admin-layout>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('media-upload-form');
+    if(form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = 'Subiendo...';
+            submitBtn.disabled = true;
+            
+            const formData = new FormData(form);
+            
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(async response => {
+                if (response.redirected) {
+                    window.location.href = response.url;
+                    return;
+                }
+                
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    const data = await response.json();
+                    if (!response.ok) {
+                        let errorMsg = 'Error al subir:\n';
+                        if (data.errors) {
+                            for (let key in data.errors) {
+                                errorMsg += '- ' + data.errors[key].join(', ') + '\n';
+                            }
+                        } else {
+                            errorMsg += data.message || 'Error desconocido';
+                        }
+                        alert(errorMsg);
+                    } else {
+                        window.location.reload();
+                    }
+                } else {
+                    // Si no es JSON y no es redirección (ej. Error 500, Error 413 Nginx)
+                    const text = await response.text();
+                    console.error("RAW RESPONSE:", text);
+                    alert("Error del servidor (Código " + response.status + "):\nRevisa la consola (F12) para ver la respuesta completa.");
+                    
+                    // Si es Laravel devolviendo HTML de validación a pesar de AJAX
+                    if(response.status === 422) {
+                         alert("Error de validación (422). Recargando para ver mensajes...");
+                         form.submit(); // Forzar submit normal para ver errores visuales
+                    }
+                }
+            })
+            .catch(error => {
+                console.error("Fetch error:", error);
+                alert("Error de conexión al subir el archivo: " + error.message);
+            })
+            .finally(() => {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            });
+        });
+    }
+});
+</script>
