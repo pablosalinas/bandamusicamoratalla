@@ -91,11 +91,6 @@ class SettingsController extends Controller
                 $path = $file->store('carousel', 'public');
                 $mime = $file->getMimeType();
                 $type = str_starts_with($mime, 'video/') ? 'video' : 'image';
-                
-                if ($type === 'image') {
-                    \App\Services\ImageWatermarkService::applyWatermark(storage_path('app/public/' . $path));
-                }
-                
                 $maxOrder++;
                 \App\Models\CarouselMedia::create([
                     'file_path' => $path,

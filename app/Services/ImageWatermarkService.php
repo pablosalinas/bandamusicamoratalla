@@ -24,27 +24,27 @@ class ImageWatermarkService
             $manager = new ImageManager(new Driver());
             $image = $manager->read($absolutePath);
 
-            // Determinar un tamaño de fuente dinámico basado en el ancho de la imagen
             $width = $image->width();
+            $height = $image->height();
             
             // Text to apply
             $text = 'www.bandamusicamoratalla.com';
 
-            // Usaremos la tipografía nativa 5 de GD que es la más grande, o dibujaremos varias veces para hacerla visible
-            // Intervention v3
-            $image->text($text, $width - 20, $image->height() - 20, function($font) {
-                // $font->file(5); // GD internal fonts 1-5 (5 is largest)
-                // Wait, if no TTF font is provided, v3 GD driver uses internal font 5.
-                $font->file(5); 
-                $font->color('rgba(255, 255, 255, 0.7)'); // 70% opacity white
+            $posX = max(10, $width - 15);
+            $posY = max(10, $height - 12);
+
+            // Sombra oscura primero para legibilidad en fondos claros
+            $image->text($text, $posX + 1, $posY + 1, function($font) {
+                $font->file(5);
+                $font->color('rgba(0, 0, 0, 0.45)');
                 $font->align('right');
                 $font->valign('bottom');
             });
 
-            // Agregamos sombra o texto negro desfasado para asegurar visibilidad en fondos blancos
-            $image->text($text, $width - 19, $image->height() - 19, function($font) {
-                $font->file(5);
-                $font->color('rgba(0, 0, 0, 0.5)'); // 50% opacity black
+            // Texto blanco discreto encima
+            $image->text($text, $posX, $posY, function($font) {
+                $font->file(5); 
+                $font->color('rgba(255, 255, 255, 0.75)');
                 $font->align('right');
                 $font->valign('bottom');
             });
