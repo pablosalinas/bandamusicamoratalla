@@ -12,7 +12,11 @@ class MediaArchiveController extends Controller
     public function index()
     {
         $mediaArchives = MediaArchive::with('images')->orderBy('sort_order')->get();
-        $existingTypes = \App\Models\SheetMusic::whereNotNull('work_type')->where('work_type', '!=', '')->distinct()->pluck('work_type')->toArray();
+        $dbTypes = \App\Models\SheetMusic::whereNotNull('work_type')->where('work_type', '!=', '')->distinct()->pluck('work_type')->toArray();
+        $defaultTypes = ['Pasodoble', 'Marcha Mora', 'Marcha Cristiana', 'Marcha de Procesión', 'Obra', 'Banda Sonora', 'Zarzuela', 'Himno', 'Pasacalle', 'Obertura', 'Poema Sinfónico', 'Suite', 'Fantasía'];
+        $existingTypes = array_unique(array_merge($defaultTypes, $dbTypes));
+        sort($existingTypes);
+        
         return view('admin.media_archive.index', compact('mediaArchives', 'existingTypes'));
     }
 
@@ -26,6 +30,7 @@ class MediaArchiveController extends Controller
             'music_type' => 'nullable|string|max:255',
             'performance_date' => 'nullable|date',
             'file' => [
+                'bail',
                 'required',
                 'file',
                 function ($attribute, $value, $fail) use ($request) {
