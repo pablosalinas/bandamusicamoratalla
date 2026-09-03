@@ -182,10 +182,6 @@
             }
             window.location.href = url.toString();
         }
-
-        window.onload = function() {
-            window.print();
-        }
     </script>
 </body>
 </html>
