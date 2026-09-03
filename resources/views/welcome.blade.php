@@ -550,22 +550,62 @@
             @if(isset($mediaArchives) && $mediaArchives->count() > 0)
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     @foreach($mediaArchives as $media)
-                        <div class="glass-panel rounded-2xl overflow-hidden hover:-translate-y-1 transition-all duration-300 group">
-                            <div class="relative aspect-video bg-black/50 flex items-center justify-center">
+                        <div class="glass-panel rounded-2xl overflow-hidden hover:-translate-y-1 transition-all duration-300 group flex flex-col">
+                            @if($media->images->count() > 0)
+                                <!-- Carrusel de Imágenes -->
+                                <div class="relative aspect-video bg-gray-900" x-data="{ activeSlide: 1, totalSlides: {{ $media->images->count() }} }">
+                                    @foreach($media->images as $index => $image)
+                                        <div x-show="activeSlide === {{ $index + 1 }}" class="absolute inset-0 transition-opacity duration-500 ease-in-out">
+                                            <img src="{{ asset('storage/' . $image->file_path) }}" class="w-full h-full object-cover select-none pointer-events-none" oncontextmenu="return false;" draggable="false">
+                                        </div>
+                                    @endforeach
+                                    
+                                    @if($media->images->count() > 1)
+                                        <button @click="activeSlide = activeSlide > 1 ? activeSlide - 1 : totalSlides" class="absolute left-2 top-1/2 -translate-y-1/2 p-2 bg-black/50 text-white rounded-full hover:bg-black/80 transition-colors">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                                        </button>
+                                        <button @click="activeSlide = activeSlide < totalSlides ? activeSlide + 1 : 1" class="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-black/50 text-white rounded-full hover:bg-black/80 transition-colors">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                                        </button>
+                                        <div class="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+                                            @foreach($media->images as $index => $image)
+                                                <button @click="activeSlide = {{ $index + 1 }}" :class="{'bg-amber-500': activeSlide === {{ $index + 1 }}, 'bg-white/50': activeSlide !== {{ $index + 1 }}}" class="w-2 h-2 rounded-full transition-colors"></button>
+                                            @endforeach
+                                        </div>
+                                    @endif
+                                </div>
+                            @endif
+
+                            <div class="relative aspect-video bg-black/50 flex items-center justify-center shrink-0">
                                 @if($media->type === 'video')
-                                    <video src="{{ asset('storage/' . $media->file_path) }}" class="w-full h-full object-cover" controls preload="metadata"></video>
+                                    <video src="{{ asset('storage/' . $media->file_path) }}" class="w-full h-full object-cover" controls preload="metadata" controlsList="nodownload" oncontextmenu="return false;"></video>
                                 @else
                                     <!-- Audio placeholder -->
                                     <div class="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-amber-900/40 to-black/80">
                                         <svg class="w-16 h-16 text-amber-500/80 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path></svg>
-                                        <audio src="{{ asset('storage/' . $media->file_path) }}" class="w-11/12 mt-2 h-10" controls preload="metadata"></audio>
+                                        <audio src="{{ asset('storage/' . $media->file_path) }}" class="w-11/12 mt-2 h-10" controls preload="metadata" controlsList="nodownload" oncontextmenu="return false;"></audio>
                                     </div>
                                 @endif
                             </div>
-                            <div class="p-6">
+                            <div class="p-6 flex flex-col flex-1">
                                 <h3 class="text-xl font-bold text-white mb-2">{{ $media->title }}</h3>
+                                
+                                @if($media->composer || $media->music_type || $media->performance_date)
+                                    <div class="flex flex-wrap gap-2 mb-3">
+                                        @if($media->music_type)
+                                            <span class="inline-flex items-center rounded-md bg-blue-400/10 px-2 py-0.5 text-xs font-medium text-blue-400 border border-blue-400/20">{{ $media->music_type }}</span>
+                                        @endif
+                                        @if($media->composer)
+                                            <span class="inline-flex items-center rounded-md bg-gray-400/10 px-2 py-0.5 text-xs font-medium text-gray-300"><svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg> {{ $media->composer }}</span>
+                                        @endif
+                                        @if($media->performance_date)
+                                            <span class="inline-flex items-center rounded-md bg-gray-400/10 px-2 py-0.5 text-xs font-medium text-gray-300"><svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg> {{ $media->performance_date->format('d/m/Y') }}</span>
+                                        @endif
+                                    </div>
+                                @endif
+
                                 @if($media->description)
-                                    <p class="text-sm text-gray-400 line-clamp-2">{{ $media->description }}</p>
+                                    <p class="text-sm text-gray-400 line-clamp-3 mt-auto">{{ $media->description }}</p>
                                 @endif
                             </div>
                         </div>

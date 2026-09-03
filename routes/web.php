@@ -174,6 +174,7 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
         // Media Archive (Archivo Sonoro)
         Route::resource('media-archive', \App\Http\Controllers\Admin\MediaArchiveController::class)->except(['create', 'show', 'edit']);
         Route::post('media-archive/{mediaArchive}/update-order', [\App\Http\Controllers\Admin\MediaArchiveController::class, 'updateOrder'])->name('media-archive.update-order');
+        Route::delete('media-archive/images/{image}', [\App\Http\Controllers\Admin\MediaArchiveController::class, 'destroyImage'])->name('media-archive.images.destroy');
 
         // Analytics & Logs
         Route::get('analytics', [\App\Http\Controllers\Admin\AnalyticsController::class, 'index'])->name('analytics.index');

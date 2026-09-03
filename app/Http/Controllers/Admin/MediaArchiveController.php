@@ -11,8 +11,9 @@ class MediaArchiveController extends Controller
 {
     public function index()
     {
-        $mediaArchives = MediaArchive::orderBy('sort_order')->get();
-        return view('admin.media_archive.index', compact('mediaArchives'));
+        $mediaArchives = MediaArchive::with('images')->orderBy('sort_order')->get();
+        $existingTypes = \App\Models\SheetMusic::whereNotNull('work_type')->where('work_type', '!=', '')->distinct()->pluck('work_type')->toArray();
+        return view('admin.media_archive.index', compact('mediaArchives', 'existingTypes'));
     }
 
     public function store(Request $request)
@@ -21,11 +22,14 @@ class MediaArchiveController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'type' => 'required|in:audio,video',
+            'composer' => 'nullable|string|max:255',
+            'music_type' => 'nullable|string|max:255',
+            'performance_date' => 'nullable|date',
             'file' => [
                 'required',
                 'file',
                 function ($attribute, $value, $fail) use ($request) {
-                    $maxSize = $request->type === 'video' ? 20480 : 8192; // 20MB for video, 8MB for audio
+                    $maxSize = 20480; // 20MB for both video and audio
                     if ($value->getSize() > $maxSize * 1024) {
                         $fail("El archivo no debe ser mayor de {$maxSize} KB.");
                     }
@@ -39,20 +43,40 @@ class MediaArchiveController extends Controller
                     }
                 }
             ],
+            'images' => 'nullable|array',
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             'is_active' => 'boolean'
         ]);
 
         $path = $request->file('file')->store('media_archive', 'public');
         $maxOrder = MediaArchive::max('sort_order') ?? 0;
 
-        MediaArchive::create([
+        $mediaArchive = MediaArchive::create([
             'title' => $request->title,
             'description' => $request->description,
             'file_path' => $path,
             'type' => $request->type,
+            'composer' => $request->composer,
+            'music_type' => $request->music_type,
+            'performance_date' => $request->performance_date,
             'is_active' => $request->has('is_active'),
             'sort_order' => $maxOrder + 1
         ]);
+
+        if ($request->hasFile('images')) {
+            $imgOrder = 0;
+            foreach ($request->file('images') as $file) {
+                $imgPath = $file->store('media_archive_images', 'public');
+                \App\Services\ImageWatermarkService::applyWatermark(storage_path('app/public/' . $imgPath));
+                
+                $imgOrder++;
+                \App\Models\MediaArchiveImage::create([
+                    'media_archive_id' => $mediaArchive->id,
+                    'file_path' => $imgPath,
+                    'sort_order' => $imgOrder
+                ]);
+            }
+        }
 
         return redirect()->route('admin.media-archive.index')->with('success', 'Archivo multimedia subido correctamente.');
     }
@@ -62,14 +86,37 @@ class MediaArchiveController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'composer' => 'nullable|string|max:255',
+            'music_type' => 'nullable|string|max:255',
+            'performance_date' => 'nullable|date',
+            'images' => 'nullable|array',
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             'is_active' => 'boolean'
         ]);
 
         $mediaArchive->update([
             'title' => $request->title,
             'description' => $request->description,
+            'composer' => $request->composer,
+            'music_type' => $request->music_type,
+            'performance_date' => $request->performance_date,
             'is_active' => $request->has('is_active')
         ]);
+
+        if ($request->hasFile('images')) {
+            $imgOrder = $mediaArchive->images()->max('sort_order') ?? 0;
+            foreach ($request->file('images') as $file) {
+                $imgPath = $file->store('media_archive_images', 'public');
+                \App\Services\ImageWatermarkService::applyWatermark(storage_path('app/public/' . $imgPath));
+                
+                $imgOrder++;
+                \App\Models\MediaArchiveImage::create([
+                    'media_archive_id' => $mediaArchive->id,
+                    'file_path' => $imgPath,
+                    'sort_order' => $imgOrder
+                ]);
+            }
+        }
 
         return redirect()->route('admin.media-archive.index')->with('success', 'Archivo actualizado correctamente.');
     }
@@ -96,5 +143,16 @@ class MediaArchiveController extends Controller
         ]);
 
         return back()->with('success', 'Orden actualizado.');
+    }
+
+    public function destroyImage(\App\Models\MediaArchiveImage $image)
+    {
+        if (Storage::disk('public')->exists($image->file_path)) {
+            Storage::disk('public')->delete($image->file_path);
+        }
+        
+        $image->delete();
+
+        return back()->with('success', 'Imagen eliminada correctamente.');
     }
 }

@@ -34,6 +34,35 @@
                             @error('type') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
                         </div>
 
+                        <div class="sm:col-span-1">
+                            <label for="composer" class="block text-sm font-medium leading-6 text-white">Compositor (Opcional)</label>
+                            <div class="mt-2">
+                                <input type="text" name="composer" id="composer" class="block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6">
+                            </div>
+                            @error('composer') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
+                        </div>
+
+                        <div class="sm:col-span-1">
+                            <label for="music_type" class="block text-sm font-medium leading-6 text-white">Tipo de Música (Opcional)</label>
+                            <div class="mt-2">
+                                <input list="music_types" name="music_type" id="music_type" placeholder="Selecciona o escribe..." class="block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6">
+                                <datalist id="music_types">
+                                    @foreach($existingTypes as $type)
+                                        <option value="{{ $type }}"></option>
+                                    @endforeach
+                                </datalist>
+                            </div>
+                            @error('music_type') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
+                        </div>
+
+                        <div class="sm:col-span-1">
+                            <label for="performance_date" class="block text-sm font-medium leading-6 text-white">Fecha de Interpretación (Opcional)</label>
+                            <div class="mt-2">
+                                <input type="date" name="performance_date" id="performance_date" class="block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6" style="color-scheme: dark;">
+                            </div>
+                            @error('performance_date') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
+                        </div>
+
                         <div class="sm:col-span-2">
                             <label for="description" class="block text-sm font-medium leading-6 text-white">Descripción (Opcional)</label>
                             <div class="mt-2">
@@ -42,13 +71,23 @@
                             @error('description') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
                         </div>
 
-                        <div class="sm:col-span-2">
+                        <div class="sm:col-span-1">
                             <label for="file" class="block text-sm font-medium leading-6 text-white">Archivo Multimedia</label>
-                            <p class="text-sm text-gray-400 mb-2">Sube un archivo de Audio (Max 8MB) o Vídeo (Max 20MB).</p>
+                            <p class="text-sm text-gray-400 mb-2">Audio o Vídeo (Max 20MB).</p>
                             <div class="mt-2">
                                 <input type="file" name="file" id="file" required accept="audio/*,video/*" class="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-gray-800 file:text-amber-500 hover:file:bg-gray-700">
                             </div>
                             @error('file') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
+                        </div>
+
+                        <div class="sm:col-span-1">
+                            <label for="images" class="block text-sm font-medium leading-6 text-white">Carrusel de Imágenes (Opcional)</label>
+                            <p class="text-sm text-gray-400 mb-2">Puedes añadir varias fotos.</p>
+                            <div class="mt-2">
+                                <input type="file" name="images[]" id="images" multiple accept="image/*" class="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-gray-800 file:text-amber-500 hover:file:bg-gray-700">
+                            </div>
+                            @error('images') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
+                            @error('images.*') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
                         </div>
                         
                         <div class="sm:col-span-2">
@@ -88,16 +127,34 @@
                     </div>
                     
                     <div class="p-4 flex-1 flex flex-col">
-                        <form action="{{ route('admin.media-archive.update', $media) }}" method="POST" class="flex-1 flex flex-col gap-3">
+                        <form action="{{ route('admin.media-archive.update', $media) }}" method="POST" enctype="multipart/form-data" class="flex-1 flex flex-col gap-3">
                             @csrf
                             @method('PUT')
                             
                             <div>
-                                <input type="text" name="title" value="{{ $media->title }}" required class="block w-full rounded-md border-0 bg-gray-900 py-1 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm font-semibold">
+                                <input type="text" name="title" value="{{ $media->title }}" required class="block w-full rounded-md border-0 bg-gray-900 py-1 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm font-semibold" placeholder="Título">
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <input type="text" name="composer" value="{{ $media->composer }}" class="block w-full rounded-md border-0 bg-gray-900 py-1 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-xs" placeholder="Compositor">
+                                </div>
+                                <div>
+                                    <input list="music_types" name="music_type" value="{{ $media->music_type }}" class="block w-full rounded-md border-0 bg-gray-900 py-1 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-xs" placeholder="Tipo de música">
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <input type="date" name="performance_date" value="{{ $media->performance_date ? $media->performance_date->format('Y-m-d') : '' }}" class="block w-full rounded-md border-0 bg-gray-900 py-1 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-xs" style="color-scheme: dark;">
                             </div>
                             
                             <div>
                                 <textarea name="description" rows="2" class="block w-full rounded-md border-0 bg-gray-900 py-1 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-xs" placeholder="Descripción...">{{ $media->description }}</textarea>
+                            </div>
+
+                            <div class="mt-2 border-t border-gray-700 pt-2">
+                                <label class="block text-xs text-gray-400 mb-1">Añadir más imágenes al carrusel</label>
+                                <input type="file" name="images[]" multiple accept="image/*" class="block w-full text-xs text-gray-400 file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-gray-800 file:text-amber-500 hover:file:bg-gray-700">
                             </div>
                             
                             <div class="flex items-center justify-between mt-2">
@@ -121,7 +178,7 @@
                                 </button>
                             </form>
                             
-                            <form action="{{ route('admin.media-archive.destroy', $media) }}" method="POST" onsubmit="return confirm('¿Estás seguro de que deseas eliminar este archivo?');">
+                            <form action="{{ route('admin.media-archive.destroy', $media) }}" method="POST" onsubmit="return confirm('¿Estás seguro de que deseas eliminar este archivo y todas sus imágenes?');">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="text-red-500 hover:text-red-400" title="Eliminar archivo">
@@ -129,6 +186,28 @@
                                 </button>
                             </form>
                         </div>
+                        
+                        @if($media->images->count() > 0)
+                            <div class="mt-4 pt-4 border-t border-gray-700">
+                                <h4 class="text-xs font-semibold text-gray-400 mb-2">Imágenes del Carrusel</h4>
+                                <div class="grid grid-cols-4 gap-2">
+                                    @foreach($media->images as $image)
+                                        <div class="relative group aspect-square bg-gray-900 rounded overflow-hidden">
+                                            <img src="{{ asset('storage/' . $image->file_path) }}" class="w-full h-full object-cover">
+                                            <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                <form action="{{ route('admin.media-archive.images.destroy', $image) }}" method="POST" onsubmit="return confirm('¿Eliminar esta imagen?');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="text-red-500 hover:text-red-400">
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
                     </div>
                 </div>
             @empty
