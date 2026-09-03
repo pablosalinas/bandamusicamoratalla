@@ -103,9 +103,9 @@
                                 </h5>
                                 <p class="text-sm text-gray-400 mt-1">Al ser menor de edad, necesitas entregar firmado el justificante parental para poder asistir a los eventos de la banda.</p>
                             </div>
-                            <a href="{{ route('musician.parental-consent.download') }}" target="_blank" class="shrink-0 rounded-md bg-amber-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-amber-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-600">
+                            <button type="button" onclick="document.getElementById('modal-parental-consent-musician').classList.remove('hidden')" class="shrink-0 rounded-md bg-amber-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-amber-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-600">
                                 Descargar Justificante
-                            </a>
+                            </button>
                         </div>
                     @endif
                 </div>
@@ -235,3 +235,38 @@
         @endif
     </div>
 </x-admin-layout>
+
+<!-- Modal Parental Consent para Músicos -->
+<div id="modal-parental-consent-musician" class="relative z-50 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity"></div>
+    <div class="fixed inset-0 z-10 overflow-y-auto">
+        <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+            <div class="relative transform overflow-hidden rounded-lg bg-gray-800 px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
+                <form action="{{ route('musician.parental-consent.download') }}" method="GET" target="_blank">
+                    <div>
+                        <h3 class="text-base font-semibold leading-6 text-white" id="modal-title">Generar Justificante Parental</h3>
+                        <div class="mt-2">
+                            <p class="text-sm text-gray-400">Selecciona el evento para autorellenar los datos. Si no seleccionas ninguno, se dejará un espacio en blanco para que lo rellenes a mano.</p>
+                            <div class="mt-4">
+                                <label for="event_id" class="block text-sm font-medium leading-6 text-white">Evento (Opcional)</label>
+                                <select id="event_id" name="event_id" class="mt-2 block w-full rounded-md border-0 bg-gray-900 py-1.5 text-white shadow-sm ring-1 ring-inset ring-gray-700 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6">
+                                    <option value="">-- Dejar en blanco --</option>
+                                    @php
+                                        $events = \App\Models\Event::where('event_date', '>=', now()->toDateString())->orderBy('event_date', 'asc')->get();
+                                    @endphp
+                                    @foreach($events as $event)
+                                        <option value="{{ $event->id }}">{{ $event->name }} ({{ \Carbon\Carbon::parse($event->event_date)->format('d/m/Y') }})</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
+                        <button type="submit" onclick="document.getElementById('modal-parental-consent-musician').classList.add('hidden')" class="inline-flex w-full justify-center rounded-md bg-amber-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-amber-500 sm:col-start-2">Generar PDF</button>
+                        <button type="button" onclick="document.getElementById('modal-parental-consent-musician').classList.add('hidden')" class="mt-3 inline-flex w-full justify-center rounded-md bg-gray-700 px-3 py-2 text-sm font-semibold text-gray-300 shadow-sm ring-1 ring-inset ring-gray-600 hover:bg-gray-600 sm:col-start-1 sm:mt-0">Cancelar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

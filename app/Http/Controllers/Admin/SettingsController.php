@@ -242,6 +242,21 @@ class SettingsController extends Controller
 
         if (!empty($template)) {
             $userName = 'Modelo';
+            
+            $template = str_replace(
+                [
+                    '<nombre>', '&lt;nombre&gt;', '[nombre]', '[NOMBRE]',
+                    '<evento>', '&lt;evento&gt;', '[evento]', '[EVENTO]',
+                    '<fecha>', '&lt;fecha&gt;', '[fecha]', '[FECHA]'
+                ],
+                [
+                    '________________________________________', '________________________________________', '________________________________________', '________________________________________',
+                    '________________________________________________________________', '________________________________________________________________', '________________________________________________________________', '________________________________________________________________',
+                    'Fecha: ____________________', 'Fecha: ____________________', 'Fecha: ____________________', 'Fecha: ____________________'
+                ],
+                $template
+            );
+
             return view('shared.parental_consent_pdf', compact('template', 'userName'));
         } elseif (!empty($pdfPath) && \Illuminate\Support\Facades\Storage::disk('public')->exists($pdfPath)) {
             return response()->download(\Illuminate\Support\Facades\Storage::disk('public')->path($pdfPath), 'modelo_justificante_parental.pdf');

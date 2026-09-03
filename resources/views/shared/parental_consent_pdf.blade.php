@@ -13,7 +13,10 @@
             padding: 30px;
         }
         .header {
-            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             margin-bottom: 40px;
             border-bottom: 2px solid #D97706;
             padding-bottom: 20px;
@@ -22,16 +25,20 @@
             max-height: 80px;
             margin-bottom: 10px;
         }
-        .header h2 {
+        .header-text {
+            text-align: center;
+        }
+        .header-text h2 {
             margin: 0;
             font-size: 20px;
             color: #333;
         }
-        .header h1 {
-            margin: 10px 0 0 0;
+        .header-text h1 {
+            margin: 5px 0 0 0;
             font-size: 24px;
             color: #D97706;
-            letter-spacing: 2px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
         }
         .content {
             margin-bottom: 50px;
@@ -86,7 +93,7 @@
         }
         usort($logos, function($a, $b) { return ($a['order'] ?? 999) <=> ($b['order'] ?? 999); });
         $logos = array_column($logos, 'path');
-        $primaryLogo = count($logos) > 0 ? $logos[0] : 'images/logo.png';
+        $primaryLogo = count($logos) > 0 ? $logos[0] : 'images/logo.jpg';
         $logoSrc = str_starts_with($primaryLogo, 'images/') ? asset($primaryLogo) : asset('storage/' . $primaryLogo);
         
         $bandName = \App\Models\SiteSetting::getSetting('band_name', 'Banda de Música');
@@ -106,8 +113,10 @@
     {{-- Cabecera --}}
     <div class="header">
         <img src="{{ $logoSrc }}" alt="Logo">
-        <h2>{{ $bandName }}</h2>
-        <h1>JUSTIFICANTE</h1>
+        <div class="header-text">
+            <h2>{{ $bandName }}</h2>
+            <h1>JUSTIFICANTE</h1>
+        </div>
     </div>
 
     {{-- Contenido del justificante --}}

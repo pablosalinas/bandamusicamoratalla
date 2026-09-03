@@ -147,6 +147,7 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     // Rutas RESTRINGIDAS (solo admin y treasurer)
     Route::middleware(['admin_or_treasurer'])->group(function () {
         Route::resource('users', \App\Http\Controllers\Admin\UserController::class);
+        Route::get('users/{user}/parental-consent', [\App\Http\Controllers\Admin\UserController::class, 'generateParentalConsent'])->name('users.parental-consent');
         
         Route::resource('boards', \App\Http\Controllers\Admin\BoardController::class);
         Route::post('boards/{board}/members', [\App\Http\Controllers\Admin\BoardController::class, 'addMember'])->name('boards.members.add');

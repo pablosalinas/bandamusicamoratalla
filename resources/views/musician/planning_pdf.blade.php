@@ -58,17 +58,14 @@
 
         $primaryLogo = count($logos) > 0 ? $logos[0] : 'images/logo.jpg';
         $logoSrc = str_starts_with($primaryLogo, 'images/') ? asset($primaryLogo) : asset('storage/' . $primaryLogo);
+        $bandName = \App\Models\SiteSetting::getSetting('band_name', 'Banda de Música');
     @endphp
 
     <img src="{{ $logoSrc }}" class="watermark" alt="Watermark">
     
     <div class="max-w-4xl mx-auto p-8 print-container">
         
-        <div class="flex justify-between items-center border-b-2 border-gray-900 pb-4 mb-8">
-            <div>
-                <h1 class="text-3xl font-bold uppercase tracking-widest text-gray-900">Planning de Actividades</h1>
-                <p class="text-sm text-gray-500 mt-1">Generado el {{ now()->format('d/m/Y') }}</p>
-            </div>
+        <div class="flex justify-end items-center mb-8">
             <div class="text-right no-print flex gap-2 justify-end">
                 <button onclick="window.close()" class="px-4 py-2 bg-gray-600 text-white rounded shadow hover:bg-gray-500 font-semibold">
                     Cerrar y Regresar
@@ -76,6 +73,15 @@
                 <button onclick="window.print()" class="px-4 py-2 bg-amber-600 text-white rounded shadow hover:bg-amber-500 font-semibold">
                     Imprimir / Guardar como PDF
                 </button>
+            </div>
+        </div>
+
+        <div class="flex flex-col items-center justify-center text-center border-b-2 border-amber-600 pb-5 mb-8">
+            <img src="{{ $logoSrc }}" alt="Logo" class="max-h-20 mb-3">
+            <div>
+                <h2 class="text-xl font-bold text-gray-900 tracking-tight">{{ $bandName }}</h2>
+                <h1 class="text-2xl font-extrabold text-amber-600 mt-1 uppercase tracking-wider">PLANNING DE ACTIVIDADES</h1>
+                <p class="text-sm text-gray-500 mt-1">Generado el {{ now()->format('d/m/Y') }}</p>
             </div>
         </div>
 

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -13,15 +13,31 @@
             padding: 30px;
         }
         .header {
-            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             border-bottom: 2px solid #D97706;
             padding-bottom: 20px;
             margin-bottom: 30px;
         }
-        h1 {
+        .header img {
+            max-height: 80px;
+            margin-bottom: 10px;
+        }
+        .header-text {
+            text-align: center;
+        }
+        .header-text h2 {
+            margin: 0;
+            font-size: 20px;
+            color: #333;
+        }
+        .header-text h1 {
             color: #D97706;
-            margin: 0 0 10px 0;
+            margin: 5px 0 10px 0;
             font-size: 26px;
+            text-transform: uppercase;
         }
         .date {
             font-style: italic;
@@ -121,8 +137,12 @@
 
     {{-- Cabecera con título y fecha de junta --}}
     <div class="header">
-        <h1>{{ $minute->title }}</h1>
-        <div class="date">Fecha de la junta: {{ $fechaJuntaEsp }}</div>
+        <img src="{{ $logoSrc }}" alt="Logo">
+        <div class="header-text">
+            <h2>{{ $bandName }}</h2>
+            <h1>ACTA DE JUNTA: {{ mb_strtoupper($minute->title) }}</h1>
+            <div class="date">Fecha de la junta: {{ $fechaJuntaEsp }}</div>
+        </div>
     </div>
 
     {{-- Contenido del acta --}}

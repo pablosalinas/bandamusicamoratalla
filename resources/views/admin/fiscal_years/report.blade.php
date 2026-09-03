@@ -98,23 +98,21 @@
     <div class="max-w-5xl mx-auto bg-white p-10 shadow-lg rounded-lg border border-gray-200">
         
         <!-- Cabecera del Informe -->
-        <div class="flex justify-between items-start mb-10 border-b-2 border-gray-800 pb-6">
-            <div class="flex items-center gap-4">
-                @php
-                    $bandName = \App\Models\SiteSetting::getSetting('band_name', 'Banda de Música de Moratalla');
-                @endphp
-                <img src="{{ $logoSrc }}" alt="Logo" class="w-24 h-24 object-contain rounded-full shadow-sm">
-                <div>
-                    <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight uppercase">{{ $bandName }}</h1>
-                    <p class="text-lg text-gray-600 mt-1 font-medium">Informe Financiero y Balance de Ejercicio</p>
-                    <p class="text-sm text-gray-500 mt-2">Generado el {{ now()->format('d/m/Y \a \l\a\s H:i') }}</p>
-                </div>
+        <div class="flex flex-col items-center justify-center text-center mb-8 border-b-2 border-amber-600 pb-5">
+            @php
+                $bandName = \App\Models\SiteSetting::getSetting('band_name', 'Banda de Música');
+            @endphp
+            <img src="{{ $logoSrc }}" alt="Logo" class="w-20 object-contain mb-3">
+            <div>
+                <h2 class="text-xl font-bold text-gray-900 tracking-tight">{{ $bandName }}</h2>
+                <h1 class="text-2xl font-extrabold text-amber-600 mt-1 uppercase tracking-wider">INFORME FINANCIERO Y BALANCE</h1>
+                <p class="text-sm text-gray-500 mt-2">Generado el {{ now()->format('d/m/Y \a \l\a\s H:i') }}</p>
             </div>
-            <div class="text-right">
+            
+            <div class="mt-4 pt-4 border-t border-gray-200 w-full max-w-md mx-auto">
                 <h2 class="text-xl font-bold text-gray-800">{{ $fiscalYear->name }}</h2>
                 <p class="text-sm text-gray-600 font-medium">
-                    Desde: {{ $fiscalYear->start_date->format('d/m/Y') }}<br>
-                    Hasta: {{ $fiscalYear->end_date->format('d/m/Y') }}
+                    Desde: {{ $fiscalYear->start_date->format('d/m/Y') }} | Hasta: {{ $fiscalYear->end_date->format('d/m/Y') }}
                 </p>
                 <div class="mt-2 inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider {{ $fiscalYear->is_closed ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800' }}">
                     {{ $fiscalYear->is_closed ? 'EJERCICIO CERRADO' : 'EJERCICIO ABIERTO' }}

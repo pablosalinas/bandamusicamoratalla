@@ -148,4 +148,40 @@ class UserController extends Controller
         $user->delete();
         return redirect()->route('admin.users.index')->with('success', 'Usuario eliminado.');
     }
+
+    public function generateParentalConsent(Request $request, User $user)
+    {
+        $template = \App\Models\SiteSetting::getSetting('parental_consent_template', '');
+        if (empty($template)) {
+            return redirect()->back()->with('error', 'El modelo de justificante parental no ha sido configurado en los ajustes.');
+        }
+
+        $userName = $user->name . ' ' . $user->last_name;
+        $eventInfo = '________________________________________________________________';
+        if ($request->filled('event_id')) {
+            $event = \App\Models\Event::find($request->event_id);
+            if ($event) {
+                \Carbon\Carbon::setLocale('es');
+                $eventInfo = $event->name . ' el ' . \Carbon\Carbon::parse($event->event_date)->translatedFormat('d \d\e F \d\e Y');
+            }
+        }
+        
+        $currentDate = now()->translatedFormat('d \d\e F \d\e Y');
+
+        $template = str_replace(
+            [
+                '<nombre>', '&lt;nombre&gt;', '[nombre]', '[NOMBRE]',
+                '<evento>', '&lt;evento&gt;', '[evento]', '[EVENTO]',
+                '<fecha>', '&lt;fecha&gt;', '[fecha]', '[FECHA]'
+            ],
+            [
+                $userName, $userName, $userName, $userName,
+                $eventInfo, $eventInfo, $eventInfo, $eventInfo,
+                'Fecha: ' . $currentDate, 'Fecha: ' . $currentDate, 'Fecha: ' . $currentDate, 'Fecha: ' . $currentDate
+            ],
+            $template
+        );
+
+        return view('shared.parental_consent_pdf', compact('template', 'userName'));
+    }
 }

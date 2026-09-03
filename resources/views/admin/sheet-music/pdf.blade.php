@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -17,6 +17,33 @@
             pointer-events: none;
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
+        }
+        .header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 2px solid #D97706;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .header img {
+            max-height: 80px;
+            margin-bottom: 10px;
+        }
+        .header-text {
+            text-align: center;
+        }
+        .header-text h2 {
+            margin: 0;
+            font-size: 20px;
+            color: #333;
+        }
+        .header-text h1 {
+            color: #D97706;
+            margin: 5px 0 10px 0;
+            font-size: 26px;
+            text-transform: uppercase;
         }
         @media print {
             .no-print { display: none !important; }
@@ -55,12 +82,12 @@
         $logos = array_column($logos, 'path');
         $primaryLogo = count($logos) > 0 ? $logos[0] : 'images/logo.jpg';
         $logoSrc = str_starts_with($primaryLogo, 'images/') ? asset($primaryLogo) : asset('storage/' . $primaryLogo);
+        $bandName = \App\Models\SiteSetting::getSetting('band_name', 'Banda de Música');
     @endphp
 
     <img src="{{ $logoSrc }}" class="watermark">
 
     <div class="mb-6 flex justify-between items-center no-print">
-        <h1 class="text-2xl font-bold">Catálogo de Partituras</h1>
         <div class="flex items-center gap-4">
             <label class="flex items-center gap-2 text-sm font-medium cursor-pointer select-none">
                 <input type="checkbox" id="toggle-desglose"
@@ -69,11 +96,17 @@
                        class="h-4 w-4 rounded border-gray-400 accent-amber-600">
                 <span>Desglose por instrumento</span>
             </label>
-            <div class="flex gap-2"><button onclick="window.close()" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded">Cerrar y Regresar</button><button onclick="window.print()" class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded">Imprimir / Guardar PDF</button></div>
         </div>
+        <div class="flex gap-2"><button onclick="window.close()" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded">Cerrar y Regresar</button><button onclick="window.print()" class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded">Imprimir / Guardar PDF</button></div>
     </div>
 
-    <h1 class="text-2xl font-bold mb-4 hidden print:block text-center">Archivo Musical de la Banda</h1>
+    <div class="header">
+        <img src="{{ $logoSrc }}" alt="Logo">
+        <div class="header-text">
+            <h2>{{ $bandName }}</h2>
+            <h1>ARCHIVO MUSICAL DE LA BANDA</h1>
+        </div>
+    </div>
     
     @if(request('work_type') || isset($instrument))
     <p class="text-center mb-4 italic text-gray-700">

@@ -93,7 +93,7 @@
             <div class="mt-12 border-t border-gray-800 pt-8">
                 <h3 class="text-lg font-bold text-white mb-4">Fotos del Instrumento</h3>
                 
-                <form action="{{ route('instrument-photos.store', ['inventory_id' => $inventory->id]) }}" method="POST" enctype="multipart/form-data" class="mb-6 flex items-end gap-4">
+                <form action="{{ route('admin.instrument-photos.store', ['inventory_id' => $inventory->id]) }}" method="POST" enctype="multipart/form-data" class="mb-6 flex items-end gap-4">
                     @csrf
                     <div class="flex-1">
                         <label class="block text-sm font-medium text-gray-400 mb-2">Añadir nueva foto</label>
@@ -114,13 +114,13 @@
                                     <img src="{{ asset('storage/' . $photo->photo_path) }}" class="w-full h-full object-cover rounded border border-gray-700">
                                 </a>
                                 
-                                <form action="{{ route('instrument-photos.update', $photo) }}" method="POST" class="flex gap-2 mb-2">
+                                <form action="{{ route('admin.instrument-photos.update', $photo) }}" method="POST" class="flex gap-2 mb-2">
                                     @csrf @method('PUT')
                                     <input type="text" name="description" value="{{ $photo->description }}" class="block w-full rounded-md border-0 bg-gray-900 py-1 text-white shadow-sm ring-1 ring-inset ring-white/10 sm:text-xs" placeholder="Descripción...">
                                     <button type="submit" class="bg-blue-600 hover:bg-blue-500 text-white rounded px-2 py-1 text-xs">Guardar</button>
                                 </form>
                                 
-                                <form action="{{ route('instrument-photos.destroy', $photo) }}" method="POST" onsubmit="return confirm('¿Borrar esta foto?');">
+                                <form action="{{ route('admin.instrument-photos.destroy', $photo) }}" method="POST" onsubmit="return confirm('¿Borrar esta foto?');">
                                     @csrf @method('DELETE')
                                     <button type="submit" class="w-full text-red-500 hover:text-red-400 text-xs text-center py-1 border border-red-500/30 rounded">Eliminar Foto</button>
                                 </form>

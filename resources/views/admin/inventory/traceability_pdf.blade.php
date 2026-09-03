@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -18,6 +18,33 @@
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
         }
+        .header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 2px solid #D97706;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .header img {
+            max-height: 80px;
+            margin-bottom: 10px;
+        }
+        .header-text {
+            text-align: center;
+        }
+        .header-text h2 {
+            margin: 0;
+            font-size: 20px;
+            color: #333;
+        }
+        .header-text h1 {
+            color: #D97706;
+            margin: 5px 0 10px 0;
+            font-size: 26px;
+            text-transform: uppercase;
+        }
         @media print {
             .no-print { display: none !important; }
             body { padding: 0; }
@@ -36,17 +63,23 @@
         $logos = array_column($logos, 'path');
         $primaryLogo = count($logos) > 0 ? $logos[0] : 'images/logo.jpg';
         $logoSrc = str_starts_with($primaryLogo, 'images/') ? asset($primaryLogo) : asset('storage/' . $primaryLogo);
+        $bandName = \App\Models\SiteSetting::getSetting('band_name', 'Banda de Música');
     @endphp
 
     <img src="{{ $logoSrc }}" class="watermark">
 
-    <div class="mb-6 flex justify-between items-center no-print">
-        <h1 class="text-2xl font-bold">Informe de Trazabilidad</h1>
+    <div class="mb-6 flex justify-end items-center no-print">
         <div class="flex gap-2"><button onclick="window.close()" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded">Cerrar y Regresar</button><button onclick="window.print()" class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded">Imprimir / Guardar PDF</button></div>
     </div>
 
-    <h1 class="text-2xl font-bold mb-2 text-center">Informe de Trazabilidad</h1>
-    <h2 class="text-xl text-center mb-8 text-gray-700">{{ $inventory->instrument->name ?? 'Instrumento' }} ({{ $inventory->brand->name ?? '' }} {{ $inventory->model }})</h2>
+    <div class="header">
+        <img src="{{ $logoSrc }}" alt="Logo">
+        <div class="header-text">
+            <h2>{{ $bandName }}</h2>
+            <h1>TRAZABILIDAD: {{ mb_strtoupper($inventory->instrument->name ?? 'INSTRUMENTO') }}</h1>
+            <div class="text-sm text-gray-700 mt-1">({{ $inventory->brand->name ?? '' }} {{ $inventory->model }})</div>
+        </div>
+    </div>
 
     <div class="mb-8 border border-gray-300 p-4 rounded bg-gray-50">
         <h3 class="font-bold text-lg mb-2">Datos del Instrumento</h3>

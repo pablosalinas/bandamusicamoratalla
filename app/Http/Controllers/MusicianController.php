@@ -119,7 +119,7 @@ class MusicianController extends Controller
         return view('musician.planning_pdf', compact('events'));
     }
 
-    public function downloadParentalConsent()
+    public function downloadParentalConsent(Request $request)
     {
         $user = Auth::user();
         $age = null;
@@ -137,6 +137,31 @@ class MusicianController extends Controller
 
         if (!empty($template)) {
             $userName = $user->name . ' ' . $user->last_name;
+            $eventInfo = '________________________________________________________________';
+            $dateInfo = 'Fecha: ____________________';
+            
+            if ($request->filled('event_id')) {
+                $event = \App\Models\Event::find($request->event_id);
+                if ($event) {
+                    \Carbon\Carbon::setLocale('es');
+                    $eventInfo = $event->name . ' el ' . \Carbon\Carbon::parse($event->event_date)->translatedFormat('d \d\e F \d\e Y');
+                    $dateInfo = 'Fecha: ' . now()->translatedFormat('d \d\e F \d\e Y');
+                }
+            }
+
+            $template = str_replace(
+                [
+                    '<nombre>', '&lt;nombre&gt;', '[nombre]', '[NOMBRE]',
+                    '<evento>', '&lt;evento&gt;', '[evento]', '[EVENTO]',
+                    '<fecha>', '&lt;fecha&gt;', '[fecha]', '[FECHA]'
+                ],
+                [
+                    $userName, $userName, $userName, $userName,
+                    $eventInfo, $eventInfo, $eventInfo, $eventInfo,
+                    $dateInfo, $dateInfo, $dateInfo, $dateInfo
+                ],
+                $template
+            );
             return view('shared.parental_consent_pdf', compact('template', 'userName'));
         } elseif (!empty($pdfPath) && \Illuminate\Support\Facades\Storage::disk('public')->exists($pdfPath)) {
             return response()->download(\Illuminate\Support\Facades\Storage::disk('public')->path($pdfPath), 'justificante_parental_' . str_replace(' ', '_', $user->name) . '.pdf');
