@@ -88,6 +88,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/planning', [\App\Http\Controllers\MusicianController::class, 'planning'])->name('musician.planning');
     Route::get('/planning/pdf', [\App\Http\Controllers\MusicianController::class, 'planningPdf'])->name('musician.planning.pdf');
     Route::view('/manual', 'musician.manual')->name('musician.manual');
+    Route::get('/parental-consent/download', [\App\Http\Controllers\MusicianController::class, 'downloadParentalConsent'])->name('musician.parental-consent.download');
 });
 
 Route::get('/test-redirect', function () {
@@ -160,6 +161,7 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
         Route::post('settings/carousel', [\App\Http\Controllers\Admin\SettingsController::class, 'storeCarouselMedia'])->name('settings.carousel.store');
         Route::put('settings/carousel/{media}', [\App\Http\Controllers\Admin\SettingsController::class, 'updateCarouselMedia'])->name('settings.carousel.update');
         Route::delete('settings/carousel/{media}', [\App\Http\Controllers\Admin\SettingsController::class, 'destroyCarouselMedia'])->name('settings.carousel.destroy');
+        Route::get('settings/parental-consent/download', [\App\Http\Controllers\Admin\SettingsController::class, 'downloadParentalConsent'])->name('settings.parental-consent.download');
         
         // Band History Images
         Route::post('settings/band-history-images', [\App\Http\Controllers\Admin\BandHistoryImageController::class, 'store'])->name('settings.band-history-images.store');

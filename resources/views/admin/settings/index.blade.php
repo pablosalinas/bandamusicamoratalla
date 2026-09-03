@@ -4,7 +4,7 @@
     </x-slot>
 
     <div class="mt-8 max-w-3xl">
-        <form action="{{ route('admin.settings.update') }}" method="POST" class="bg-gray-900 shadow-sm ring-1 ring-gray-800 sm:rounded-xl">
+        <form action="{{ route('admin.settings.update') }}" method="POST" enctype="multipart/form-data" class="bg-gray-900 shadow-sm ring-1 ring-gray-800 sm:rounded-xl">
             @csrf
             
             <div class="px-4 py-6 sm:p-8">
@@ -64,6 +64,31 @@
                             <textarea id="band_history" name="band_history" rows="10">{{ old('band_history', $settings['band_history'] ?? '') }}</textarea>
                         </div>
                         @error('band_history') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div class="sm:col-span-6 border-t border-gray-800 pt-6 mt-2">
+                        <h3 class="text-lg font-bold leading-tight tracking-tight text-white mb-2">Modelo de Justificante Parental</h3>
+                        <p class="text-sm text-gray-400 mb-4">Los músicos menores de edad podrán descargar este modelo desde su panel. Puedes subir un PDF directamente, o redactarlo aquí con texto enriquecido. Si redactas texto, tendrá prioridad y se generará un PDF automático con marca de agua.</p>
+                        
+                        <div class="mb-4">
+                            <label for="parental_consent_pdf" class="block text-sm font-medium leading-6 text-white">Subir Archivo PDF (Opcional si usas el editor abajo)</label>
+                            <input type="file" name="parental_consent_pdf" id="parental_consent_pdf" accept="application/pdf" class="mt-2 block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-gray-800 file:text-amber-500 hover:file:bg-gray-700">
+                            @if(isset($settings['parental_consent_pdf']) && $settings['parental_consent_pdf'])
+                                <p class="mt-2 text-sm text-green-400">📄 Hay un PDF subido actualmente.</p>
+                            @endif
+                        </div>
+
+                        <label for="parental_consent_template" class="block text-sm font-medium leading-6 text-white">Editor de Texto Enriquecido (Prioridad sobre PDF)</label>
+                        <div class="mt-2 text-black">
+                            <textarea id="parental_consent_template" name="parental_consent_template" rows="10">{{ old('parental_consent_template', $settings['parental_consent_template'] ?? '') }}</textarea>
+                        </div>
+                        @error('parental_consent_template') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
+                        
+                        <div class="mt-4 flex gap-4">
+                            <a href="{{ route('admin.settings.parental-consent.download') }}" target="_blank" class="rounded-md bg-gray-700 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-600 ring-1 ring-inset ring-gray-600">
+                                Descargar / Imprimir Prueba de PDF
+                            </a>
+                        </div>
                     </div>
 
                     <div class="sm:col-span-3">
@@ -297,6 +322,13 @@
             filebrowserImageUploadUrl: '/admin/editor/image-upload?_token={{ csrf_token() }}'
         });
         CKEDITOR.replace('band_history', {
+            language: 'es',
+            height: 350,
+            allowedContent: true,
+            versionCheck: false,
+            filebrowserImageUploadUrl: '/admin/editor/image-upload?_token={{ csrf_token() }}'
+        });
+        CKEDITOR.replace('parental_consent_template', {
             language: 'es',
             height: 350,
             allowedContent: true,

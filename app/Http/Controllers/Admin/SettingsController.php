@@ -41,6 +41,8 @@ class SettingsController extends Controller
             'carousel_speed' => \App\Models\SiteSetting::getSetting('carousel_speed', 4),
             'band_iban' => $bandIban,
             'site_logos' => $logos,
+            'parental_consent_template' => \App\Models\SiteSetting::getSetting('parental_consent_template', ''),
+            'parental_consent_pdf' => \App\Models\SiteSetting::getSetting('parental_consent_pdf', ''),
         ];
         
         $carouselMedia = \App\Models\CarouselMedia::orderBy('sort_order')->get();
@@ -58,6 +60,8 @@ class SettingsController extends Controller
             'statutes' => 'nullable|string',
             'band_history' => 'nullable|string',
             'carousel_speed' => 'required|integer|min:1',
+            'parental_consent_template' => 'nullable|string',
+            'parental_consent_pdf' => 'nullable|file|mimes:pdf|max:10240',
         ];
 
         if (auth()->user()->canViewIban()) {
@@ -70,9 +74,20 @@ class SettingsController extends Controller
             if ($key === 'band_iban') {
                 $value = $value ? \Illuminate\Support\Facades\Crypt::encryptString($value) : '';
             }
+            if ($key === 'parental_consent_pdf') {
+                continue; // Handled below
+            }
             \App\Models\SiteSetting::updateOrCreate(
                 ['key' => $key],
                 ['value' => $value, 'type' => is_numeric($value) ? 'integer' : 'text']
+            );
+        }
+
+        if ($request->hasFile('parental_consent_pdf')) {
+            $path = $request->file('parental_consent_pdf')->store('settings', 'public');
+            \App\Models\SiteSetting::updateOrCreate(
+                ['key' => 'parental_consent_pdf'],
+                ['value' => $path, 'type' => 'text']
             );
         }
 
@@ -218,5 +233,41 @@ class SettingsController extends Controller
         );
 
         return redirect()->route('admin.settings.index')->with('success', 'Orden actualizado.');
+    }
+
+    public function downloadParentalConsent()
+    {
+        $template = \App\Models\SiteSetting::getSetting('parental_consent_template', '');
+        $pdfPath = \App\Models\SiteSetting::getSetting('parental_consent_pdf', '');
+
+        if (!empty($template)) {
+            // Generate PDF from HTML
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadHTML('
+                <html>
+                <head>
+                    <style>
+                        body { font-family: Arial, sans-serif; }
+                        .watermark {
+                            position: fixed;
+                            top: 30%;
+                            left: 15%;
+                            width: 70%;
+                            opacity: 0.1;
+                            z-index: -1;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <img src="' . public_path('images/logo.png') . '" class="watermark">
+                    ' . $template . '
+                </body>
+                </html>
+            ');
+            return $pdf->stream('modelo_justificante_parental.pdf');
+        } elseif (!empty($pdfPath) && \Illuminate\Support\Facades\Storage::disk('public')->exists($pdfPath)) {
+            return response()->download(\Illuminate\Support\Facades\Storage::disk('public')->path($pdfPath), 'modelo_justificante_parental.pdf');
+        }
+
+        return redirect()->back()->with('error', 'No hay modelo de justificante configurado.');
     }
 }

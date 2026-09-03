@@ -9,7 +9,12 @@ class Attendance extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['event_id', 'user_id', 'status'];
+    protected $fillable = [
+        'event_id',
+        'user_id',
+        'status',
+        'has_parental_consent',
+    ];
 
     public function event()
     {

@@ -40,20 +40,37 @@
                         <thead class="bg-gray-900">
                             <tr>
                                 <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-white sm:pl-6">Músico</th>
-                                <th scope="col" class="px-3 py-3.5 text-center text-sm font-semibold text-white w-1/4">Presente</th>
-                                <th scope="col" class="px-3 py-3.5 text-center text-sm font-semibold text-white w-1/4">Falta</th>
-                                <th scope="col" class="px-3 py-3.5 text-center text-sm font-semibold text-white w-1/4">Falta Justificada</th>
+                                <th scope="col" class="px-3 py-3.5 text-center text-sm font-semibold text-white w-1/5">Presente</th>
+                                <th scope="col" class="px-3 py-3.5 text-center text-sm font-semibold text-white w-1/5">Falta</th>
+                                <th scope="col" class="px-3 py-3.5 text-center text-sm font-semibold text-white w-1/5">Falta Justificada</th>
+                                <th scope="col" class="px-3 py-3.5 text-center text-sm font-semibold text-white w-1/5">Justif. Parental</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-800 bg-gray-950">
                             @foreach ($users as $user)
                                 @php
-                                    $currentStatus = $attendances->has($user->id) ? $attendances[$user->id] : 'present';
+                                    $currentAttendance = $attendances->has($user->id) ? $attendances[$user->id] : null;
+                                    $currentStatus = $currentAttendance ? $currentAttendance->status : 'present';
+                                    $hasConsent = $currentAttendance ? $currentAttendance->has_parental_consent : false;
+
+                                    $age = $user->birth_date ? \Carbon\Carbon::parse($user->birth_date)->age : null;
+                                    
+                                    $rowClass = 'hover:bg-gray-900/50 transition-colors';
+                                    if ($age === null) {
+                                        $rowClass .= ' bg-orange-900/20';
+                                    } elseif ($age < 18) {
+                                        $rowClass .= ' bg-red-900/20';
+                                    }
                                 @endphp
-                                <tr class="hover:bg-gray-900/50 transition-colors">
+                                <tr class="{{ $rowClass }}">
                                     <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-white sm:pl-6">
                                         {{ $user->name }} {{ $user->last_name }}
-                                        <div class="text-xs text-gray-500 font-normal">
+                                        @if($age === null)
+                                            <span class="ml-2 inline-flex items-center rounded-md bg-orange-400/10 px-2 py-1 text-xs font-medium text-orange-400 ring-1 ring-inset ring-orange-400/20">Falta fecha nac.</span>
+                                        @elseif($age < 18)
+                                            <span class="ml-2 inline-flex items-center rounded-md bg-red-400/10 px-2 py-1 text-xs font-medium text-red-400 ring-1 ring-inset ring-red-400/20">Menor ({{ $age }} años)</span>
+                                        @endif
+                                        <div class="text-xs text-gray-500 font-normal mt-1">
                                             {{ $user->inventories->map(fn($inv) => $inv->instrument->name ?? 'Desconocido')->implode(', ') }}
                                         </div>
                                     </td>
@@ -80,6 +97,18 @@
                                                 class="h-6 w-6 border-gray-700 bg-gray-900 text-yellow-600 focus:ring-yellow-600 focus:ring-offset-gray-900 cursor-pointer status-radio excused-radio"
                                                 {{ $currentStatus === 'excused' ? 'checked' : '' }}>
                                         </div>
+                                    </td>
+
+                                    <td class="whitespace-nowrap px-3 py-4 text-center">
+                                        @if($age === null || $age < 18)
+                                            <div class="flex justify-center">
+                                                <input type="checkbox" name="parental_consent[{{ $user->id }}]" value="1" 
+                                                    class="h-6 w-6 rounded border-gray-700 bg-gray-900 text-amber-600 focus:ring-amber-600 focus:ring-offset-gray-900 cursor-pointer"
+                                                    {{ $hasConsent ? 'checked' : '' }}>
+                                            </div>
+                                        @else
+                                            <span class="text-xs text-gray-500">-</span>
+                                        @endif
                                     </td>
                                 </tr>
                             @endforeach

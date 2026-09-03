@@ -76,7 +76,7 @@ class EventController extends Controller
     {
         // Solo obtener usuarios activos
         $users = User::where('is_active', true)->orderBy('name')->get();
-        $attendances = $event->attendances()->pluck('status', 'user_id');
+        $attendances = $event->attendances()->get()->keyBy('user_id');
 
         return view('admin.events.attendance', compact('event', 'users', 'attendances'));
     }
@@ -85,9 +85,11 @@ class EventController extends Controller
     {
         $request->validate([
             'attendance' => 'array',
+            'parental_consent' => 'array',
         ]);
 
         $attendances = $request->input('attendance', []);
+        $parentalConsents = $request->input('parental_consent', []);
 
         // Eliminamos todas las asistencias previas del evento
         $event->attendances()->delete();
@@ -98,6 +100,7 @@ class EventController extends Controller
                 'event_id' => $event->id,
                 'user_id' => $userId,
                 'status' => $status,
+                'has_parental_consent' => isset($parentalConsents[$userId]),
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ];

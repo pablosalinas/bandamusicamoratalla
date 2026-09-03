@@ -118,4 +118,51 @@ class MusicianController extends Controller
 
         return view('musician.planning_pdf', compact('events'));
     }
+
+    public function downloadParentalConsent()
+    {
+        $user = Auth::user();
+        $age = null;
+        if ($user->birth_date) {
+            $age = \Carbon\Carbon::parse($user->birth_date)->age;
+        }
+
+        // Only minors or those without birth date can download it from here (as per requirement)
+        if ($age !== null && $age >= 18) {
+            abort(403, 'No necesitas justificante parental al ser mayor de edad.');
+        }
+
+        $template = \App\Models\SiteSetting::getSetting('parental_consent_template', '');
+        $pdfPath = \App\Models\SiteSetting::getSetting('parental_consent_pdf', '');
+
+        if (!empty($template)) {
+            // Generate PDF from HTML
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadHTML('
+                <html>
+                <head>
+                    <style>
+                        body { font-family: Arial, sans-serif; }
+                        .watermark {
+                            position: fixed;
+                            top: 30%;
+                            left: 15%;
+                            width: 70%;
+                            opacity: 0.1;
+                            z-index: -1;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <img src="' . public_path('images/logo.png') . '" class="watermark">
+                    ' . $template . '
+                </body>
+                </html>
+            ');
+            return $pdf->stream('justificante_parental_' . str_replace(' ', '_', $user->name) . '.pdf');
+        } elseif (!empty($pdfPath) && \Illuminate\Support\Facades\Storage::disk('public')->exists($pdfPath)) {
+            return response()->download(\Illuminate\Support\Facades\Storage::disk('public')->path($pdfPath), 'justificante_parental_' . str_replace(' ', '_', $user->name) . '.pdf');
+        }
+
+        return redirect()->back()->with('error', 'El modelo de justificante parental aún no ha sido configurado por la administración.');
+    }
 }
