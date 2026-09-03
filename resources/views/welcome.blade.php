@@ -160,28 +160,7 @@
             startAutoplay() {
                 this.stopAutoplay();
                 this.$nextTick(() => {
-                    let currentSlide = this.slides[this.currentIndex];
-                    if (!currentSlide || currentSlide.type !== 'video') {
-                        this.scheduleNext();
-                    } else {
-                        let videoEl = document.getElementById('carousel-video-' + this.currentIndex);
-                        if (videoEl) {
-                            videoEl.muted = this.globalMuted;
-                            videoEl.currentTime = 0;
-                            let playPromise = videoEl.play();
-                            if (playPromise !== undefined) {
-                                playPromise.catch(() => {
-                                    // Browser blocked autoplay (probably because it's unmuted without interaction)
-                                    this.globalMuted = true;
-                                    videoEl.muted = true;
-                                    videoEl.play().catch(()=>{});
-                                });
-                            }
-                            videoEl.onended = () => { this.next(); };
-                        } else {
-                            this.scheduleNext();
-                        }
-                    }
+                    this.scheduleNext();
                 });
             },
             
@@ -255,22 +234,6 @@
                                                muted
                                                playsinline>
                                         </video>
-                                        <button @click.stop="toggleMute()"
-                                                class="absolute bottom-3 right-3 z-20 bg-black/60 hover:bg-black/90 text-white rounded-full p-2 transition-all"
-                                                :title="globalMuted ? 'Activar sonido' : 'Silenciar'">
-                                            <svg x-show="globalMuted" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                      d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/>
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                      d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"/>
-                                            </svg>
-                                            <svg x-show="!globalMuted" style="display:none" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                      d="M15.536 8.464a5 5 0 010 7.072M12 6v12m0 0l-4-4H4V10h4l4-4z"/>
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                      d="M18.364 5.636a9 9 0 010 12.728"/>
-                                            </svg>
-                                        </button>
                                     </div>
                                 </template>
                                 
@@ -330,7 +293,7 @@
                         
                         <template x-if="slide.type === 'video'">
                             <!-- Using a different ID for lightbox video so they don't clash -->
-                            <video :id="'lightbox-video-' + index" :src="slide.src" class="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl" controls autoplay :muted="globalMuted"></video>
+                            <video :id="'lightbox-video-' + index" :src="slide.src" class="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl" controls muted></video>
                         </template>
                         
                         <template x-if="slide.description">
