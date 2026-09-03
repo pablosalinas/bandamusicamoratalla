@@ -12,6 +12,10 @@ use App\Models\Inventory;
 use App\Models\Event;
 use App\Models\InstrumentCatalog;
 use App\Models\MediaArchive;
+use App\Models\InstrumentBrand;
+use App\Models\FiscalYear;
+use App\Models\Visit;
+use App\Models\ActivityLog;
 
 class DashboardController extends Controller
 {
@@ -26,6 +30,10 @@ class DashboardController extends Controller
             'events' => Event::count(),
             'instruments' => InstrumentCatalog::count(),
             'media' => MediaArchive::count(),
+            'instrument_brands' => InstrumentBrand::count(),
+            'fiscal_years' => FiscalYear::count(),
+            'visits' => Visit::count(),
+            'logs' => ActivityLog::count(),
         ];
 
         return view('admin.dashboard', compact('stats'));
