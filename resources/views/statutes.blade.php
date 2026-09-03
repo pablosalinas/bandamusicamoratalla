@@ -31,12 +31,12 @@
         <div class="bg-gray-900 border border-gray-800 rounded-2xl p-8 shadow-2xl">
             <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 pb-6 border-b border-gray-800">
                 <h1 class="text-3xl sm:text-4xl font-bold text-white">Estatutos de la Banda</h1>
-                <button onclick="window.print()" class="mt-4 md:mt-0 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-gray-900 bg-amber-500 hover:bg-amber-400">
+                <a href="{{ route('estatutos.pdf') }}" class="mt-4 md:mt-0 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-gray-900 bg-amber-500 hover:bg-amber-400">
                     <svg class="mr-2 -ml-1 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                     </svg>
                     Descargar PDF / Imprimir
-                </button>
+                </a>
             </div>
             
             <div class="prose prose-invert prose-amber max-w-none text-gray-300 leading-relaxed">

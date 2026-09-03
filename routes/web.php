@@ -18,6 +18,10 @@ Route::get('/estatutos', function () {
     return view('statutes');
 })->name('estatutos');
 
+Route::get('/estatutos/pdf', function () {
+    return view('statutes_pdf');
+})->name('estatutos.pdf');
+
 Route::get('/migrate-db-secret', function() {
     try {
         // Ejecutamos migraciones

@@ -57,7 +57,9 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-20">
                 <div class="flex items-center gap-3 md:gap-4">
-                    <x-logo-rotator class="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 rounded-full shadow-[0_0_15px_rgba(245,158,11,0.4)] shrink-0 overflow-hidden" />
+                    <a href="{{ url('/') }}" class="cursor-pointer shrink-0">
+                        <x-logo-rotator class="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 rounded-full shadow-[0_0_15px_rgba(245,158,11,0.4)] overflow-hidden" />
+                    </a>
                     <div class="flex flex-col">
                         <div class="flex flex-col lg:flex-row lg:items-baseline leading-none">
                             <span class="text-xl sm:text-2xl lg:text-4xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-600">{{ $globalBandName }}</span>
@@ -664,7 +666,9 @@
         <div class="max-w-7xl mx-auto px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center">
             <div class="mb-6 md:mb-0">
                 <div class="flex items-center gap-4">
-                    <x-logo-rotator class="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 rounded-full shrink-0 overflow-hidden" />
+                    <a href="{{ url('/') }}" class="cursor-pointer shrink-0">
+                        <x-logo-rotator class="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 rounded-full overflow-hidden" />
+                    </a>
                     <div class="flex flex-col">
                         <div class="flex flex-col leading-none">
                             <span class="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-600">{{ $globalBandName }}</span>
