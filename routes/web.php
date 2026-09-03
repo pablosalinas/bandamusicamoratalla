@@ -286,3 +286,29 @@ Route::get('/debug-server', function() {
     $logsWritable = is_writable($logs) ? 'Si' : 'NO';
     return 'Storage Writable: ' . $isWritable . '<br>Sessions Writable: ' . $sessionsWritable . '<br>Logs Writable: ' . $logsWritable;
 });
+
+Route::get('/debug-media', function() {
+    $lastMedia = \App\Models\MediaArchive::orderBy('id', 'desc')->first();
+    if (!$lastMedia) return 'No hay media';
+    
+    $path = $lastMedia->file_path;
+    $absPath = storage_path('app/public/' . $path);
+    $url = asset('storage/' . $path);
+    
+    $exists = file_exists($absPath) ? 'SI' : 'NO';
+    $size = file_exists($absPath) ? filesize($absPath) : 0;
+    
+    $symlinkExists = file_exists(public_path('storage')) ? 'SI' : 'NO';
+    $isLink = is_link(public_path('storage')) ? 'SI' : 'NO';
+    
+    return response()->json([
+        'file_path_db' => $path,
+        'absolute_path' => $absPath,
+        'url_generated' => $url,
+        'file_exists_on_disk' => $exists,
+        'file_size_bytes' => $size,
+        'public_storage_exists' => $symlinkExists,
+        'public_storage_is_link' => $isLink,
+        'app_url' => config('app.url')
+    ]);
+});
