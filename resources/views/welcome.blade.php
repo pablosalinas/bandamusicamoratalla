@@ -31,6 +31,23 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
+        @keyframes slogan-shine {
+            0% { background-position: 200% center; }
+            100% { background-position: -200% center; }
+        }
+        @keyframes slogan-float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-2px); }
+        }
+        .animate-slogan {
+            background: linear-gradient(90deg, rgba(245, 158, 11, 0.8) 0%, rgba(245, 158, 11, 0.8) 40%, #ffffff 50%, rgba(245, 158, 11, 0.8) 60%, rgba(245, 158, 11, 0.8) 100%);
+            background-size: 200% auto;
+            color: transparent;
+            -webkit-background-clip: text;
+            background-clip: text;
+            animation: slogan-shine 4s linear infinite, slogan-float 3s ease-in-out infinite;
+            display: inline-block;
+        }
     </style>
 </head>
 <body class="antialiased bg-gray-950 text-gray-200" x-data="{ scrolled: false, mobileMenuOpen: false }" @scroll.window="scrolled = (window.pageYOffset > 20)">
@@ -45,7 +62,7 @@
                         <div class="flex flex-col lg:flex-row lg:items-baseline leading-none">
                             <span class="text-xl sm:text-2xl lg:text-4xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-600">{{ $globalBandName }}</span>
                         </div>
-                        <span class="text-xs sm:text-sm lg:text-lg font-medium text-amber-500/80 italic tracking-widest mt-1">{{ \App\Models\SiteSetting::getSetting('site_slogan', 'Tu banda') }}</span>
+                        <span class="text-xs sm:text-sm lg:text-lg font-medium italic tracking-widest mt-1 animate-slogan">{{ \App\Models\SiteSetting::getSetting('site_slogan', 'Tu banda') }}</span>
                     </div>
                 </div>
                 <div class="hidden md:flex items-center space-x-8">
