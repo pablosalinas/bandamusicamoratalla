@@ -241,61 +241,8 @@ class SettingsController extends Controller
         $pdfPath = \App\Models\SiteSetting::getSetting('parental_consent_pdf', '');
 
         if (!empty($template)) {
-            $watermarkHtml = '';
-            
-            // Buscar el logo con el orden más bajo
-            $rawLogos = json_decode(\App\Models\SiteSetting::getSetting('site_logos', '[]'), true) ?: [];
-            $logos = [];
-            foreach ($rawLogos as $logo) {
-                if (is_string($logo)) {
-                    $logos[] = ['path' => $logo, 'order' => 999];
-                } else if (is_array($logo)) {
-                    $logos[] = $logo;
-                }
-            }
-            usort($logos, function($a, $b) {
-                return ($a['order'] ?? 999) <=> ($b['order'] ?? 999);
-            });
-
-            if (count($logos) > 0) {
-                $bestLogoPath = $logos[0]['path'];
-                $fullPath = str_starts_with($bestLogoPath, 'images/') 
-                    ? public_path($bestLogoPath) 
-                    : storage_path('app/public/' . $bestLogoPath);
-
-                if (file_exists($fullPath)) {
-                    // DOMPDF necesita permisos y a veces falla con rutas relativas o URLs. Base64 es la forma más segura.
-                    $type = pathinfo($fullPath, PATHINFO_EXTENSION);
-                    $data = file_get_contents($fullPath);
-                    $base64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
-                    
-                    $watermarkHtml = '<img src="' . $base64 . '" class="watermark">';
-                }
-            }
-
-            // Generate PDF from HTML
-            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadHTML('
-                <html>
-                <head>
-                    <style>
-                        body { font-family: Arial, sans-serif; }
-                        .watermark {
-                            position: fixed;
-                            top: 30%;
-                            left: 15%;
-                            width: 70%;
-                            opacity: 0.1;
-                            z-index: -1;
-                        }
-                    </style>
-                </head>
-                <body>
-                    ' . $watermarkHtml . '
-                    ' . $template . '
-                </body>
-                </html>
-            ');
-            return $pdf->stream('modelo_justificante_parental.pdf');
+            $userName = 'Modelo';
+            return view('shared.parental_consent_pdf', compact('template', 'userName'));
         } elseif (!empty($pdfPath) && \Illuminate\Support\Facades\Storage::disk('public')->exists($pdfPath)) {
             return response()->download(\Illuminate\Support\Facades\Storage::disk('public')->path($pdfPath), 'modelo_justificante_parental.pdf');
         }
