@@ -354,19 +354,6 @@
             <p class="text-lg md:text-2xl text-gray-300 mb-10 leading-relaxed font-light max-w-2xl mx-auto">
                 Acompañamos cada momento especial de nuestro pueblo con pasión, dedicación y excelencia musical.
             </p>
-
-            <div class="flex flex-col sm:flex-row gap-5 justify-center">
-                <a href="#historia" class="inline-flex items-center justify-center px-8 py-4 text-base font-bold rounded-full text-gray-950 bg-gradient-to-r from-amber-400 to-amber-600 hover:from-amber-300 hover:to-amber-500 transition-all transform hover:scale-105 hover:-translate-y-1 shadow-[0_10px_30px_rgba(245,158,11,0.3)]">
-                    Descubre nuestra historia
-                </a>
-            </div>
-        </div>
-        
-        <!-- Scroll indicator -->
-        <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce">
-            <svg class="w-6 h-6 text-amber-500/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
-            </svg>
         </div>
     </section>
 
