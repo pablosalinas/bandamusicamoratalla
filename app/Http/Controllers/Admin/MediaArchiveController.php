@@ -57,8 +57,7 @@ class MediaArchiveController extends Controller
                 }
             ],
             'images' => 'nullable|array',
-            'images.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:5120',
-            'is_active' => 'boolean'
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:5120'
         ]);
 
         $path = $request->file('file')->store('media_archive', 'public');
@@ -103,8 +102,7 @@ class MediaArchiveController extends Controller
             'music_type' => 'nullable|string|max:255',
             'performance_date' => 'nullable|date',
             'images' => 'nullable|array',
-            'images.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:5120',
-            'is_active' => 'boolean'
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:5120'
         ]);
 
         $mediaArchive->update([
