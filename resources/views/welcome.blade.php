@@ -553,13 +553,16 @@
             @if(isset($mediaArchives) && $mediaArchives->count() > 0)
                 <div class="flex overflow-x-auto gap-6 pb-8 snap-x snap-mandatory scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900" style="scrollbar-width: thin;">
                     @foreach($mediaArchives as $media)
-                        <div class="glass-panel rounded-2xl overflow-hidden hover:-translate-y-1 transition-all duration-300 group flex flex-col flex-none w-[75vw] sm:w-[280px] lg:w-[300px] snap-center">
+                        <div x-data="{ openLightbox: false, lightboxSlides: {{ json_encode($media->images->map(function($i) { return asset('storage/' . $i->file_path); })) }}, activeLightboxSlide: 0 }" class="glass-panel rounded-2xl overflow-hidden hover:-translate-y-1 transition-all duration-300 group flex flex-col flex-none w-[65vw] sm:w-[220px] lg:w-[240px] snap-center">
                             @if($media->images->count() > 0)
                                 <!-- Carrusel de Imágenes -->
                                 <div class="relative aspect-video bg-gray-900" x-data="{ activeSlide: 1, totalSlides: {{ $media->images->count() }} }">
                                     @foreach($media->images as $index => $image)
-                                        <div x-show="activeSlide === {{ $index + 1 }}" class="absolute inset-0 transition-opacity duration-500 ease-in-out">
-                                            <img src="{{ asset('storage/' . $image->file_path) }}" class="w-full h-full object-cover select-none pointer-events-none" oncontextmenu="return false;" draggable="false">
+                                        <div x-show="activeSlide === {{ $index + 1 }}" @click="openLightbox = true; activeLightboxSlide = {{ $index }}" class="absolute inset-0 transition-opacity duration-500 ease-in-out cursor-pointer group/img">
+                                            <img src="{{ asset('storage/' . $image->file_path) }}" class="w-full h-full object-contain select-none transition-transform duration-500 group-hover/img:scale-105" oncontextmenu="return false;" draggable="false">
+                                            <div class="absolute inset-0 bg-black/50 opacity-0 group-hover/img:opacity-100 flex items-center justify-center transition-opacity">
+                                                 <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path></svg>
+                                            </div>
                                         </div>
                                     @endforeach
                                     
@@ -608,9 +611,42 @@
                                 @endif
 
                                 @if($media->description)
-                                    <p class="text-sm text-gray-400 line-clamp-3 mt-auto">{{ $media->description }}</p>
+                                    <p class="text-xs text-gray-400 line-clamp-2 mt-auto">{{ $media->description }}</p>
                                 @endif
                             </div>
+                            
+                            <!-- Lightbox de Imágenes -->
+                            @if($media->images->count() > 0)
+                            <template x-teleport="body">
+                                <div x-show="openLightbox" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-sm" style="display: none;" @keydown.escape.window="openLightbox = false" @keydown.right.window="if(openLightbox) activeLightboxSlide = (activeLightboxSlide + 1) % lightboxSlides.length" @keydown.left.window="if(openLightbox) activeLightboxSlide = (activeLightboxSlide - 1 + lightboxSlides.length) % lightboxSlides.length">
+                                    <button @click="openLightbox = false" class="absolute top-6 right-6 text-white/70 hover:text-white bg-black/50 hover:bg-amber-600 rounded-full p-2 transition-colors z-[110]">
+                                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                    </button>
+                                    
+                                    <button x-show="lightboxSlides.length > 1" @click="activeLightboxSlide = (activeLightboxSlide - 1 + lightboxSlides.length) % lightboxSlides.length" class="absolute left-6 top-1/2 -translate-y-1/2 text-white/70 hover:text-white bg-black/50 hover:bg-amber-600 rounded-full p-3 transition-colors z-[110]">
+                                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                                    </button>
+                                    
+                                    <button x-show="lightboxSlides.length > 1" @click="activeLightboxSlide = (activeLightboxSlide + 1) % lightboxSlides.length" class="absolute right-6 top-1/2 -translate-y-1/2 text-white/70 hover:text-white bg-black/50 hover:bg-amber-600 rounded-full p-3 transition-colors z-[110]">
+                                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                                    </button>
+
+                                    <div class="w-full h-full flex flex-col items-center justify-center">
+                                        <template x-for="(url, index) in lightboxSlides" :key="index">
+                                            <div x-show="activeLightboxSlide === index" x-transition.opacity.duration.300ms class="absolute inset-0 flex items-center justify-center p-4 md:p-12 z-[105]">
+                                                <img :src="url" class="max-h-[85vh] max-w-full object-contain rounded-lg shadow-2xl">
+                                            </div>
+                                        </template>
+                                    </div>
+                                    
+                                    <div x-show="lightboxSlides.length > 1" class="absolute bottom-8 left-1/2 -translate-x-1/2 flex space-x-3 bg-black/40 px-4 py-2 rounded-full backdrop-blur-sm z-[110]">
+                                        <template x-for="(_, index) in lightboxSlides" :key="index">
+                                            <button @click="activeLightboxSlide = index" class="w-3 h-3 rounded-full transition-colors" :class="activeLightboxSlide === index ? 'bg-amber-500' : 'bg-white/40 hover:bg-white/60'"></button>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
+                            @endif
                         </div>
                     @endforeach
                 </div>
