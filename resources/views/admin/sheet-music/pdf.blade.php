@@ -48,7 +48,7 @@
         @media print {
             @page { margin: 0; }
             .no-print { display: none !important; }
-            body { padding: 1.5cm; }
+            body { padding: 1.5cm; line-height: 1.3 !important; }
         }
         .instruments-list {
             margin-top: 4px;

@@ -27,6 +27,7 @@
             }
             body {
                 padding: 1.5cm !important;
+                line-height: 1.3 !important;
             }
             /* Optimizaciones para imprimir bordes finos y colores */
             table {

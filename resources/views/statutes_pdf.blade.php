@@ -27,6 +27,7 @@
             }
             body {
                 padding: 1.5cm !important;
+                line-height: 1.3 !important;
             }
             .bg-gray-100 { 
                 background-color: #ffffff !important; 
@@ -98,7 +99,7 @@
         </div>
 
         <!-- Contenido -->
-        <div class="prose max-w-none text-gray-800 leading-relaxed">
+        <div class="prose max-w-none text-gray-800 leading-snug">
             @if(empty($globalStatutes))
                 <p class="text-gray-400 italic text-center">Los estatutos aún no han sido publicados.</p>
             @else
