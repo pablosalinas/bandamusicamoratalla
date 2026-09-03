@@ -148,14 +148,14 @@
         <div>
             <h3 class="text-lg font-bold text-gray-800 mb-4 border-b border-gray-200 pb-2">Detalle de Movimientos (Cronológico)</h3>
             
-            <table class="w-full text-left text-sm text-gray-700">
+            <table class="w-full text-left text-sm text-gray-700 table-fixed">
                 <thead class="bg-gray-100 text-gray-900 uppercase font-semibold text-xs border-b border-gray-300">
                     <tr>
-                        <th class="py-3 px-4">Fecha</th>
-                        <th class="py-3 px-4 w-1/2">Concepto</th>
-                        <th class="py-3 px-4 text-center">Tipo</th>
-                        <th class="py-3 px-4 text-right">Importe</th>
-                        <th class="py-3 px-4 text-center">Punteado</th>
+                        <th class="py-2 px-2 w-24">Fecha</th>
+                        <th class="py-2 px-2">Concepto</th>
+                        <th class="py-2 px-2 w-24 text-center">Tipo</th>
+                        <th class="py-2 px-2 w-32 text-right">Importe</th>
+                        <th class="py-2 px-2 w-24 text-center">Punteado</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200">
@@ -166,19 +166,19 @@
                             else $runningBalance -= $mov->amount;
                         @endphp
                         <tr class="avoid-break hover:bg-gray-50">
-                            <td class="py-3 px-4 whitespace-nowrap">{{ $mov->date->format('d/m/Y') }}</td>
-                            <td class="py-3 px-4 font-medium">{{ $mov->description }}</td>
-                            <td class="py-3 px-4 text-center">
+                            <td class="py-2 px-2 whitespace-nowrap">{{ $mov->date->format('d/m/Y') }}</td>
+                            <td class="py-2 px-2 font-medium truncate" title="{{ $mov->description }}">{{ $mov->description }}</td>
+                            <td class="py-2 px-2 text-center">
                                 @if($mov->type === 'income')
-                                    <span class="text-green-600 font-bold uppercase text-xs tracking-wider">Ingreso</span>
+                                    <span class="text-green-600 font-bold uppercase text-[10px] tracking-wider">Ingreso</span>
                                 @else
-                                    <span class="text-red-600 font-bold uppercase text-xs tracking-wider">Gasto</span>
+                                    <span class="text-red-600 font-bold uppercase text-[10px] tracking-wider">Gasto</span>
                                 @endif
                             </td>
-                            <td class="py-3 px-4 text-right font-bold {{ $mov->type === 'income' ? 'text-green-600' : 'text-red-600' }}">
+                            <td class="py-2 px-2 text-right font-bold whitespace-nowrap {{ $mov->type === 'income' ? 'text-green-600' : 'text-red-600' }}">
                                 {{ $mov->type === 'income' ? '+' : '-' }}{{ number_format($mov->amount, 2, ',', '.') }} €
                             </td>
-                            <td class="py-3 px-4 text-center">
+                            <td class="py-2 px-2 text-center">
                                 @if($mov->is_reconciled)
                                     <span class="text-green-600 font-bold">✓</span>
                                 @else
