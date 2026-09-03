@@ -55,7 +55,11 @@
 
                     <div>
                         <label class="block text-sm font-medium leading-6 text-white">Estado Físico *</label>
-                        <input type="text" name="status" value="{{ old('status', $inventory->status) }}" required class="mt-2 block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm">
+                        <select name="status" required class="mt-2 block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm">
+                            <option value="good" {{ old('status', $inventory->status) == 'good' ? 'selected' : '' }}>Bueno</option>
+                            <option value="repair" {{ old('status', $inventory->status) == 'repair' ? 'selected' : '' }}>En Reparación</option>
+                            <option value="bad" {{ old('status', $inventory->status) == 'bad' ? 'selected' : '' }}>Malo / Baja</option>
+                        </select>
                         @error('status') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
                     </div>
 
