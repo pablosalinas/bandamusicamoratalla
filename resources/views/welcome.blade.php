@@ -147,6 +147,7 @@
                     } else {
                         let videoEl = document.getElementById('carousel-video-' + this.currentIndex);
                         if (videoEl) {
+                            this.globalMuted = true;
                             videoEl.muted = this.globalMuted;
                             videoEl.currentTime = 0;
                             videoEl.play().catch(() => {});
@@ -193,6 +194,7 @@
             },
             
             openLightbox(index) {
+                this.globalMuted = true;
                 this.lightboxOpen = true;
                 document.body.style.overflow = 'hidden';
             },
