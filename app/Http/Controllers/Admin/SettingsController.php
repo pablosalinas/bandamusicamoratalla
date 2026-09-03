@@ -34,6 +34,7 @@ class SettingsController extends Controller
 
         $settings = [
             'band_name' => \App\Models\SiteSetting::getSetting('band_name', 'Banda de Música de Moratalla'),
+            'site_slogan' => \App\Models\SiteSetting::getSetting('site_slogan', 'Tu banda'),
             'session_timeout' => \App\Models\SiteSetting::getSetting('session_timeout', 120),
             'statutes' => \App\Models\SiteSetting::getSetting('statutes', ''),
             'band_history' => \App\Models\SiteSetting::getSetting('band_history', ''),
@@ -52,6 +53,7 @@ class SettingsController extends Controller
     {
         $rules = [
             'band_name' => 'required|string|max:255',
+            'site_slogan' => 'nullable|string|max:255',
             'session_timeout' => 'required|integer|min:1',
             'statutes' => 'nullable|string',
             'band_history' => 'nullable|string',

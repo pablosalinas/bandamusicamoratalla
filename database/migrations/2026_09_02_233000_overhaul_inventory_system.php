@@ -44,7 +44,7 @@ return new class extends Migration
                 'serial_number' => $pivot->serial_number,
                 'model' => $pivot->modelo,
                 'status' => 'good',
-                'user_id' => $pivot->is_active ? $pivot->user_id : null, // assigned to user if active
+                // 'user_id' => $pivot->is_active ? $pivot->user_id : null, // assigned to user if active
                 'notes' => 'Migrado desde ficha de músico',
                 'created_at' => $pivot->created_at ?? now(),
                 'updated_at' => $pivot->updated_at ?? now(),

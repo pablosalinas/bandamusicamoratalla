@@ -45,13 +45,14 @@
                         <div class="flex flex-col lg:flex-row lg:items-baseline leading-none">
                             <span class="text-xl sm:text-2xl lg:text-4xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-600">{{ $globalBandName }}</span>
                         </div>
-                        <span class="text-xs sm:text-sm lg:text-lg font-medium text-amber-500/80 italic tracking-widest mt-1">Tu banda</span>
+                        <span class="text-xs sm:text-sm lg:text-lg font-medium text-amber-500/80 italic tracking-widest mt-1">{{ \App\Models\SiteSetting::getSetting('site_slogan', 'Tu banda') }}</span>
                     </div>
                 </div>
                 <div class="hidden md:flex items-center space-x-8">
                     <a href="#inicio" class="text-gray-300 hover:text-white transition-colors font-medium">Inicio</a>
                     <a href="#historia" class="text-gray-300 hover:text-white transition-colors font-medium">Historia</a>
                     <a href="#noticias" class="text-gray-300 hover:text-white transition-colors font-medium">Noticias</a>
+                    <a href="#archivo-sonoro" class="text-gray-300 hover:text-white transition-colors font-medium">Archivo Sonoro</a>
                     @auth
                         <a href="{{ route('dashboard') }}" class="text-amber-500 hover:text-amber-400 font-semibold transition-colors">Mi Panel</a>
                     @else
@@ -79,6 +80,7 @@
                 <a href="#inicio" @click="mobileMenuOpen = false" class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-800">Inicio</a>
                 <a href="#historia" @click="mobileMenuOpen = false" class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-800">Historia</a>
                 <a href="#noticias" @click="mobileMenuOpen = false" class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-800">Noticias</a>
+                <a href="#archivo-sonoro" @click="mobileMenuOpen = false" class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-800">Archivo Sonoro</a>
                 @auth
                     <a href="{{ route('dashboard') }}" class="block px-3 py-2 rounded-md text-base font-medium text-amber-500 hover:text-amber-400 hover:bg-gray-800">Mi Panel</a>
                 @else
@@ -352,9 +354,6 @@
                 <a href="#historia" class="inline-flex items-center justify-center px-8 py-4 text-base font-bold rounded-full text-gray-950 bg-gradient-to-r from-amber-400 to-amber-600 hover:from-amber-300 hover:to-amber-500 transition-all transform hover:scale-105 hover:-translate-y-1 shadow-[0_10px_30px_rgba(245,158,11,0.3)]">
                     Descubre nuestra historia
                 </a>
-                <a href="#contacto" class="inline-flex items-center justify-center px-8 py-4 text-base font-bold rounded-full text-white glass-panel hover:bg-gray-800 transition-all transform hover:-translate-y-1">
-                    Únete a la banda
-                </a>
             </div>
         </div>
         
@@ -539,6 +538,48 @@
         </div>
     </section>
 
+    <!-- Archivo Sonoro Section -->
+    <section id="archivo-sonoro" class="py-24 relative bg-gray-950">
+        <div class="max-w-7xl mx-auto px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-5xl font-bold mb-4">Archivo Sonoro</h2>
+                <div class="h-1 w-20 bg-amber-500 mx-auto rounded-full"></div>
+                <p class="text-gray-400 mt-4 max-w-2xl mx-auto">Disfruta de nuestras interpretaciones y actuaciones multimedia.</p>
+            </div>
+            
+            @if(isset($mediaArchives) && $mediaArchives->count() > 0)
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    @foreach($mediaArchives as $media)
+                        <div class="glass-panel rounded-2xl overflow-hidden hover:-translate-y-1 transition-all duration-300 group">
+                            <div class="relative aspect-video bg-black/50 flex items-center justify-center">
+                                @if($media->type === 'video')
+                                    <video src="{{ asset('storage/' . $media->file_path) }}" class="w-full h-full object-cover" controls preload="metadata"></video>
+                                @else
+                                    <!-- Audio placeholder -->
+                                    <div class="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-amber-900/40 to-black/80">
+                                        <svg class="w-16 h-16 text-amber-500/80 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path></svg>
+                                        <audio src="{{ asset('storage/' . $media->file_path) }}" class="w-11/12 mt-2 h-10" controls preload="metadata"></audio>
+                                    </div>
+                                @endif
+                            </div>
+                            <div class="p-6">
+                                <h3 class="text-xl font-bold text-white mb-2">{{ $media->title }}</h3>
+                                @if($media->description)
+                                    <p class="text-sm text-gray-400 line-clamp-2">{{ $media->description }}</p>
+                                @endif
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @else
+                <div class="text-center py-12">
+                    <svg class="w-16 h-16 text-gray-700 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                    <p class="text-gray-500 text-lg">Próximamente compartiremos nuestro archivo sonoro y visual.</p>
+                </div>
+            @endif
+        </div>
+    </section>
+
     <!-- Footer -->
     <footer class="border-t border-gray-800 bg-gray-950 pt-16 pb-8">
         <div class="max-w-7xl mx-auto px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center">
@@ -549,7 +590,7 @@
                         <div class="flex flex-col leading-none">
                             <span class="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-600">{{ $globalBandName }}</span>
                         </div>
-                        <span class="text-xs sm:text-sm lg:text-base font-medium text-amber-500/80 italic tracking-widest mt-1">Tu banda</span>
+                        <span class="text-xs sm:text-sm lg:text-base font-medium text-amber-500/80 italic tracking-widest mt-1">{{ \App\Models\SiteSetting::getSetting('site_slogan', 'Tu banda') }}</span>
                     </div>
                 </div>
                 <p class="text-gray-500 mt-2 text-sm">Cultura y tradición musical en el Noroeste Murciano.</p>

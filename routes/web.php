@@ -74,8 +74,10 @@ Route::get('/', function () {
 
     $carouselMedia = \App\Models\CarouselMedia::orderBy('sort_order')->get();
     $carouselSpeed = (int) \App\Models\SiteSetting::getSetting('carousel_speed', 4);
+    
+    $mediaArchives = \App\Models\MediaArchive::where('is_active', true)->orderBy('sort_order')->get();
 
-    return view('welcome', compact('news', 'band_history', 'bandHistoryImages', 'visit_count', 'carouselMedia', 'carouselSpeed'));
+    return view('welcome', compact('news', 'band_history', 'bandHistoryImages', 'visit_count', 'carouselMedia', 'carouselSpeed', 'mediaArchives'));
 });
 
 Route::view('/aviso-legal', 'legal')->name('legal');
@@ -168,6 +170,10 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
         Route::post('settings/logos', [\App\Http\Controllers\Admin\SettingsController::class, 'storeLogo'])->name('settings.logos.store');
         Route::put('settings/logos', [\App\Http\Controllers\Admin\SettingsController::class, 'updateLogoOrder'])->name('settings.logos.update');
         Route::delete('settings/logos', [\App\Http\Controllers\Admin\SettingsController::class, 'destroyLogo'])->name('settings.logos.destroy');
+
+        // Media Archive (Archivo Sonoro)
+        Route::resource('media-archive', \App\Http\Controllers\Admin\MediaArchiveController::class)->except(['create', 'show', 'edit']);
+        Route::post('media-archive/{mediaArchive}/update-order', [\App\Http\Controllers\Admin\MediaArchiveController::class, 'updateOrder'])->name('media-archive.update-order');
 
         // Analytics & Logs
         Route::get('analytics', [\App\Http\Controllers\Admin\AnalyticsController::class, 'index'])->name('analytics.index');
