@@ -359,9 +359,9 @@
 
 
     <!-- Historia Section -->
-    <section id="historia" class="py-24 relative">
+    <section id="historia" class="py-12 relative">
         <div class="max-w-7xl mx-auto px-6 lg:px-8">
-            <div class="text-center mb-16">
+            <div class="text-center mb-8">
                 <h2 class="text-3xl md:text-5xl font-bold mb-4">Historia de la Banda</h2>
                 <div class="h-1 w-20 bg-amber-500 mx-auto rounded-full"></div>
             </div>
@@ -426,9 +426,9 @@
     </section>
 
     <!-- Noticias Section -->
-    <section id="noticias" class="py-24 relative bg-gray-950/50">
+    <section id="noticias" class="py-12 relative bg-gray-950/50">
         <div class="max-w-7xl mx-auto px-6 lg:px-8">
-            <div class="text-center mb-16">
+            <div class="text-center mb-8">
                 <h2 class="text-3xl md:text-5xl font-bold mb-4">Últimas Noticias</h2>
                 <div class="h-1 w-20 bg-amber-500 mx-auto rounded-full"></div>
                 <p class="mt-6 text-gray-400 max-w-2xl mx-auto text-lg">
@@ -531,10 +531,10 @@
     </section>
 
     <!-- Archivo Sonoro Section -->
-    <section id="archivo-sonoro" class="py-24 relative bg-gray-950">
+    <section id="archivo-sonoro" class="py-12 relative bg-gray-950">
         <div class="max-w-7xl mx-auto px-6 lg:px-8">
-            <div class="text-center mb-16">
-                <h2 class="text-3xl md:text-5xl font-bold mb-4">Archivo Sonoro</h2>
+            <div class="text-center mb-8">
+                <h2 class="text-3xl md:text-5xl font-bold mb-4">Archivo Multimedia</h2>
                 <div class="h-1 w-20 bg-amber-500 mx-auto rounded-full"></div>
                 <p class="text-gray-400 mt-4 max-w-2xl mx-auto">Disfruta de nuestras interpretaciones y actuaciones multimedia.</p>
             </div>
