@@ -242,8 +242,35 @@ class SettingsController extends Controller
 
         if (!empty($template)) {
             $watermarkHtml = '';
-            if (file_exists(public_path('images/logo.png'))) {
-                $watermarkHtml = '<img src="' . public_path('images/logo.png') . '" class="watermark">';
+            
+            // Buscar el logo con el orden más bajo
+            $rawLogos = json_decode(\App\Models\SiteSetting::getSetting('site_logos', '[]'), true) ?: [];
+            $logos = [];
+            foreach ($rawLogos as $logo) {
+                if (is_string($logo)) {
+                    $logos[] = ['path' => $logo, 'order' => 999];
+                } else if (is_array($logo)) {
+                    $logos[] = $logo;
+                }
+            }
+            usort($logos, function($a, $b) {
+                return ($a['order'] ?? 999) <=> ($b['order'] ?? 999);
+            });
+
+            if (count($logos) > 0) {
+                $bestLogoPath = $logos[0]['path'];
+                $fullPath = str_starts_with($bestLogoPath, 'images/') 
+                    ? public_path($bestLogoPath) 
+                    : storage_path('app/public/' . $bestLogoPath);
+
+                if (file_exists($fullPath)) {
+                    // DOMPDF necesita permisos y a veces falla con rutas relativas o URLs. Base64 es la forma más segura.
+                    $type = pathinfo($fullPath, PATHINFO_EXTENSION);
+                    $data = file_get_contents($fullPath);
+                    $base64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
+                    
+                    $watermarkHtml = '<img src="' . $base64 . '" class="watermark">';
+                }
             }
 
             // Generate PDF from HTML
