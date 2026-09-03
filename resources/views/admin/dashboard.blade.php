@@ -1,7 +1,7 @@
 <x-admin-layout>
     <x-slot name="header">
         <h2 class="text-3xl font-bold leading-tight tracking-tight text-white">
-            Dashboard
+            Panel de Control
         </h2>
     </x-slot>
 
