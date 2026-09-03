@@ -346,10 +346,25 @@
                 <span>{{ date('Y') - 1854 + 1 }} años de historia</span>
             </div>
             
-            <h1 class="text-5xl md:text-7xl font-extrabold mb-6 tracking-tight">
-                El Alma Sonora de <br/>
-                <span class="text-gold">Moratalla</span>
-            </h1>
+            @php
+                $rawLogos = json_decode(\App\Models\SiteSetting::getSetting('site_logos', '[]'), true) ?: [];
+                $logosArray = [];
+                foreach ($rawLogos as $logo) {
+                    if (is_string($logo)) $logosArray[] = ['path' => $logo, 'order' => 999];
+                    else if (is_array($logo)) $logosArray[] = $logo;
+                }
+                usort($logosArray, function($a, $b) { return ($a['order'] ?? 999) <=> ($b['order'] ?? 999); });
+                $lowestOrderLogo = count($logosArray) > 0 ? $logosArray[0]['path'] : 'images/logo.jpg';
+                $lowestOrderLogoSrc = str_starts_with($lowestOrderLogo, 'images/') ? asset($lowestOrderLogo) : asset('storage/' . $lowestOrderLogo);
+            @endphp
+            
+            <div class="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-8 mb-6">
+                <img src="{{ $lowestOrderLogoSrc }}" alt="Logo Banda de Música de Moratalla" class="w-24 h-24 md:w-32 md:h-32 object-contain rounded-full shadow-[0_0_20px_rgba(245,158,11,0.3)] border-2 border-amber-500/20 shrink-0">
+                <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight text-center md:text-left mb-0">
+                    El Alma Sonora de <br/>
+                    <span class="text-gold">Moratalla</span>
+                </h1>
+            </div>
             
             <p class="text-lg md:text-2xl text-gray-300 mb-10 leading-relaxed font-light max-w-2xl mx-auto">
                 Acompañamos cada momento especial de nuestro pueblo con pasión, dedicación y excelencia musical.
