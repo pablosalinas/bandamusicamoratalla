@@ -166,10 +166,17 @@
                     } else {
                         let videoEl = document.getElementById('carousel-video-' + this.currentIndex);
                         if (videoEl) {
-                            this.globalMuted = true;
                             videoEl.muted = this.globalMuted;
                             videoEl.currentTime = 0;
-                            videoEl.play().catch(() => {});
+                            let playPromise = videoEl.play();
+                            if (playPromise !== undefined) {
+                                playPromise.catch(() => {
+                                    // Browser blocked autoplay (probably because it's unmuted without interaction)
+                                    this.globalMuted = true;
+                                    videoEl.muted = true;
+                                    videoEl.play().catch(()=>{});
+                                });
+                            }
                             videoEl.onended = () => { this.next(); };
                         } else {
                             this.scheduleNext();
@@ -213,7 +220,7 @@
             },
             
             openLightbox(index) {
-                this.globalMuted = true;
+                // Remove forcing globalMuted = true here, preserve user's choice
                 this.lightboxOpen = true;
                 document.body.style.overflow = 'hidden';
             },
@@ -567,7 +574,7 @@
             @if(isset($mediaArchives) && $mediaArchives->count() > 0)
                 <div class="flex overflow-x-auto gap-6 pb-8 snap-x snap-mandatory scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900" style="scrollbar-width: thin;">
                     @foreach($mediaArchives as $media)
-                        <div class="glass-panel rounded-2xl overflow-hidden hover:-translate-y-1 transition-all duration-300 group flex flex-col flex-none w-[85vw] sm:w-[320px] lg:w-[360px] snap-center">
+                        <div class="glass-panel rounded-2xl overflow-hidden hover:-translate-y-1 transition-all duration-300 group flex flex-col flex-none w-[75vw] sm:w-[280px] lg:w-[300px] snap-center">
                             @if($media->images->count() > 0)
                                 <!-- Carrusel de Imágenes -->
                                 <div class="relative aspect-video bg-gray-900" x-data="{ activeSlide: 1, totalSlides: {{ $media->images->count() }} }">
@@ -604,8 +611,8 @@
                                     </div>
                                 @endif
                             </div>
-                            <div class="p-6 flex flex-col flex-1">
-                                <h3 class="text-xl font-bold text-white mb-2">{{ $media->title }}</h3>
+                            <div class="p-4 flex flex-col flex-1">
+                                <h3 class="text-lg font-bold text-white mb-2">{{ $media->title }}</h3>
                                 
                                 @if($media->composer || $media->music_type || $media->performance_date)
                                     <div class="flex flex-wrap gap-2 mb-3">
