@@ -136,6 +136,11 @@ class MusicianController extends Controller
         $pdfPath = \App\Models\SiteSetting::getSetting('parental_consent_pdf', '');
 
         if (!empty($template)) {
+            $watermarkHtml = '';
+            if (file_exists(public_path('images/logo.png'))) {
+                $watermarkHtml = '<img src="' . public_path('images/logo.png') . '" class="watermark">';
+            }
+
             // Generate PDF from HTML
             $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadHTML('
                 <html>
@@ -153,7 +158,7 @@ class MusicianController extends Controller
                     </style>
                 </head>
                 <body>
-                    <img src="' . public_path('images/logo.png') . '" class="watermark">
+                    ' . $watermarkHtml . '
                     ' . $template . '
                 </body>
                 </html>
