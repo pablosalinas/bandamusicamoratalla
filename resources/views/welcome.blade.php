@@ -160,7 +160,23 @@
             startAutoplay() {
                 this.stopAutoplay();
                 this.$nextTick(() => {
-                    this.scheduleNext();
+                    let currentSlide = this.slides[this.currentIndex];
+                    if (!currentSlide || currentSlide.type !== 'video') {
+                        this.scheduleNext();
+                    } else {
+                        let videoEl = document.getElementById('carousel-video-' + this.currentIndex);
+                        if (videoEl) {
+                            videoEl.muted = true; // Siempre sin sonido en el carrusel principal
+                            videoEl.currentTime = 0;
+                            let playPromise = videoEl.play();
+                            if (playPromise !== undefined) {
+                                playPromise.catch(() => {});
+                            }
+                            videoEl.onended = () => { this.next(); };
+                        } else {
+                            this.scheduleNext();
+                        }
+                    }
                 });
             },
             
