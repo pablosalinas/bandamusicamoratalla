@@ -565,9 +565,9 @@
             </div>
             
             @if(isset($mediaArchives) && $mediaArchives->count() > 0)
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="flex overflow-x-auto gap-6 pb-8 snap-x snap-mandatory scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900" style="scrollbar-width: thin;">
                     @foreach($mediaArchives as $media)
-                        <div class="glass-panel rounded-2xl overflow-hidden hover:-translate-y-1 transition-all duration-300 group flex flex-col">
+                        <div class="glass-panel rounded-2xl overflow-hidden hover:-translate-y-1 transition-all duration-300 group flex flex-col flex-none w-[85vw] sm:w-[320px] lg:w-[360px] snap-center">
                             @if($media->images->count() > 0)
                                 <!-- Carrusel de Imágenes -->
                                 <div class="relative aspect-video bg-gray-900" x-data="{ activeSlide: 1, totalSlides: {{ $media->images->count() }} }">
