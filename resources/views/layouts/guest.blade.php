@@ -14,6 +14,26 @@
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+        
+        <style>
+            @keyframes slogan-shine {
+                0% { background-position: 200% center; }
+                100% { background-position: -200% center; }
+            }
+            @keyframes slogan-float {
+                0%, 100% { transform: translateY(0); }
+                50% { transform: translateY(-2px); }
+            }
+            .animate-slogan {
+                background: linear-gradient(90deg, rgba(245, 158, 11, 0.8) 0%, rgba(245, 158, 11, 0.8) 40%, #ffffff 50%, rgba(245, 158, 11, 0.8) 60%, rgba(245, 158, 11, 0.8) 100%);
+                background-size: 200% auto;
+                color: transparent;
+                -webkit-background-clip: text;
+                background-clip: text;
+                animation: slogan-shine 4s linear infinite, slogan-float 3s ease-in-out infinite;
+                display: inline-block;
+            }
+        </style>
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -33,6 +53,7 @@
                         <span class="text-2xl">Banda de Música</span><br>
                         <span class="text-5xl uppercase tracking-widest">Moratalla</span>
                     </h1>
+                    <span class="text-sm sm:text-lg font-medium italic tracking-widest mt-3 animate-slogan">{{ \App\Models\SiteSetting::getSetting('site_slogan', 'Tu banda') }}</span>
                 </a>
             </div>
 

@@ -647,7 +647,7 @@
                         <div class="flex flex-col leading-none">
                             <span class="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-600">{{ $globalBandName }}</span>
                         </div>
-                        <span class="text-xs sm:text-sm lg:text-base font-medium text-amber-500/80 italic tracking-widest mt-1">{{ \App\Models\SiteSetting::getSetting('site_slogan', 'Tu banda') }}</span>
+                        <span class="text-xs sm:text-sm lg:text-base font-medium italic tracking-widest mt-1 animate-slogan">{{ \App\Models\SiteSetting::getSetting('site_slogan', 'Tu banda') }}</span>
                     </div>
                 </div>
                 <p class="text-gray-500 mt-2 text-sm">Cultura y tradición musical en el Noroeste Murciano.</p>

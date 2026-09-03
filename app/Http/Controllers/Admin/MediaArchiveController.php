@@ -35,11 +35,19 @@ class MediaArchiveController extends Controller
                     }
                     
                     $mime = $value->getMimeType();
-                    if ($request->type === 'video' && !str_starts_with($mime, 'video/')) {
-                        $fail("El archivo debe ser un vídeo válido.");
+                    $extension = strtolower($value->getClientOriginalExtension());
+                    
+                    if ($request->type === 'video') {
+                        $validVideoExts = ['mp4', 'mov', 'avi', 'mkv', 'webm'];
+                        if (!str_starts_with($mime, 'video/') && !str_starts_with($mime, 'application/') && !in_array($extension, $validVideoExts)) {
+                            $fail("El archivo debe ser un vídeo válido.");
+                        }
                     }
-                    if ($request->type === 'audio' && !str_starts_with($mime, 'audio/')) {
-                        $fail("El archivo debe ser un audio válido.");
+                    if ($request->type === 'audio') {
+                        $validAudioExts = ['mp3', 'wav', 'ogg', 'm4a', 'flac', 'aac'];
+                        if (!str_starts_with($mime, 'audio/') && !str_starts_with($mime, 'application/') && !in_array($extension, $validAudioExts)) {
+                            $fail("El archivo debe ser un audio válido.");
+                        }
                     }
                 }
             ],

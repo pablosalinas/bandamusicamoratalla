@@ -17,6 +17,26 @@
 
     <!-- Scripts (Vite con Alpine y Tailwind) -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    <style>
+        @keyframes slogan-shine {
+            0% { background-position: 200% center; }
+            100% { background-position: -200% center; }
+        }
+        @keyframes slogan-float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-2px); }
+        }
+        .animate-slogan {
+            background: linear-gradient(90deg, rgba(245, 158, 11, 0.8) 0%, rgba(245, 158, 11, 0.8) 40%, #ffffff 50%, rgba(245, 158, 11, 0.8) 60%, rgba(245, 158, 11, 0.8) 100%);
+            background-size: 200% auto;
+            color: transparent;
+            -webkit-background-clip: text;
+            background-clip: text;
+            animation: slogan-shine 4s linear infinite, slogan-float 3s ease-in-out infinite;
+            display: inline-block;
+        }
+    </style>
 </head>
 <body class="h-full font-sans antialiased text-gray-100 bg-gray-950">
     <div x-data="{ sidebarOpen: false }" class="flex h-screen overflow-hidden">
@@ -36,9 +56,12 @@
                     </div>
                     <!-- Sidebar component for mobile -->
                     <div class="flex grow flex-col gap-y-5 overflow-y-auto bg-gray-900 px-6 pb-2 ring-1 ring-white/10">
-                        <div class="flex h-16 shrink-0 items-center gap-2">
+                        <div class="flex h-16 shrink-0 items-center gap-2 mt-2">
                             <x-logo-rotator class="h-10 w-10" textClass="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-600" />
-                            <span class="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-600">Banda Moratalla</span>
+                            <div class="flex flex-col leading-none">
+                                <span class="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-600">Banda Moratalla</span>
+                                <span class="text-[10px] font-medium italic tracking-widest mt-1 animate-slogan">{{ \App\Models\SiteSetting::getSetting('site_slogan', 'Tu banda') }}</span>
+                            </div>
                         </div>
                         <nav class="flex flex-1 flex-col">
                             @include('admin.partials.nav')
@@ -57,6 +80,7 @@
                         <span class="text-sm">Banda de Música</span><br>
                         <span class="text-2xl uppercase tracking-wider">Moratalla</span>
                     </h1>
+                    <span class="text-xs font-medium italic tracking-widest mt-1 animate-slogan text-center">{{ \App\Models\SiteSetting::getSetting('site_slogan', 'Tu banda') }}</span>
                 </div>
                 <nav class="flex flex-1 flex-col pb-4">
                     @include('admin.partials.nav')

@@ -18,7 +18,7 @@
                         <div class="sm:col-span-1">
                             <label for="title" class="block text-sm font-medium leading-6 text-white">Título</label>
                             <div class="mt-2">
-                                <input type="text" name="title" id="title" required class="block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6">
+                                <input type="text" name="title" id="title" value="{{ old('title') }}" required class="block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6">
                             </div>
                             @error('title') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
                         </div>
@@ -27,8 +27,8 @@
                             <label for="type" class="block text-sm font-medium leading-6 text-white">Tipo de Archivo</label>
                             <div class="mt-2">
                                 <select name="type" id="type" required class="block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6">
-                                    <option value="audio">Audio</option>
-                                    <option value="video">Vídeo</option>
+                                    <option value="audio" {{ old('type') == 'audio' ? 'selected' : '' }}>Audio</option>
+                                    <option value="video" {{ old('type') == 'video' ? 'selected' : '' }}>Vídeo</option>
                                 </select>
                             </div>
                             @error('type') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
@@ -37,7 +37,7 @@
                         <div class="sm:col-span-1">
                             <label for="composer" class="block text-sm font-medium leading-6 text-white">Compositor (Opcional)</label>
                             <div class="mt-2">
-                                <input type="text" name="composer" id="composer" class="block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6">
+                                <input type="text" name="composer" id="composer" value="{{ old('composer') }}" class="block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6">
                             </div>
                             @error('composer') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
                         </div>
@@ -45,7 +45,7 @@
                         <div class="sm:col-span-1">
                             <label for="music_type" class="block text-sm font-medium leading-6 text-white">Tipo de Música (Opcional)</label>
                             <div class="mt-2">
-                                <input list="music_types" name="music_type" id="music_type" placeholder="Selecciona o escribe..." class="block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6">
+                                <input list="music_types" name="music_type" id="music_type" value="{{ old('music_type') }}" placeholder="Selecciona o escribe..." class="block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6">
                                 <datalist id="music_types">
                                     @foreach($existingTypes as $type)
                                         <option value="{{ $type }}"></option>
@@ -58,7 +58,7 @@
                         <div class="sm:col-span-1">
                             <label for="performance_date" class="block text-sm font-medium leading-6 text-white">Fecha de Interpretación (Opcional)</label>
                             <div class="mt-2">
-                                <input type="date" name="performance_date" id="performance_date" class="block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6" style="color-scheme: dark;">
+                                <input type="date" name="performance_date" id="performance_date" value="{{ old('performance_date') }}" class="block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6" style="color-scheme: dark;">
                             </div>
                             @error('performance_date') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
                         </div>
@@ -66,7 +66,7 @@
                         <div class="sm:col-span-2">
                             <label for="description" class="block text-sm font-medium leading-6 text-white">Descripción (Opcional)</label>
                             <div class="mt-2">
-                                <textarea id="description" name="description" rows="2" class="block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6"></textarea>
+                                <textarea id="description" name="description" rows="2" class="block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6">{{ old('description') }}</textarea>
                             </div>
                             @error('description') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
                         </div>
@@ -92,7 +92,7 @@
                         
                         <div class="sm:col-span-2">
                             <div class="flex items-center gap-x-3">
-                                <input id="is_active" name="is_active" type="checkbox" checked class="h-4 w-4 rounded border-white/10 bg-gray-800 text-amber-600 focus:ring-amber-600 focus:ring-offset-gray-900">
+                                <input id="is_active" name="is_active" type="checkbox" {{ old('is_active', true) ? 'checked' : '' }} class="h-4 w-4 rounded border-white/10 bg-gray-800 text-amber-600 focus:ring-amber-600 focus:ring-offset-gray-900">
                                 <label for="is_active" class="text-sm font-medium leading-6 text-white">Activo (Visible en la web)</label>
                             </div>
                         </div>
