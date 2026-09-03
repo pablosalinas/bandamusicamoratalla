@@ -255,6 +255,15 @@ Route::get('/crear-admin-secreto', function() {
     }
 });
 
+Route::get('/db-migrar-secreto', function() {
+    try {
+        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+        return 'Migraciones ejecutadas con éxito. Resultado: ' . \Illuminate\Support\Facades\Artisan::output();
+    } catch (\Exception $e) {
+        return 'Error al migrar: ' . $e->getMessage();
+    }
+});
+
 Route::get('/cargar-instrumentos', function() {
     try {
         \Illuminate\Support\Facades\Artisan::call('db:seed', [
