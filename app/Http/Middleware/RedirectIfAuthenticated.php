@@ -22,7 +22,7 @@ class RedirectIfAuthenticated
         foreach ($guards as $guard) {
             if (Auth::guard($guard)->check()) {
                 \Log::info('RedirectIfAuthenticated triggered. User is logged in. Redirecting to dashboard.');
-                if (in_array(Auth::guard($guard)->user()->role, ['admin', 'treasurer'])) {
+                if (in_array(Auth::guard($guard)->user()->role, ['admin', 'treasurer', 'director'])) {
                     return redirect()->route('admin.dashboard');
                 }
                 return redirect()->route('dashboard');

@@ -39,7 +39,7 @@
                 Panel de Control
             </a>
         </li>
-        @if(in_array(Auth::user()->role, ['admin', 'treasurer']) || Auth::user()->isSuperAdmin())
+        @if(in_array(Auth::user()->role, ['admin', 'treasurer', 'director']) || Auth::user()->isSuperAdmin())
         <li>
             <a href="{{ route('admin.users.index') }}" class="{{ request()->routeIs('admin.users.*') ? 'bg-gray-800 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-800' }} group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold transition-colors">
                 <svg class="h-6 w-6 shrink-0 {{ request()->routeIs('admin.users.*') ? 'text-white' : 'text-gray-400 group-hover:text-white' }}" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
@@ -82,7 +82,7 @@
             </a>
         </li>
         @endif
-        @if(in_array(Auth::user()->role, ['admin', 'treasurer']) || Auth::user()->isSuperAdmin())
+        @if(in_array(Auth::user()->role, ['admin', 'treasurer', 'director']) || Auth::user()->isSuperAdmin())
         <li>
             <a href="{{ route('admin.boards.index') }}" class="{{ request()->routeIs('admin.boards.*') ? 'bg-gray-800 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-800' }} group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold transition-colors">
                 <svg class="h-6 w-6 shrink-0 {{ request()->routeIs('admin.boards.*') ? 'text-white' : 'text-gray-400 group-hover:text-white' }}" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
@@ -92,7 +92,7 @@
             </a>
         </li>
         @endif
-        @if((Auth::user()->isCurrentBoardMember() && in_array(Auth::user()->role, ['admin', 'treasurer'])) || Auth::user()->isSuperAdmin())
+        @if((Auth::user()->isCurrentBoardMember() && in_array(Auth::user()->role, ['admin', 'treasurer', 'director'])) || Auth::user()->isSuperAdmin())
         <li>
             <a href="{{ route('admin.fiscal-years.index') }}" class="{{ request()->routeIs('admin.fiscal-years.*') || request()->routeIs('admin.budget-movements.*') ? 'bg-gray-800 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-800' }} group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold transition-colors">
                 <svg class="h-6 w-6 shrink-0 {{ request()->routeIs('admin.fiscal-years.*') || request()->routeIs('admin.budget-movements.*') ? 'text-white' : 'text-gray-400 group-hover:text-white' }}" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
@@ -128,7 +128,7 @@
             </a>
         </li>
         @endif
-        @if(in_array(Auth::user()->role, ['admin', 'treasurer']) || Auth::user()->isSuperAdmin())
+        @if(in_array(Auth::user()->role, ['admin', 'treasurer', 'director']) || Auth::user()->isSuperAdmin())
         <li>
             <a href="{{ route('admin.settings.index') }}" class="{{ request()->routeIs('admin.settings.*') ? 'bg-gray-800 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-800' }} group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
                 <svg class="h-6 w-6 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">

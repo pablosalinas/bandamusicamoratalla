@@ -15,7 +15,7 @@ class AdminOrTreasurer
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (auth()->check() && (in_array(auth()->user()->role, ['admin', 'treasurer']) || auth()->user()->isSuperAdmin())) {
+        if (auth()->check() && (in_array(auth()->user()->role, ['admin', 'treasurer', 'director']) || auth()->user()->isSuperAdmin())) {
             return $next($request);
         }
 
