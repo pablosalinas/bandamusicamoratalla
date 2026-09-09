@@ -250,7 +250,7 @@
             
             const instruments = [
                 @foreach($instruments as $inst)
-                    { id: {{ $inst->id }}, name: "{{ strtolower($inst->name) }}", originalName: "{{ $inst->name }}" },
+                    { id: {{ $inst->id }}, name: "{{ $inst->name }}", originalName: "{{ $inst->name }}" },
                 @endforeach
             ];
             
@@ -275,13 +275,24 @@
                 let matchedAliases = [];
                 
                 for (const inst of sortedInstruments) {
-                    const instNormalized = inst.name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, " ").trim();
+                    const instNormalized = inst.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, " ").trim();
                     
                     // Manejar alias comunes
                     let instAliases = [instNormalized];
-                    if (instNormalized.includes("saxofon")) {
+                    if (instNormalized.includes("saxofon") || instNormalized.includes("saxo")) {
                         instAliases.push(instNormalized.replace("saxofon", "saxo"));
                         instAliases.push(instNormalized.replace("saxofon", "sax"));
+                        
+                        // Si es alto, admitimos contralto
+                        if (instNormalized.includes("alto")) {
+                            instAliases.push(instNormalized.replace("alto", "contralto"));
+                            instAliases.push("contralto");
+                        }
+                        
+                        // Si el archivo omitió la palabra saxofón
+                        if (instNormalized.includes("baritono")) instAliases.push("baritono");
+                        if (instNormalized.includes("tenor")) instAliases.push("tenor");
+                        if (instNormalized.includes("soprano")) instAliases.push("soprano");
                     }
                     if (instNormalized.includes("flautin")) {
                         instAliases.push(instNormalized.replace("flautin", "piccolo"));

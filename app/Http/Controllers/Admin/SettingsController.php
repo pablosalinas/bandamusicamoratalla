@@ -264,4 +264,72 @@ class SettingsController extends Controller
 
         return redirect()->back()->with('error', 'No hay modelo de justificante configurado.');
     }
+
+    public function generateBackup()
+    {
+        set_time_limit(0);
+        ini_set('memory_limit', '1024M');
+
+        $dbName = env('DB_DATABASE');
+        $dbUser = env('DB_USERNAME');
+        $dbPass = env('DB_PASSWORD');
+        $dbHost = env('DB_HOST', '127.0.0.1');
+
+        $backupFileName = 'backup_banda_' . date('Y_m_d_His') . '.zip';
+        $backupPath = storage_path('app/' . $backupFileName);
+
+        $zip = new \ZipArchive();
+        if ($zip->open($backupPath, \ZipArchive::CREATE) !== true) {
+            return back()->with('error', 'No se pudo crear el archivo ZIP.');
+        }
+
+        // 1. Backup de base de datos
+        $sqlFile = storage_path('app/temp_db_backup.sql');
+        $mysqldumpPath = 'C:\\xampp_2023\\mysql\\bin\\mysqldump.exe';
+        if (!file_exists($mysqldumpPath)) {
+            $mysqldumpPath = 'mysqldump'; // Fallback a global
+        }
+
+        $passwordArg = $dbPass ? "-p\"{$dbPass}\"" : "";
+        $command = "\"{$mysqldumpPath}\" -u \"{$dbUser}\" {$passwordArg} -h {$dbHost} {$dbName} > \"{$sqlFile}\"";
+        
+        exec($command, $output, $returnVar);
+
+        if ($returnVar === 0 && file_exists($sqlFile)) {
+            $zip->addFile($sqlFile, 'database_backup.sql');
+        } else {
+            $zip->addFromString('db_backup_error.txt', "No se pudo generar la copia de la base de datos. Asegúrate de que mysqldump esté disponible.\nComando intentado: " . $command);
+        }
+
+        // 2. Backup de archivos relevantes (partituras, logos, etc en public storage)
+        $publicStorage = storage_path('app/public');
+        if (is_dir($publicStorage)) {
+            $files = new \RecursiveIteratorIterator(
+                new \RecursiveDirectoryIterator($publicStorage),
+                \RecursiveIteratorIterator::LEAVES_ONLY
+            );
+
+            foreach ($files as $name => $file) {
+                if (!$file->isDir()) {
+                    $filePath = $file->getRealPath();
+                    $relativePath = 'archivos_publicos/' . substr($filePath, strlen($publicStorage) + 1);
+                    $zip->addFile($filePath, $relativePath);
+                }
+            }
+        }
+        
+        // 3. Incluir archivo .env
+        $envPath = base_path('.env');
+        if (file_exists($envPath)) {
+            $zip->addFile($envPath, 'config_env.txt');
+        }
+
+        $zip->close();
+
+        if (file_exists($sqlFile)) {
+            @unlink($sqlFile);
+        }
+
+        return response()->download($backupPath)->deleteFileAfterSend(true);
+    }
 }
