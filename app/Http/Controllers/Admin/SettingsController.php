@@ -17,9 +17,10 @@ class SettingsController extends Controller
             } catch (\Illuminate\Contracts\Encryption\DecryptException $e) {
                 $bandIban = '';
             }
+        }
 
         $backupPassword = '';
-        if (auth()->user()->isSuperAdmin()) {
+        if (auth()->user() && auth()->user()->isSuperAdmin()) {
             $rawBackupPass = \App\Models\SiteSetting::getSetting('backup_password', '');
             if ($rawBackupPass) {
                 try {
@@ -30,7 +31,6 @@ class SettingsController extends Controller
             } else {
                 $backupPassword = '@Acemila2026'; // Default request
             }
-        }
         }
 
         $rawLogos = json_decode(\App\Models\SiteSetting::getSetting('site_logos', '[]'), true) ?: [];
