@@ -255,8 +255,9 @@
             ];
             
             let matchedCount = 0;
+            let skippedCount = 0;
             
-            // Ordenamos por longitud descendente (p. ej. "Saxofón Tenor" antes que "Saxofón")
+            // Ordenamos por longitud descendente para que busque "Saxofón Tenor" antes que "Saxofón"
             const sortedInstruments = [...instruments].sort((a, b) => b.name.length - a.name.length);
             
             for (let i = 0; i < files.length; i++) {
@@ -267,28 +268,73 @@
                     continue;
                 }
                 
+                // Normalizar: quitar acentos y caracteres especiales, reemplazar todo por espacios
+                const fileNormalized = filename.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, " ").trim();
+                
                 let matchedInstrument = null;
-                const fileNormalized = filename.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
                 
                 for (const inst of sortedInstruments) {
-                    const instNormalized = inst.name.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-                    if (fileNormalized.includes(instNormalized)) {
+                    const instNormalized = inst.name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, " ").trim();
+                    
+                    // Manejar alias comunes
+                    let aliases = [instNormalized];
+                    if (instNormalized.includes("saxofon")) {
+                        aliases.push(instNormalized.replace("saxofon", "saxo"));
+                        aliases.push(instNormalized.replace("saxofon", "sax"));
+                    }
+                    if (instNormalized.includes("flautin")) {
+                        aliases.push("piccolo");
+                    }
+                    if (instNormalized.includes("trompa")) {
+                        aliases.push(instNormalized.replace("trompa", "corno"));
+                        if (instNormalized.includes("fa")) { aliases.push("trompa f"); aliases.push("trompas en fa"); }
+                        if (instNormalized.includes("mib") || instNormalized.includes("mi b")) { aliases.push("trompa eb"); aliases.push("trompa mib"); }
+                    }
+                    if (instNormalized.includes("bombardino")) {
+                        aliases.push("eufonio");
+                        aliases.push("euphonium");
+                    }
+                    
+                    let found = false;
+                    for (let alias of aliases) {
+                        alias = alias.replace(/\s+/g, ' ').trim();
+                        if (fileNormalized.includes(alias)) {
+                            found = true; break;
+                        }
+                        
+                        // Búsqueda dividiendo palabras (ej. "saxo tenor" coincidirá con "saxo 1 tenor")
+                        let parts = alias.split(' ');
+                        if (parts.length > 1) {
+                            let allPartsFound = true;
+                            for (let p of parts) {
+                                // Match exact word boundary for the part
+                                let regex = new RegExp("\\b" + p + "\\b");
+                                if (!regex.test(fileNormalized)) { allPartsFound = false; break; }
+                            }
+                            if (allPartsFound) { found = true; break; }
+                        }
+                    }
+                    
+                    if (found) {
                         matchedInstrument = inst;
-                        break;
+                        break; // Nos quedamos con el primero que coincida (el más largo gracias al sort)
                     }
                 }
                 
                 let matchedType = 'TODOS'; 
-                let fileWithoutExt = fileNormalized.substring(0, fileNormalized.lastIndexOf('.'));
                 
-                if (fileWithoutExt.match(/(?:^|[^a-z0-9])1(?:[^a-z0-9]|$)/) || fileWithoutExt.includes('1o') || fileWithoutExt.includes('1º') || fileWithoutExt.includes('primero') || fileWithoutExt.includes('primera')) {
+                // Detección de número/categoría. Buscamos números solos o sufijos de posición.
+                if (fileNormalized.match(/(?:^|\s)1(?:st|o|a|er|\s|$)/) || fileNormalized.includes('primero') || fileNormalized.includes('primera')) {
                     matchedType = '1º';
-                } else if (fileWithoutExt.match(/(?:^|[^a-z0-9])2(?:[^a-z0-9]|$)/) || fileWithoutExt.includes('2o') || fileWithoutExt.includes('2º') || fileWithoutExt.includes('segundo') || fileWithoutExt.includes('segunda')) {
+                } else if (fileNormalized.match(/(?:^|\s)2(?:nd|o|a|do|\s|$)/) || fileNormalized.includes('segundo') || fileNormalized.includes('segunda')) {
                     matchedType = '2º';
-                } else if (fileWithoutExt.match(/(?:^|[^a-z0-9])3(?:[^a-z0-9]|$)/) || fileWithoutExt.includes('3o') || fileWithoutExt.includes('3º') || fileWithoutExt.includes('tercero') || fileWithoutExt.includes('tercera')) {
+                } else if (fileNormalized.match(/(?:^|\s)3(?:rd|o|a|er|\s|$)/) || fileNormalized.includes('tercero') || fileNormalized.includes('tercera')) {
                     matchedType = '3º';
-                } else if (fileWithoutExt.includes('principal') || fileWithoutExt.includes('pral') || fileWithoutExt.includes('solo')) {
+                } else if (fileNormalized.includes('principal') || fileNormalized.includes('pral') || fileNormalized.match(/\bsolo\b/)) {
                     matchedType = 'PRINCIPAL';
+                } else if (fileNormalized.includes('solista') || fileNormalized.includes('todos')) {
+                    // Mapeo solicitado por el usuario: solista equivale a TODOS
+                    matchedType = 'TODOS';
                 }
                 
                 if (matchedInstrument) {
@@ -296,6 +342,19 @@
                     const input = document.querySelector(`input[name="${inputName}"]`);
                     
                     if (input) {
+                        // Omitir si ya tiene un archivo subido al servidor o si ya asignamos uno localmente en pasadas previas
+                        const hasServerFile = input.closest('div.bg-gray-900').querySelector('a[href*="download"]');
+                        const hasLocalFile = input.files.length > 0;
+                        
+                        if (hasServerFile || hasLocalFile) {
+                            const li = document.createElement('li');
+                            li.innerHTML = `<span class="text-blue-400">ℹ Omitido:</span> <span class="text-gray-300 font-mono text-xs">${file.name}</span> - <em>Ya tiene archivo asignado (${matchedInstrument.originalName} ${matchedType})</em>`;
+                            logUl.appendChild(li);
+                            skippedCount++;
+                            continue;
+                        }
+
+                        // Asignar el File al input usando DataTransfer
                         const dataTransfer = new DataTransfer();
                         dataTransfer.items.add(file);
                         input.files = dataTransfer.files;
@@ -320,10 +379,15 @@
                 }
             }
             
+            // Vaciar el valor para permitir seleccionar la misma carpeta y realizar pasadas sucesivas
+            e.target.value = '';
+            
             if (matchedCount > 0) {
-                alert(`¡Análisis completado! Se han emparejado ${matchedCount} archivos automáticamente. Revisa la lista y dale a "Actualizar Partitura" para iniciar la subida y guardarlos.`);
+                alert(`¡Análisis completado! Se han emparejado ${matchedCount} archivos nuevos.\n(Se omitieron ${skippedCount} que ya estaban asignados).`);
+            } else if (skippedCount > 0) {
+                alert(`Todos los archivos detectados (${skippedCount}) fueron omitidos porque ya tienen una partitura asignada. No se han sobreescrito.`);
             } else {
-                alert("No se pudo deducir ningún instrumento de los nombres de los archivos subidos. Asegúrate de que los nombres de archivo contienen el nombre exacto del instrumento (ej. 'Flauta 1.pdf').");
+                alert("No se pudo deducir ningún instrumento de los nombres de los archivos subidos.");
             }
         });
 
