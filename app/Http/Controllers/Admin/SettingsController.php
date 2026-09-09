@@ -334,10 +334,10 @@ class SettingsController extends Controller
 
         if ($returnVar === 0 && file_exists($sqlFile)) {
             $zip->addFile($sqlFile, 'database_backup.sql');
-            if ($backupPassword) $zip->setEncryptionName('database_backup.sql', \ZipArchive::EM_AES_256);
+            if ($backupPassword) $zip->setEncryptionName('database_backup.sql', \ZipArchive::EM_TRAD_PKWARE);
         } else {
-            $zip->addFromString('db_backup_error.txt', "No se pudo generar la copia de la base de datos. Asegúrate de que mysqldump esté disponible.\nComando intentado: " . $command);
-            if ($backupPassword) $zip->setEncryptionName('db_backup_error.txt', \ZipArchive::EM_AES_256);
+            $zip->addFromString('db_backup_error.txt', "No se pudo generar la copia de la base de datos. Asegǧrate de que mysqldump estǸ disponible.\nComando intentado: " . $command);
+            if ($backupPassword) $zip->setEncryptionName('db_backup_error.txt', \ZipArchive::EM_TRAD_PKWARE);
         }
 
         // 2. Backup de archivos relevantes (partituras, logos, etc en public storage)
@@ -353,7 +353,7 @@ class SettingsController extends Controller
                     $filePath = $file->getRealPath();
                     $relativePath = 'archivos_publicos/' . substr($filePath, strlen($publicStorage) + 1);
                     $zip->addFile($filePath, $relativePath);
-                    if ($backupPassword) $zip->setEncryptionName($relativePath, \ZipArchive::EM_AES_256);
+                    if ($backupPassword) $zip->setEncryptionName($relativePath, \ZipArchive::EM_TRAD_PKWARE);
                 }
             }
         }
@@ -362,7 +362,7 @@ class SettingsController extends Controller
         $envPath = base_path('.env');
         if (file_exists($envPath)) {
             $zip->addFile($envPath, 'config_env.txt');
-            if ($backupPassword) $zip->setEncryptionName('config_env.txt', \ZipArchive::EM_AES_256);
+            if ($backupPassword) $zip->setEncryptionName('config_env.txt', \ZipArchive::EM_TRAD_PKWARE);
         }
 
         $zip->close();
@@ -371,6 +371,6 @@ class SettingsController extends Controller
             @unlink($sqlFile);
         }
 
-        return response()->download($backupPath)->deleteFileAfterSend(true);
+        return response()->download($backupPath)->deleteFileAfterSend(true)->withCookie(cookie('backup_downloaded', '1', 1, null, null, false, false));
     }
 }

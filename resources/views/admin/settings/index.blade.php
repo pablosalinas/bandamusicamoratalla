@@ -318,13 +318,30 @@
                                 ⚠️ <b>Aviso:</b> El proceso puede tardar varios minutos dependiendo de la cantidad de partituras que haya subidas. Por favor, <b>no cierres ni recargues la página</b> hasta que comience la descarga.
                             </p>
                             
-                            <form action="{{ route('admin.settings.backup') }}" method="POST" onsubmit="
-                                const btn = this.querySelector('button'); 
-                                btn.innerHTML = 'Generando copia de seguridad... (Espera por favor)'; 
-                                btn.classList.add('opacity-50', 'cursor-not-allowed'); 
-                                btn.disabled = true;
-                                return true;
-                            ">
+                            <form id="backup_form" action="{{ route('admin.settings.backup') }}" method="POST" onsubmit="
+                                  const btn = this.querySelector('button'); 
+                                  btn.innerHTML = 'Generando copia de seguridad... (Espera por favor)'; 
+                                  btn.classList.add('opacity-50', 'cursor-not-allowed'); 
+                                  btn.disabled = true;
+                                  
+                                  document.cookie = 'backup_downloaded=; Max-Age=0; path=/';
+                                  let checkCookie = setInterval(() => {
+                                      if (document.cookie.includes('backup_downloaded=1')) {
+                                          clearInterval(checkCookie);
+                                          btn.innerHTML = '¡Copia finalizada y descargada!';
+                                          btn.classList.remove('bg-blue-600', 'hover:bg-blue-500');
+                                          btn.classList.add('bg-green-600', 'hover:bg-green-500');
+                                          setTimeout(() => {
+                                              btn.innerHTML = 'Generar y Descargar Backup';
+                                              btn.classList.remove('opacity-50', 'cursor-not-allowed', 'bg-green-600', 'hover:bg-green-500');
+                                              btn.classList.add('bg-blue-600', 'hover:bg-blue-500');
+                                              btn.disabled = false;
+                                              document.cookie = 'backup_downloaded=; Max-Age=0; path=/';
+                                          }, 5000);
+                                      }
+                                  }, 1000);
+                                  return true;
+                              ">
                                 @csrf
                                 <button type="submit" class="rounded-md bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 inline-flex items-center gap-2">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
