@@ -271,7 +271,8 @@
                 // Normalizar: quitar acentos y caracteres especiales, reemplazar todo por espacios
                 const fileNormalized = filename.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, " ").trim();
                 
-                let matchedInstrument = null;
+                let matchedInstruments = [];
+                let matchedAliases = [];
                 
                 for (const inst of sortedInstruments) {
                     const instNormalized = inst.name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, " ").trim();
@@ -328,10 +329,11 @@
                     let aliases = expandedAliases;
                     
                     let found = false;
+                    let foundAlias = "";
                     for (let alias of aliases) {
                         alias = alias.replace(/\s+/g, ' ').trim();
                         if (fileNormalized.includes(alias)) {
-                            found = true; break;
+                            found = true; foundAlias = alias; break;
                         }
                         
                         // Búsqueda dividiendo palabras (ej. "saxo tenor" coincidirá con "saxo 1 tenor")
@@ -343,13 +345,33 @@
                                 let regex = new RegExp("\\b" + p + "\\b");
                                 if (!regex.test(fileNormalized)) { allPartsFound = false; break; }
                             }
-                            if (allPartsFound) { found = true; break; }
+                            if (allPartsFound) { found = true; foundAlias = alias; break; }
                         }
                     }
                     
                     if (found) {
-                        matchedInstrument = inst;
-                        break; // Nos quedamos con el primero que coincida (el más largo gracias al sort)
+                        // Evitar coincidencias genéricas si ya tenemos una específica (ej. "Saxofón" si ya emparejamos "Saxofón Tenor")
+                        let isSubset = false;
+                        for (let existingAlias of matchedAliases) {
+                            let foundParts = foundAlias.split(' ');
+                            let existingParts = existingAlias.split(' ');
+                            let allContained = true;
+                            for (let p of foundParts) {
+                                if (!existingParts.includes(p)) {
+                                    allContained = false;
+                                    break;
+                                }
+                            }
+                            if (allContained) {
+                                isSubset = true;
+                                break;
+                            }
+                        }
+                        
+                        if (!isSubset) {
+                            matchedInstruments.push(inst);
+                            matchedAliases.push(foundAlias);
+                        }
                     }
                 }
                 
@@ -369,40 +391,42 @@
                     matchedType = 'TODOS';
                 }
                 
-                if (matchedInstrument) {
-                    const inputName = `files[${matchedInstrument.id}][${matchedType}]`;
-                    const input = document.querySelector(`input[name="${inputName}"]`);
-                    
-                    if (input) {
-                        // Omitir si ya tiene un archivo subido al servidor o si ya asignamos uno localmente en pasadas previas
-                        const hasServerFile = input.closest('div.bg-gray-900').querySelector('a[href*="download"]');
-                        const hasLocalFile = input.files.length > 0;
+                if (matchedInstruments.length > 0) {
+                    for (const matchedInstrument of matchedInstruments) {
+                        const inputName = `files[${matchedInstrument.id}][${matchedType}]`;
+                        const input = document.querySelector(`input[name="${inputName}"]`);
                         
-                        if (hasServerFile || hasLocalFile) {
+                        if (input) {
+                            // Omitir si ya tiene un archivo subido al servidor o si ya asignamos uno localmente en pasadas previas
+                            const hasServerFile = input.closest('div.bg-gray-900').querySelector('a[href*="download"]');
+                            const hasLocalFile = input.files.length > 0;
+                            
+                            if (hasServerFile || hasLocalFile) {
+                                const li = document.createElement('li');
+                                li.innerHTML = `<span class="text-blue-400">ℹ Omitido:</span> <span class="text-gray-300 font-mono text-xs">${file.name}</span> - <em>Ya tiene archivo asignado (${matchedInstrument.originalName} ${matchedType})</em>`;
+                                logUl.appendChild(li);
+                                skippedCount++;
+                                continue;
+                            }
+
+                            // Asignar el File al input usando DataTransfer
+                            const dataTransfer = new DataTransfer();
+                            dataTransfer.items.add(file);
+                            input.files = dataTransfer.files;
+                            
+                            // Añadir indicador visual a la tarjeta padre (x-data de Alpine)
+                            const cardContainer = input.closest('div.border.transition-colors');
+                            if (cardContainer) {
+                                cardContainer.classList.remove('bg-gray-800/50', 'border-gray-700');
+                                cardContainer.classList.add('bg-blue-900/40', 'border-blue-700');
+                            }
+
                             const li = document.createElement('li');
-                            li.innerHTML = `<span class="text-blue-400">ℹ Omitido:</span> <span class="text-gray-300 font-mono text-xs">${file.name}</span> - <em>Ya tiene archivo asignado (${matchedInstrument.originalName} ${matchedType})</em>`;
+                            li.innerHTML = `<span class="text-green-400">✓ Asignado:</span> <span class="text-gray-300 font-mono text-xs">${file.name}</span> ➔ <strong class="text-white">${matchedInstrument.originalName} (${matchedType})</strong>`;
                             logUl.appendChild(li);
-                            skippedCount++;
-                            continue;
+                            
+                            matchedCount++;
                         }
-
-                        // Asignar el File al input usando DataTransfer
-                        const dataTransfer = new DataTransfer();
-                        dataTransfer.items.add(file);
-                        input.files = dataTransfer.files;
-                        
-                        // Añadir indicador visual a la tarjeta padre (x-data de Alpine)
-                        const cardContainer = input.closest('div.border.transition-colors');
-                        if (cardContainer) {
-                            cardContainer.classList.remove('bg-gray-800/50', 'border-gray-700');
-                            cardContainer.classList.add('bg-blue-900/40', 'border-blue-700');
-                        }
-
-                        const li = document.createElement('li');
-                        li.innerHTML = `<span class="text-green-400">✓ Asignado:</span> <span class="text-gray-300 font-mono text-xs">${file.name}</span> ➔ <strong class="text-white">${matchedInstrument.originalName} (${matchedType})</strong>`;
-                        logUl.appendChild(li);
-                        
-                        matchedCount++;
                     }
                 } else {
                     const li = document.createElement('li');

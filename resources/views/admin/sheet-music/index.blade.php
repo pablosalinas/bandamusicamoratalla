@@ -114,7 +114,7 @@
                                     </td>
                                     <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
                                         <a href="{{ route('admin.sheet-music.edit', $sheet) }}" class="text-amber-500 hover:text-amber-400 mr-4">Editar</a>
-                                        <form action="{{ route('admin.sheet-music.destroy', $sheet) }}" method="POST" class="inline-block" onsubmit="return confirm('⚠️ AVISO: Es preferible DESACTIVAR el registro (cambiar su estado a inactivo) en lugar de borrarlo para no perder el historial. ¿Estás completamente seguro de que deseas ELIMINARLO definitivamente?');">
+                                        <form action="{{ route('admin.sheet-music.destroy', $sheet) }}" method="POST" class="inline-block" onsubmit="return confirm('⚠️ ATENCIÓN: Esta partitura está {{ $sheet->is_active ? 'ACTIVA' : 'INACTIVA' }}.\n\nBorrarla implica ELIMINAR DEFINITIVAMENTE todos los archivos físicos (PDFs, guiones, particellas) subidos a ella del servidor.\n\nEs preferible simplemente DESACTIVARLA (editando el registro) si quieres ocultarla pero conservar los archivos e historial.\n\nSi decides borrarla, asegúrate de haber hecho una copia de las partituras previamente si las necesitas.\n\n¿Estás completamente seguro de ELIMINARLA?');">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="text-red-500 hover:text-red-400">Eliminar</button>
