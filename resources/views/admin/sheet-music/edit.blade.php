@@ -277,23 +277,55 @@
                     const instNormalized = inst.name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, " ").trim();
                     
                     // Manejar alias comunes
-                    let aliases = [instNormalized];
+                    let instAliases = [instNormalized];
                     if (instNormalized.includes("saxofon")) {
-                        aliases.push(instNormalized.replace("saxofon", "saxo"));
-                        aliases.push(instNormalized.replace("saxofon", "sax"));
+                        instAliases.push(instNormalized.replace("saxofon", "saxo"));
+                        instAliases.push(instNormalized.replace("saxofon", "sax"));
                     }
                     if (instNormalized.includes("flautin")) {
-                        aliases.push("piccolo");
+                        instAliases.push(instNormalized.replace("flautin", "piccolo"));
                     }
                     if (instNormalized.includes("trompa")) {
-                        aliases.push(instNormalized.replace("trompa", "corno"));
-                        if (instNormalized.includes("fa")) { aliases.push("trompa f"); aliases.push("trompas en fa"); }
-                        if (instNormalized.includes("mib") || instNormalized.includes("mi b")) { aliases.push("trompa eb"); aliases.push("trompa mib"); }
+                        instAliases.push(instNormalized.replace("trompa", "corno"));
+                        instAliases.push(instNormalized.replace("trompa", "horn"));
                     }
                     if (instNormalized.includes("bombardino")) {
-                        aliases.push("eufonio");
-                        aliases.push("euphonium");
+                        instAliases.push(instNormalized.replace("bombardino", "eufonio"));
+                        instAliases.push(instNormalized.replace("bombardino", "euphonium"));
                     }
+                    
+                    const toneMappings = [
+                        { es: /\b(do)\b/g, en: /\b(c)\b/g, es_str: "do", en_str: "c" },
+                        { es: /\b(re)\b/g, en: /\b(d)\b/g, es_str: "re", en_str: "d" },
+                        { es: /\b(mi\s*b|mib|mi\s*bemol)\b/g, en: /\b(eb|e\s*flat|e\s*b)\b/g, es_str: "mib", en_str: "eb" },
+                        { es: /\b(mi)\b/g, en: /\b(e)\b/g, es_str: "mi", en_str: "e" },
+                        { es: /\b(fa)\b/g, en: /\b(f)\b/g, es_str: "fa", en_str: "f" },
+                        { es: /\b(sol)\b/g, en: /\b(g)\b/g, es_str: "sol", en_str: "g" },
+                        { es: /\b(la\s*b|lab|la\s*bemol)\b/g, en: /\b(ab|a\s*flat|a\s*b)\b/g, es_str: "lab", en_str: "ab" },
+                        { es: /\b(la)\b/g, en: /\b(a)\b/g, es_str: "la", en_str: "a" },
+                        { es: /\b(si\s*b|sib|si\s*bemol)\b/g, en: /\b(bb|b\s*flat|b\s*b)\b/g, es_str: "sib", en_str: "bb" },
+                        { es: /\b(si)\b/g, en: /\b(b)\b/g, es_str: "si", en_str: "b" }
+                    ];
+
+                    let expandedAliases = [];
+                    for (let alias of instAliases) {
+                        expandedAliases.push(alias);
+                        
+                        // Quitar la palabra "en " (ej. "trompeta en do" -> "trompeta do")
+                        let noEn = alias.replace(/\ben\b/g, "").replace(/\s+/g, " ").trim();
+                        if (noEn !== alias) expandedAliases.push(noEn);
+
+                        for (let map of toneMappings) {
+                            if (alias.match(map.es)) {
+                                let engAlias = alias.replace(map.es, map.en_str).replace(/\ben\b/g, "").replace(/\s+/g, " ").trim();
+                                expandedAliases.push(engAlias);
+                            } else if (alias.match(map.en)) {
+                                let espAlias = alias.replace(map.en, map.es_str).replace(/\ben\b/g, "").replace(/\s+/g, " ").trim();
+                                expandedAliases.push(espAlias);
+                            }
+                        }
+                    }
+                    let aliases = expandedAliases;
                     
                     let found = false;
                     for (let alias of aliases) {
