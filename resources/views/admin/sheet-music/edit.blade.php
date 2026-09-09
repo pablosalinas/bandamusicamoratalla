@@ -578,7 +578,7 @@
                         this.disabled = true;
                         this.classList.add('opacity-50');
                         
-                        fetch("{{ route('instruments.ajax-create') }}", {
+                        fetch("{{ route('admin.instruments.ajax-create') }}", {
                             method: "POST",
                             headers: {
                                 "Content-Type": "application/json",
