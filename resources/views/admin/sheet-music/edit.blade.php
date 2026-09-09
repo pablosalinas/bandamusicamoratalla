@@ -121,6 +121,27 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Smart Assignment Section -->
+                        <div class="mb-6 bg-gray-800/80 border border-gray-700 rounded-lg p-5">
+                            <div class="flex items-start gap-4">
+                                <div class="p-2 bg-blue-500/20 rounded-lg">
+                                    <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                                </div>
+                                <div class="flex-1">
+                                    <h3 class="text-lg font-medium text-white mb-1">Asignación Inteligente por Carpeta</h3>
+                                    <p class="text-sm text-gray-400 mb-4">Selecciona una carpeta local de tu ordenador que contenga las partituras sueltas. El sistema analizará los nombres de archivo para deducir de forma automática el instrumento y la categoría, rellenando los campos de abajo por ti.</p>
+                                    
+                                    <input type="file" id="smart_folder_upload" webkitdirectory directory multiple class="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-500 cursor-pointer">
+                                    
+                                    <div id="smart_upload_results" class="mt-4 hidden border-t border-gray-700 pt-3">
+                                        <h4 class="text-sm font-medium text-gray-300 mb-2">Resultados del análisis:</h4>
+                                        <ul id="smart_upload_log" class="list-disc pl-5 text-sm space-y-1 max-h-48 overflow-y-auto bg-gray-900/50 p-3 rounded"></ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <p class="text-sm text-gray-400 mb-6">Selecciona el instrumento y asigna el archivo PDF o Imagen correspondiente a cada tipo. Si subes imágenes, se les aplicará automáticamente una marca de agua.</p>
                         
                         <div class="space-y-6">
@@ -217,6 +238,95 @@
                 isUserActive = false;
             }
         }, 15 * 60 * 1000);
+        // Lógica de Asignación Inteligente por Carpeta
+        document.getElementById('smart_folder_upload').addEventListener('change', function(e) {
+            const files = e.target.files;
+            if (files.length === 0) return;
+            
+            const resultsDiv = document.getElementById('smart_upload_results');
+            const logUl = document.getElementById('smart_upload_log');
+            resultsDiv.classList.remove('hidden');
+            logUl.innerHTML = '';
+            
+            const instruments = [
+                @foreach($instruments as $inst)
+                    { id: {{ $inst->id }}, name: "{{ strtolower($inst->name) }}", originalName: "{{ $inst->name }}" },
+                @endforeach
+            ];
+            
+            let matchedCount = 0;
+            
+            // Ordenamos por longitud descendente (p. ej. "Saxofón Tenor" antes que "Saxofón")
+            const sortedInstruments = [...instruments].sort((a, b) => b.name.length - a.name.length);
+            
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const filename = file.name.toLowerCase();
+                
+                if (filename.startsWith('.') || (!filename.endsWith('.pdf') && !filename.match(/\.(jpg|jpeg|png|bmp|webp)$/))) {
+                    continue;
+                }
+                
+                let matchedInstrument = null;
+                const fileNormalized = filename.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                
+                for (const inst of sortedInstruments) {
+                    const instNormalized = inst.name.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                    if (fileNormalized.includes(instNormalized)) {
+                        matchedInstrument = inst;
+                        break;
+                    }
+                }
+                
+                let matchedType = 'TODOS'; 
+                let fileWithoutExt = fileNormalized.substring(0, fileNormalized.lastIndexOf('.'));
+                
+                if (fileWithoutExt.match(/(?:^|[^a-z0-9])1(?:[^a-z0-9]|$)/) || fileWithoutExt.includes('1o') || fileWithoutExt.includes('1º') || fileWithoutExt.includes('primero') || fileWithoutExt.includes('primera')) {
+                    matchedType = '1º';
+                } else if (fileWithoutExt.match(/(?:^|[^a-z0-9])2(?:[^a-z0-9]|$)/) || fileWithoutExt.includes('2o') || fileWithoutExt.includes('2º') || fileWithoutExt.includes('segundo') || fileWithoutExt.includes('segunda')) {
+                    matchedType = '2º';
+                } else if (fileWithoutExt.match(/(?:^|[^a-z0-9])3(?:[^a-z0-9]|$)/) || fileWithoutExt.includes('3o') || fileWithoutExt.includes('3º') || fileWithoutExt.includes('tercero') || fileWithoutExt.includes('tercera')) {
+                    matchedType = '3º';
+                } else if (fileWithoutExt.includes('principal') || fileWithoutExt.includes('pral') || fileWithoutExt.includes('solo')) {
+                    matchedType = 'PRINCIPAL';
+                }
+                
+                if (matchedInstrument) {
+                    const inputName = `files[${matchedInstrument.id}][${matchedType}]`;
+                    const input = document.querySelector(`input[name="${inputName}"]`);
+                    
+                    if (input) {
+                        const dataTransfer = new DataTransfer();
+                        dataTransfer.items.add(file);
+                        input.files = dataTransfer.files;
+                        
+                        // Añadir indicador visual a la tarjeta padre (x-data de Alpine)
+                        const cardContainer = input.closest('div.border.transition-colors');
+                        if (cardContainer) {
+                            cardContainer.classList.remove('bg-gray-800/50', 'border-gray-700');
+                            cardContainer.classList.add('bg-blue-900/40', 'border-blue-700');
+                        }
+
+                        const li = document.createElement('li');
+                        li.innerHTML = `<span class="text-green-400">✓ Asignado:</span> <span class="text-gray-300 font-mono text-xs">${file.name}</span> ➔ <strong class="text-white">${matchedInstrument.originalName} (${matchedType})</strong>`;
+                        logUl.appendChild(li);
+                        
+                        matchedCount++;
+                    }
+                } else {
+                    const li = document.createElement('li');
+                    li.innerHTML = `<span class="text-yellow-400">⚠ No reconocido:</span> <span class="text-gray-300 font-mono text-xs">${file.name}</span> - <em>No se detectó ningún instrumento en el nombre</em>`;
+                    logUl.appendChild(li);
+                }
+            }
+            
+            if (matchedCount > 0) {
+                alert(`¡Análisis completado! Se han emparejado ${matchedCount} archivos automáticamente. Revisa la lista y dale a "Actualizar Partitura" para iniciar la subida y guardarlos.`);
+            } else {
+                alert("No se pudo deducir ningún instrumento de los nombres de los archivos subidos. Asegúrate de que los nombres de archivo contienen el nombre exacto del instrumento (ej. 'Flauta 1.pdf').");
+            }
+        });
+
         // Control de subida asíncrona de archivos
         document.getElementById('sheet-music-form').addEventListener('submit', async function(e) {
             const form = this;
