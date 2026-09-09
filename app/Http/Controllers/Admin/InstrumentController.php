@@ -39,6 +39,33 @@ class InstrumentController extends Controller
         return redirect()->route('admin.instruments.index')->with('success', 'Instrumento añadido correctamente al catálogo.');
     }
 
+    public function ajaxCreate(Request $request)
+    {
+        $request->validate([
+            'instruments' => ['required', 'array'],
+            'instruments.*.name' => ['required', 'string', 'max:255'],
+            'instruments.*.type' => ['required', 'string', 'max:255'],
+        ]);
+
+        $created = [];
+        foreach ($request->instruments as $instData) {
+            // Verificar si ya existe para evitar duplicados exactos
+            $existing = InstrumentCatalog::where('name', strtoupper(trim($instData['name'])))->first();
+            if (!$existing) {
+                $newInst = InstrumentCatalog::create([
+                    'name' => strtoupper(trim($instData['name'])),
+                    'type' => strtoupper(trim($instData['type'])),
+                    'is_active' => true,
+                ]);
+                $created[] = $newInst;
+            } else {
+                $created[] = $existing;
+            }
+        }
+
+        return response()->json(['success' => true, 'instruments' => $created]);
+    }
+
     public function edit(InstrumentCatalog $instrument)
     {
         return view('admin.instruments.edit', compact('instrument'));

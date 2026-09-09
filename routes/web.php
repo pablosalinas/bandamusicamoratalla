@@ -122,9 +122,10 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     ]);
     Route::get('sheet-music/{sheetMusic}/download', [\App\Http\Controllers\Admin\SheetMusicController::class, 'download'])->name('sheet-music.download');
     Route::post('sheet-music/{sheetMusic}/upload-part-ajax', [\App\Http\Controllers\Admin\SheetMusicController::class, 'uploadPartAjax'])->name('sheet-music.upload-part-ajax');
+    Route::get('sheet-music/{sheetMusic}/download-all', [\App\Http\Controllers\Admin\SheetMusicController::class, 'downloadAll'])->name('sheet-music.download-all');
     Route::get('sheet-music-parts/{sheetMusicInstrument}/download', [\App\Http\Controllers\Admin\SheetMusicController::class, 'downloadPart'])->name('sheet-music.download-part');
     
-    // Instrument Catalog
+    Route::post('instruments/ajax-create', [\App\Http\Controllers\Admin\InstrumentController::class, 'ajaxCreate'])->name('instruments.ajax-create');
     Route::resource('instruments', \App\Http\Controllers\Admin\InstrumentController::class)->except(['show']);
     Route::resource('instrument-brands', \App\Http\Controllers\Admin\InstrumentBrandController::class)->only(['index', 'store', 'destroy']);
     Route::post('instrument-photos', [\App\Http\Controllers\Admin\InstrumentPhotoController::class, 'store'])->name('instrument-photos.store');
