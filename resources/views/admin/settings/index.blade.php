@@ -326,7 +326,7 @@
                                   
                                   document.cookie = 'backup_downloaded=; Max-Age=0; path=/';
                                   let checkCookie = setInterval(() => {
-                                      if (document.cookie.includes('backup_downloaded=1')) {
+                                      if (document.cookie.includes('backup_downloaded=')) {
                                           clearInterval(checkCookie);
                                           btn.innerHTML = '¡Copia finalizada y descargada!';
                                           btn.classList.remove('bg-blue-600', 'hover:bg-blue-500');
