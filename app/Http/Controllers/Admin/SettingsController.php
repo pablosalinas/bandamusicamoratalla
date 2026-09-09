@@ -371,6 +371,8 @@ class SettingsController extends Controller
             @unlink($sqlFile);
         }
 
-        return response()->download($backupPath)->deleteFileAfterSend(true)->withCookie(cookie('backup_downloaded', '1', 1, null, null, false, false));
+        $response = response()->download($backupPath)->deleteFileAfterSend(true);
+        $response->headers->setCookie(cookie('backup_downloaded', '1', 1, null, null, false, false));
+        return $response;
     }
 }
