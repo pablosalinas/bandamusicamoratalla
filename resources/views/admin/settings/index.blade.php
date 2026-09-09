@@ -58,7 +58,14 @@
                                 <input type="text" name="band_iban" id="band_iban" value="{{ old('band_iban', $settings['band_iban']) }}" class="block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-amber-500/50 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6" placeholder="ES00 0000 0000 0000 0000 0000">
                             </div>
                             @endif
-                            <input type="hidden" name="carousel_speed" value="{{ old('carousel_speed', $settings['carousel_speed'] ?? 4) }}">
+                            @if(auth()->user()->isSuperAdmin())
+                            <div class="sm:col-span-6 mt-4">
+                                <label for="backup_password" class="block text-sm font-medium leading-6 text-amber-500">Contrase&ntilde;a del Archivo Backup (ZIP)</label>
+                                <p class="text-sm text-gray-400 mb-2">Se guardar&aacute; encriptada y s&oacute;lo el superusuario puede gestionarla. El ZIP generado requerir&aacute; esta clave para abrirse.</p>
+                                <input type="text" name="backup_password" id="backup_password" value="{{ old('backup_password', $backupPassword) }}" class="block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-amber-500/50 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6" placeholder="@Acemila2026">
+                            </div>
+                            @endif
+<input type="hidden" name="carousel_speed" value="{{ old('carousel_speed', $settings['carousel_speed'] ?? 4) }}">
                         </div>
                     </div>
                     <div class="flex items-center justify-end px-4 py-4 sm:px-8 border-t border-gray-800">

@@ -17,6 +17,20 @@ class SettingsController extends Controller
             } catch (\Illuminate\Contracts\Encryption\DecryptException $e) {
                 $bandIban = '';
             }
+
+        $backupPassword = '';
+        if (auth()->user()->isSuperAdmin()) {
+            $rawBackupPass = \App\Models\SiteSetting::getSetting('backup_password', '');
+            if ($rawBackupPass) {
+                try {
+                    $backupPassword = \Illuminate\Support\Facades\Crypt::decryptString($rawBackupPass);
+                } catch (\Illuminate\Contracts\Encryption\DecryptException $e) {
+                    $backupPassword = '';
+                }
+            } else {
+                $backupPassword = '@Acemila2026'; // Default request
+            }
+        }
         }
 
         $rawLogos = json_decode(\App\Models\SiteSetting::getSetting('site_logos', '[]'), true) ?: [];
@@ -48,7 +62,7 @@ class SettingsController extends Controller
         $carouselMedia = \App\Models\CarouselMedia::orderBy('sort_order')->get();
         $bandHistoryImages = \App\Models\BandHistoryImage::orderBy('sort_order')->get();
         
-        return view('admin.settings.index', compact('settings', 'carouselMedia', 'bandHistoryImages'));
+        return view('admin.settings.index', compact('settings', 'carouselMedia', 'bandHistoryImages', 'backupPassword'));
     }
 
     public function update(Request $request)
@@ -65,13 +79,24 @@ class SettingsController extends Controller
         ];
 
         if (auth()->user()->canViewIban()) {
+            
             $rules['band_iban'] = ['nullable', 'string', 'max:50', new \App\Rules\ValidIban];
+        
+        }
+        
+        if (auth()->user()->isSuperAdmin()) {
+            $rules['backup_password'] = ['nullable', 'string', 'max:255'];
         }
 
         $validated = $request->validate($rules);
 
         foreach ($validated as $key => $value) {
             if ($key === 'band_iban') {
+                
+                $value = $value ? \Illuminate\Support\Facades\Crypt::encryptString($value) : '';
+            
+            }
+            if ($key === 'backup_password' && auth()->user()->isSuperAdmin()) {
                 $value = $value ? \Illuminate\Support\Facades\Crypt::encryptString($value) : '';
             }
             if ($key === 'parental_consent_pdf') {
@@ -283,6 +308,18 @@ class SettingsController extends Controller
             return back()->with('error', 'No se pudo crear el archivo ZIP.');
         }
 
+        $rawBackupPass = \App\Models\SiteSetting::getSetting('backup_password', '');
+        $backupPassword = '@Acemila2026';
+        if ($rawBackupPass) {
+            try {
+                $backupPassword = \Illuminate\Support\Facades\Crypt::decryptString($rawBackupPass);
+            } catch (\Exception $e) {}
+        }
+        
+        if ($backupPassword) {
+            $zip->setPassword($backupPassword);
+        }
+
         // 1. Backup de base de datos
         $sqlFile = storage_path('app/temp_db_backup.sql');
         $mysqldumpPath = 'C:\\xampp_2023\\mysql\\bin\\mysqldump.exe';
@@ -297,8 +334,10 @@ class SettingsController extends Controller
 
         if ($returnVar === 0 && file_exists($sqlFile)) {
             $zip->addFile($sqlFile, 'database_backup.sql');
+            if ($backupPassword) $zip->setEncryptionName('database_backup.sql', \ZipArchive::EM_AES_256);
         } else {
             $zip->addFromString('db_backup_error.txt', "No se pudo generar la copia de la base de datos. Asegúrate de que mysqldump esté disponible.\nComando intentado: " . $command);
+            if ($backupPassword) $zip->setEncryptionName('db_backup_error.txt', \ZipArchive::EM_AES_256);
         }
 
         // 2. Backup de archivos relevantes (partituras, logos, etc en public storage)
@@ -314,6 +353,7 @@ class SettingsController extends Controller
                     $filePath = $file->getRealPath();
                     $relativePath = 'archivos_publicos/' . substr($filePath, strlen($publicStorage) + 1);
                     $zip->addFile($filePath, $relativePath);
+                    if ($backupPassword) $zip->setEncryptionName($relativePath, \ZipArchive::EM_AES_256);
                 }
             }
         }
@@ -322,6 +362,7 @@ class SettingsController extends Controller
         $envPath = base_path('.env');
         if (file_exists($envPath)) {
             $zip->addFile($envPath, 'config_env.txt');
+            if ($backupPassword) $zip->setEncryptionName('config_env.txt', \ZipArchive::EM_AES_256);
         }
 
         $zip->close();
