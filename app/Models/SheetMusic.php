@@ -19,4 +19,24 @@ class SheetMusic extends Model
     {
         return $this->belongsToMany(InstrumentCatalog::class, 'sheet_music_instruments', 'sheet_music_id', 'instrument_catalog_id')->withPivot('pdf_file_path', 'tipo_partitura')->withTimestamps();
     }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::deleting(function ($sheetMusic) {
+            // Eliminar archivos físicos de las partituras (instrumentos)
+            $pivots = \App\Models\SheetMusicInstrument::where('sheet_music_id', $sheetMusic->id)->get();
+            foreach ($pivots as $pivot) {
+                if ($pivot->pdf_file_path && \Illuminate\Support\Facades\Storage::disk('local')->exists($pivot->pdf_file_path)) {
+                    \Illuminate\Support\Facades\Storage::disk('local')->delete($pivot->pdf_file_path);
+                }
+            }
+
+            // Eliminar el archivo físico del guión
+            if ($sheetMusic->pdf_file_path && \Illuminate\Support\Facades\Storage::disk('local')->exists($sheetMusic->pdf_file_path)) {
+                \Illuminate\Support\Facades\Storage::disk('local')->delete($sheetMusic->pdf_file_path);
+            }
+        });
+    }
 }

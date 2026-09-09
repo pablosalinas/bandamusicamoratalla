@@ -125,10 +125,23 @@
                         
                         <div class="space-y-6">
                             @foreach($instruments as $instrument)
-                                <div class="bg-gray-800/50 rounded-lg p-4 border border-gray-700" x-data="{ expanded: false }">
+                                @php
+                                    $assignedTypes = isset($filesIndexed[$instrument->id]) ? array_keys($filesIndexed[$instrument->id]) : [];
+                                    $hasFiles = count($assignedTypes) > 0;
+                                @endphp
+                                <div class="{{ $hasFiles ? 'bg-blue-900/40 border-blue-700' : 'bg-gray-800/50 border-gray-700' }} rounded-lg p-4 border transition-colors" x-data="{ expanded: false }">
                                     <div class="flex items-center justify-between cursor-pointer" @click="expanded = !expanded">
-                                        <h4 class="text-lg font-medium text-gray-200">{{ $instrument->name }}</h4>
-                                        <svg class="h-5 w-5 text-gray-400 transform transition-transform" :class="expanded ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <div class="flex items-center gap-3">
+                                            <h4 class="text-lg font-medium {{ $hasFiles ? 'text-blue-100' : 'text-gray-200' }}">{{ $instrument->name }}</h4>
+                                            @if($hasFiles)
+                                                <div class="flex gap-1 flex-wrap">
+                                                    @foreach($assignedTypes as $type)
+                                                        <span class="inline-flex items-center rounded-md bg-blue-400/10 px-2 py-0.5 text-xs font-medium text-blue-400 ring-1 ring-inset ring-blue-400/30">{{ $type }}</span>
+                                                    @endforeach
+                                                </div>
+                                            @endif
+                                        </div>
+                                        <svg class="h-5 w-5 {{ $hasFiles ? 'text-blue-300' : 'text-gray-400' }} transform transition-transform" :class="expanded ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                                         </svg>
                                     </div>
@@ -207,6 +220,17 @@
         // Control de subida asíncrona de archivos
         document.getElementById('sheet-music-form').addEventListener('submit', async function(e) {
             const form = this;
+            
+            // Validar si está inactiva
+            const isActiveCheckbox = form.querySelector('#is_active');
+            if (!isActiveCheckbox.checked) {
+                const confirmMsg = "Has marcado esta partitura como inactiva. Mientras no se active, no estará disponible para los músicos.\n\n¿Estás seguro de que deseas continuar?";
+                if (!confirm(confirmMsg)) {
+                    e.preventDefault();
+                    return;
+                }
+            }
+
             const fileInputs = Array.from(form.querySelectorAll('input[type="file"][name^="files["]')).filter(input => input.files.length > 0);
             
             if (fileInputs.length === 0) {

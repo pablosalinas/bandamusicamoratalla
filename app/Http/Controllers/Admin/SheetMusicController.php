@@ -265,16 +265,6 @@ class SheetMusicController extends Controller
 
     public function destroy(SheetMusic $sheetMusic)
     {
-        $pivots = SheetMusicInstrument::where('sheet_music_id', $sheetMusic->id)->get();
-        foreach ($pivots as $pivot) {
-            if ($pivot->pdf_file_path && Storage::disk('local')->exists($pivot->pdf_file_path)) {
-                Storage::disk('local')->delete($pivot->pdf_file_path);
-            }
-        }
-
-        if ($sheetMusic->pdf_file_path && Storage::disk('local')->exists($sheetMusic->pdf_file_path)) {
-            Storage::disk('local')->delete($sheetMusic->pdf_file_path);
-        }
         $sheetMusic->delete();
         
         return redirect()->route('admin.sheet-music.index')->with('success', 'Partitura eliminada.');

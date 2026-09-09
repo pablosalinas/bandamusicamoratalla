@@ -14,4 +14,15 @@ class SheetMusicInstrument extends Pivot
         'tipo_partitura',
         'pdf_file_path',
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::deleting(function ($sheetMusicInstrument) {
+            if ($sheetMusicInstrument->pdf_file_path && \Illuminate\Support\Facades\Storage::disk('local')->exists($sheetMusicInstrument->pdf_file_path)) {
+                \Illuminate\Support\Facades\Storage::disk('local')->delete($sheetMusicInstrument->pdf_file_path);
+            }
+        });
+    }
 }

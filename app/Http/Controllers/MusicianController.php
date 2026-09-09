@@ -9,6 +9,34 @@ use Illuminate\Support\Facades\Storage;
 
 class MusicianController extends Controller
 {
+    private function getBestTipoPartitura($userTipo, $availableTipos)
+    {
+        if (in_array($userTipo, $availableTipos)) {
+            return $userTipo;
+        }
+        if (in_array('TODOS', $availableTipos)) {
+            return 'TODOS';
+        }
+        
+        $hierarchy = ['3º' => 4, '2º' => 3, '1º' => 2, 'PRINCIPAL' => 1];
+        $userLevel = isset($hierarchy[$userTipo]) ? $hierarchy[$userTipo] : 0;
+        
+        $bestLevel = 0;
+        $bestTipo = null;
+        
+        foreach ($availableTipos as $tipo) {
+            $level = isset($hierarchy[$tipo]) ? $hierarchy[$tipo] : 0;
+            if ($level > 0 && $level < $userLevel) {
+                if ($level > $bestLevel) {
+                    $bestLevel = $level;
+                    $bestTipo = $tipo;
+                }
+            }
+        }
+        
+        return $bestTipo;
+    }
+
     public function index()
     {
         $user = Auth::user();
@@ -33,16 +61,34 @@ class MusicianController extends Controller
                 ->where('sheet_music.is_active', true)
                 ->select('sheet_music_instruments.*', 'sheet_music.title', 'sheet_music.composer', 'sheet_music.work_type');
             
-            $query->where(function($q) use ($userInstrumentParts) {
-                foreach ($userInstrumentParts as $uip) {
-                    $q->orWhere(function($subQ) use ($uip) {
-                        $subQ->where('instrument_catalog_id', $uip['id'])
-                             ->whereIn('tipo_partitura', [$uip['tipo'], 'TODOS']);
-                    });
-                }
+            $instrumentIds = array_column($userInstrumentParts, 'id');
+            $query->whereIn('instrument_catalog_id', $instrumentIds);
+            
+            $allParts = $query->get();
+            $grouped = $allParts->groupBy(function($item) {
+                return $item->sheet_music_id . '_' . $item->instrument_catalog_id;
             });
             
-            $availableParts = $query->orderBy('sheet_music.title')->get();
+            foreach ($grouped as $key => $parts) {
+                $instrumentId = $parts->first()->instrument_catalog_id;
+                $userTipo = 'TODOS';
+                foreach ($userInstrumentParts as $uip) {
+                    if ($uip['id'] == $instrumentId) {
+                        $userTipo = $uip['tipo'];
+                        break;
+                    }
+                }
+                
+                $availableTipos = $parts->pluck('tipo_partitura')->toArray();
+                $bestTipo = $this->getBestTipoPartitura($userTipo, $availableTipos);
+                
+                if ($bestTipo) {
+                    $bestPart = $parts->where('tipo_partitura', $bestTipo)->first();
+                    $availableParts->push($bestPart);
+                }
+            }
+            
+            $availableParts = $availableParts->sortBy('title')->values();
         }
 
         $missedAttendances = \App\Models\Attendance::with('event')
@@ -72,7 +118,14 @@ class MusicianController extends Controller
         foreach ($user->inventories as $inv) {
             if ($inv->is_active && $inv->instrument_catalog_id == $sheetMusicInstrument->instrument_catalog_id) {
                 $userTipo = $inv->tipo_partitura ?: 'TODOS';
-                if (in_array($sheetMusicInstrument->tipo_partitura, [$userTipo, 'TODOS'])) {
+                
+                $allParts = \App\Models\SheetMusicInstrument::where('sheet_music_id', $sheetMusicInstrument->sheet_music_id)
+                    ->where('instrument_catalog_id', $sheetMusicInstrument->instrument_catalog_id)
+                    ->pluck('tipo_partitura')->toArray();
+                
+                $bestTipo = $this->getBestTipoPartitura($userTipo, $allParts);
+                
+                if ($bestTipo === $sheetMusicInstrument->tipo_partitura) {
                     $hasAccess = true;
                     break;
                 }
