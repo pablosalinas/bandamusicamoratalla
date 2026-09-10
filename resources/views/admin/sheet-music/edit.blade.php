@@ -334,10 +334,12 @@
                             }
                             if (instNormalized.includes('flautin')) {
                                 instAliases.push(instNormalized.replace('flautin', 'piccolo'));
+                                instAliases.push(instNormalized.replace('flautin', 'fluati'));
                             }
                             if (instNormalized.includes('trompa')) {
                                 instAliases.push(instNormalized.replace('trompa', 'corno'));
                                 instAliases.push(instNormalized.replace('trompa', 'horn'));
+                                instAliases.push(instNormalized.replace('trompa', 'tompa'));
                             }
                             if (instNormalized.includes('bombardino')) {
                                 instAliases.push(instNormalized.replace('bombardino', 'eufonio'));
@@ -346,6 +348,18 @@
                             if (instNormalized.includes('trombon')) {
                                 instAliases.push(instNormalized.replace('trombon', 'trombo'));
                                 instAliases.push('trombo');
+                            }
+                            if (instNormalized.includes('timbales')) {
+                                instAliases.push(instNormalized.replace('timbales', 'timbals'));
+                            }
+                            if (instNormalized.includes('fliscorno')) {
+                                instAliases.push(instNormalized.replace('fliscorno', 'friscor'));
+                            }
+                            if (instNormalized.includes('requinto')) {
+                                instAliases.push(instNormalized.replace('requinto', 'requin'));
+                            }
+                            if (instNormalized.includes('saxofon alto') || instNormalized.includes('saxo alto')) {
+                                instAliases.push('saxo alt');
                             }
                             if (instNormalized.includes('tuba')) {
                                 if (instNormalized.includes('do')) instAliases.push('tuba'); 
@@ -559,6 +573,11 @@
                 const list = document.getElementById('missing_instruments_list');
                 list.innerHTML = '';
                 
+                let existingOptions = '<option value="">-- O asignar a uno existente --</option>';
+                [...instrumentsArray].sort((a,b) => a.originalName.localeCompare(b.originalName)).forEach(i => {
+                    existingOptions += `<option value="${i.id}">${i.originalName}</option>`;
+                });
+                
                 let count = 0;
                 for (let key in candidates) {
                     count++;
@@ -568,13 +587,18 @@
                     div.innerHTML = `
                         <input type="checkbox" id="chk_missing_${count}" value="${key}" class="missing-chk w-5 h-5 rounded border-gray-500 text-indigo-600 focus:ring-indigo-600 bg-gray-700">
                         <label for="chk_missing_${count}" class="text-white font-semibold flex-1 cursor-pointer select-none">${cand.name}</label>
-                        <select id="sel_missing_${count}" class="bg-gray-900 border border-gray-600 text-white text-sm rounded-md px-3 py-1.5">
-                            <option value="VIENTO MADERA" ${cand.family==='VIENTO MADERA'?'selected':''}>Viento Madera</option>
-                            <option value="VIENTO METAL" ${cand.family==='VIENTO METAL'?'selected':''}>Viento Metal</option>
-                            <option value="PERCUSIÓN" ${cand.family==='PERCUSIÓN'?'selected':''}>Percusión</option>
-                            <option value="CUERDA" ${cand.family==='CUERDA'?'selected':''}>Cuerda</option>
-                            <option value="TECLA" ${cand.family==='TECLA'?'selected':''}>Tecla</option>
-                        </select>
+                        <div class="flex flex-col gap-1 w-48">
+                            <select id="sel_missing_${count}" class="bg-gray-900 border border-gray-600 text-white text-xs rounded-md px-2 py-1">
+                                <option value="VIENTO MADERA" ${cand.family==='VIENTO MADERA'?'selected':''}>Crear: Viento Madera</option>
+                                <option value="VIENTO METAL" ${cand.family==='VIENTO METAL'?'selected':''}>Crear: Viento Metal</option>
+                                <option value="PERCUSIÓN" ${cand.family==='PERCUSIÓN'?'selected':''}>Crear: Percusión</option>
+                                <option value="CUERDA" ${cand.family==='CUERDA'?'selected':''}>Crear: Cuerda</option>
+                                <option value="TECLA" ${cand.family==='TECLA'?'selected':''}>Crear: Tecla</option>
+                            </select>
+                            <select id="sel_assign_${count}" class="bg-gray-900 border border-indigo-600 text-white text-xs rounded-md px-2 py-1">
+                                ${existingOptions}
+                            </select>
+                        </div>
                         <span class="text-xs text-gray-400 w-24 text-right">(${cand.files.length} archivo/s)</span>
                     `;
                     list.appendChild(div);
@@ -588,18 +612,73 @@
                     
                     newBtn.addEventListener('click', function() {
                         let toCreate = [];
+                        let toAssign = [];
                         let chks = list.querySelectorAll('.missing-chk:checked');
+                        
                         chks.forEach(chk => {
                             let key = chk.value;
                             let selId = chk.id.replace('chk_', 'sel_');
+                            let assignId = chk.id.replace('chk_', 'sel_assign_');
+                            
                             let family = document.getElementById(selId).value;
-                            toCreate.push({ name: candidates[key].name, type: family, files: candidates[key].files });
+                            let existingInstId = document.getElementById(assignId).value;
+                            
+                            if (existingInstId) {
+                                toAssign.push({ instId: existingInstId, files: candidates[key].files, el: chk.closest('.flex') });
+                            } else {
+                                toCreate.push({ name: candidates[key].name, type: family, files: candidates[key].files, el: chk.closest('.flex') });
+                            }
                         });
                         
-                        if (toCreate.length === 0) return alert('Selecciona al menos un instrumento para crear.');
+                        if (toCreate.length === 0 && toAssign.length === 0) return alert('Selecciona al menos un instrumento para procesar.');
+                        
+                        // Process existing assignments first
+                        if (toAssign.length > 0) {
+                            toAssign.forEach(item => {
+                                let targetInst = instrumentsArray.find(i => i.id == item.instId);
+                                if (targetInst) {
+                                    let inputId = 'file_' + targetInst.id + '_TODOS'; // fallback to TODOS by default when mapping manually
+                                    let input = document.getElementById(inputId);
+                                    if (!input) input = document.getElementById('file_' + targetInst.id);
+                                    
+                                    if (input) {
+                                        const dt = new DataTransfer();
+                                        if (input.files.length > 0) {
+                                            for (let j=0; j<input.files.length; j++) dt.items.add(input.files[j]);
+                                        }
+                                        item.files.forEach(f => dt.items.add(f));
+                                        input.files = dt.files;
+                                        
+                                        // Visual updates
+                                        const card = document.getElementById('card_' + targetInst.id);
+                                        if (card) {
+                                            card.classList.remove('border-gray-700', 'bg-gray-800');
+                                            card.classList.add('border-indigo-500', 'bg-indigo-900/40', 'ring-1', 'ring-indigo-500');
+                                        }
+                                        const existingCard = document.getElementById('existing_card_' + targetInst.id);
+                                        if (existingCard) {
+                                            existingCard.classList.remove('border-gray-700', 'bg-gray-800/50');
+                                            existingCard.classList.add('border-indigo-500', 'bg-indigo-900/40', 'ring-1', 'ring-indigo-500');
+                                            if (existingCard.__x && existingCard.__x.$data) existingCard.__x.$data.expanded = true;
+                                        }
+                                        const label = document.getElementById('label_' + targetInst.id);
+                                        if (label) label.innerHTML = `<span class="text-green-400 font-medium">✅ Archivos Locales: ${dt.files.length}</span>`;
+                                        
+                                        item.el.remove();
+                                    }
+                                }
+                            });
+                            
+                            if (toCreate.length === 0) {
+                                alert("Archivos asignados a instrumentos existentes correctamente.");
+                                if (list.children.length === 0) container.classList.add('hidden');
+                                return;
+                            }
+                        }
+
                         if (!confirm('Se crearán ' + toCreate.length + ' instrumentos nuevos en el catálogo general. ¿Estás seguro?')) return;
                         
-                        this.innerText = 'Creando...';
+                        this.innerText = 'Procesando...';
                         this.disabled = true;
                         this.classList.add('opacity-50');
                         
@@ -614,7 +693,7 @@
                         .then(res => res.json())
                         .then(data => {
                             if (data.success) {
-                                alert("Instrumentos creados y asignados correctamente.");
+                                alert("Instrumentos creados y archivos asignados correctamente.");
                                 data.instruments.forEach(newInst => {
                                     instrumentsArray.push({ id: newInst.id, name: newInst.name, originalName: newInst.name });
                                     
@@ -635,9 +714,9 @@
                                                 card.classList.add('border-indigo-500', 'bg-indigo-900/40', 'ring-1', 'ring-indigo-500');
                                             }
                                         }
+                                        matchedCandidate.el.remove();
                                     }
                                 });
-                                chks.forEach(chk => chk.closest('.flex').remove());
                                 if (list.children.length === 0) container.classList.add('hidden');
                             }
                         })
@@ -646,7 +725,7 @@
                             alert("Hubo un error al crear los instrumentos.");
                         })
                         .finally(() => {
-                            this.innerText = 'Crear Instrumentos Seleccionados';
+                            this.innerText = 'Procesar Seleccionados';
                             this.disabled = false;
                             this.classList.remove('opacity-50');
                         });
