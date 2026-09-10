@@ -245,16 +245,16 @@
 
     document.addEventListener('DOMContentLoaded', function() {
         let existingFiles = {};
-        @foreach( as  => )
-            existingFiles["{{  }}"] = {};
-            @foreach( as  => )
-                existingFiles["{{  }}"]["{{  }}"] = true;
+        @foreach($filesIndexed as $instId => $types)
+            existingFiles["{{ $instId }}"] = {};
+            @foreach($types as $type => $file)
+                existingFiles["{{ $instId }}"]["{{ $type }}"] = true;
             @endforeach
         @endforeach
         
         let existingNames = {};
-        @foreach( as )
-            existingNames["{{ ->name }}"] = "{{ ->id }}";
+        @foreach($instruments as $inst)
+            existingNames["{{ $inst->name }}"] = "{{ $inst->id }}";
         @endforeach
 
         const folderUpload = document.getElementById('smart_folder_upload');
@@ -267,8 +267,8 @@
                 tbody.innerHTML = '';
                 
                 const instruments = [
-                    @foreach( as )
-                        { id: {{ ->id }}, name: "{{ ->name }}", originalName: "{{ ->name }}" },
+                    @foreach($instruments as $inst)
+                        { id: {{ $inst->id }}, name: "{{ $inst->name }}", originalName: "{{ $inst->name }}" },
                     @endforeach
                 ];
                 
