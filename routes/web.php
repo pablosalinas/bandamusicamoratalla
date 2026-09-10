@@ -122,6 +122,7 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     ]);
     Route::get('sheet-music/{sheetMusic}/download', [\App\Http\Controllers\Admin\SheetMusicController::class, 'download'])->name('sheet-music.download');
     Route::post('sheet-music/{sheetMusic}/upload-part-ajax', [\App\Http\Controllers\Admin\SheetMusicController::class, 'uploadPartAjax'])->name('sheet-music.upload-part-ajax');
+    Route::post('sheet-music/{sheetMusic}/upload-grid-row-ajax', [\App\Http\Controllers\Admin\SheetMusicController::class, 'uploadGridRowAjax'])->name('sheet-music.upload-grid-row-ajax');
     Route::get('sheet-music/{sheetMusic}/download-all', [\App\Http\Controllers\Admin\SheetMusicController::class, 'downloadAll'])->name('sheet-music.download-all');
     Route::get('sheet-music-parts/{sheetMusicInstrument}/download', [\App\Http\Controllers\Admin\SheetMusicController::class, 'downloadPart'])->name('sheet-music.download-part');
     

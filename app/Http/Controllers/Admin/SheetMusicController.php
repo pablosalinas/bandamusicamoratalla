@@ -353,6 +353,79 @@ class SheetMusicController extends Controller
     }
     
             
+    public function uploadGridRowAjax(Request $request, SheetMusic $sheetMusic)
+    {
+        if ($request->hasFile('file') && $request->file('file')->isValid()) {
+            $file = $request->file('file');
+            $instruments = json_decode($request->input('instruments', '[]'), true);
+            $types = json_decode($request->input('types', '[]'), true);
+            
+            $validAssignments = [];
+            for ($i = 0; $i < count($instruments); $i++) {
+                $instName = trim($instruments[$i] ?? '');
+                $typeName = trim($types[$i] ?? '');
+                
+                if (!empty($instName) && !empty($typeName)) {
+                    $instrument = \App\Models\InstrumentCatalog::firstOrCreate(
+                        ['name' => strtoupper($instName)],
+                        ['type' => 'OTROS', 'is_active' => true]
+                    );
+                    
+                    $validAssignments[] = [
+                        'instrument_id' => $instrument->id,
+                        'tipo' => strtoupper($typeName)
+                    ];
+                }
+            }
+
+            if (count($validAssignments) > 0) {
+                $extension = strtolower($file->getClientOriginalExtension());
+                
+                if (in_array($extension, ['jpg', 'jpeg', 'png', 'bmp', 'webp'])) {
+                    $manager = new ImageManager(new Driver());
+                    $image = $manager->read($file->getPathname());
+                    
+                    $image->text('www.bandamusicamoratalla.com', $image->width() - 20, $image->height() - 20, function($font) use ($image) {
+                        $font->size(min($image->width() * 0.03, 30)); 
+                        $font->color('rgba(150, 150, 150, 0.5)');
+                        $font->align('right');
+                        $font->valign('bottom');
+                    });
+                    
+                    $filename = 'sheet-music-parts/' . uniqid() . '.jpg';
+                    Storage::disk('local')->put($filename, (string) $image->toJpeg(80));
+                    $path = $filename;
+                } else {
+                    $path = $file->store('sheet-music-parts', 'local');
+                }
+
+                foreach ($validAssignments as $assignment) {
+                    $pivot = SheetMusicInstrument::where('sheet_music_id', $sheetMusic->id)
+                        ->where('instrument_catalog_id', $assignment['instrument_id'])
+                        ->where('tipo_partitura', $assignment['tipo'])
+                        ->first();
+                    
+                    if ($pivot && $pivot->pdf_file_path && Storage::disk('local')->exists($pivot->pdf_file_path)) {
+                        Storage::disk('local')->delete($pivot->pdf_file_path);
+                    }
+
+                    if ($pivot) {
+                        $pivot->update(['pdf_file_path' => $path]);
+                    } else {
+                        SheetMusicInstrument::create([
+                            'sheet_music_id' => $sheetMusic->id,
+                            'instrument_catalog_id' => $assignment['instrument_id'],
+                            'tipo_partitura' => $assignment['tipo'],
+                            'pdf_file_path' => $path
+                        ]);
+                    }
+                }
+                return response()->json(['success' => true]);
+            }
+        }
+        return response()->json(['success' => false, 'message' => 'No válido']);
+    }
+
     public function downloadPart(SheetMusicInstrument $sheetMusicInstrument)
     {
         if (!$sheetMusicInstrument->pdf_file_path || !\Storage::disk('local')->exists($sheetMusicInstrument->pdf_file_path)) {
