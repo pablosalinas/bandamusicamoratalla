@@ -1,4 +1,4 @@
-<x-admin-layout>
+﻿<x-admin-layout>
     <x-slot name="header">
         <div class="sm:flex sm:items-center">
             <div class="sm:flex-auto">
@@ -239,81 +239,19 @@
     
     
     <script>
+        document.addEventListener('alpine:init', () => {
+            // Inicializar alpine si hace falta
+        });
+
         document.addEventListener('DOMContentLoaded', function() {
-            let formChanged = false;
-            let isUserActive = true;
-            let keepAliveInterval;
-
-            const form = document.querySelector('form');
-            if (form) {
-                form.addEventListener('change', () => formChanged = true);
-                
-                ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'].forEach(evt => {
-                    document.addEventListener(evt, () => isUserActive = true);
-                });
-
-                keepAliveInterval = setInterval(() => {
-                    if (formChanged && isUserActive) {
-                        fetch(window.location.href, { method: 'HEAD' }).catch(() => {});
-                        isUserActive = false;
-                    }
-                }, 15 * 60 * 1000);
-            }
-
-            // Detección y creación de nuevos instrumentos
-            let missingCandidates = {};
-            
-            function guessFamily(name) {
-                let lower = name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-                if (lower.includes('sax') || lower.includes('flaut') || lower.includes('oboe') || lower.includes('fagot') || lower.includes('clarinete') || lower.includes('requinto') || lower.includes('corno ingles')) return 'VIENTO MADERA';
-                if (lower.includes('tromp') || lower.includes('tromb') || lower.includes('tuba') || lower.includes('bombardino') || lower.includes('fliscorno') || lower.includes('corno')) return 'VIENTO METAL';
-                if (lower.includes('viol') || lower.includes('contra') || lower.includes('arpa') || lower.includes('guitarra') || lower.includes('bajo') || lower.includes('cello')) return 'CUERDA';
-                if (lower.includes('piano') || lower.includes('teclad') || lower.includes('sinteti')) return 'TECLA';
-                return 'PERCUSIÓN';
-            }
-            
-            function appendInstrumentRow(inst) {
-                const grid = document.getElementById('instruments_grid');
-                if (!grid) return;
-                const div = document.createElement('div');
-                div.id = 'card_' + inst.id;
-                div.className = 'relative flex items-start space-x-3 rounded-lg border border-indigo-500 bg-indigo-900/40 px-6 py-5 shadow-sm focus-within:ring-2 focus-within:ring-indigo-500 ring-1 ring-indigo-500 hover:border-gray-600 transition-colors';
-                
-                let selectHtml = '<select onchange="document.getElementById(\\\'file_' + inst.id + '\\\').name=\\\'files[' + inst.id + '][\\\' + this.value + \\\']\\\'" id="type_' + inst.id + '" class="mt-2 block w-full rounded-md border-0 bg-gray-900 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6 relative z-10">';
-                selectHtml += '<option value="TODOS">TODOS (Por defecto)</option>';
-                selectHtml += '<option value="1º">1º</option>';
-                selectHtml += '<option value="2º">2º</option>';
-                selectHtml += '<option value="3º">3º</option>';
-                selectHtml += '<option value="PRINCIPAL">PRINCIPAL / SOLISTA</option>';
-                selectHtml += '</select>';
-
-                div.innerHTML = `
-                    <div class="min-w-0 flex-1">
-                        <p class="text-sm font-medium text-white mb-2 flex items-center justify-between">
-                            <span>${inst.name}</span>
-                            <span class="inline-flex items-center rounded-md bg-blue-500/10 px-2 py-1 text-xs font-medium text-blue-400 ring-1 ring-inset ring-blue-500/20">Nuevo</span>
-                        </p>
-                        <div class="mt-2 relative z-10">
-                            <input type="file" name="files[${inst.id}][TODOS]" id="file_${inst.id}" accept=".pdf,image/*" class="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-gray-700 file:text-indigo-400 hover:file:bg-gray-600">
-                        </div>
-                        ${selectHtml}
-                        <p id="label_${inst.id}" class="mt-2 text-xs text-gray-400"><span class="text-green-400 font-medium">✅ Archivos Locales Asignados</span></p>
-                    </div>
-                `;
-                grid.appendChild(div);
-            }
-
             const folderUpload = document.getElementById('smart_folder_upload');
             if (folderUpload) {
                 folderUpload.addEventListener('change', function(e) {
                     const files = e.target.files;
                     if (files.length === 0) return;
                     
-                    const resultsDiv = document.getElementById('smart_upload_results');
-                    const logUl = document.getElementById('smart_upload_log');
-                    resultsDiv.classList.remove('hidden');
-                    logUl.innerHTML = '';
-                    missingCandidates = {};
+                    const tbody = document.getElementById('smart_grid_body');
+                    tbody.innerHTML = '';
                     
                     const instruments = [
                         @foreach($instruments as $inst)
@@ -321,93 +259,39 @@
                         @endforeach
                     ];
                     
-                    let matchedCount = 0;
-                    let skippedCount = 0;
-                    
                     const sortedInstruments = [...instruments].sort((a, b) => b.name.length - a.name.length);
                     
                     for (let i = 0; i < files.length; i++) {
                         const file = files[i];
-                        const filename = file.name.toLowerCase();
-                        
-                        if (filename.startsWith('.') || (!filename.endsWith('.pdf') && !filename.match(/\.(jpg|jpeg|png|bmp|webp)$/))) {
-                            continue;
-                        }
-                        
-                        const fileNormalized = filename.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, ' ').trim();
+                        let fileNormalized = file.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
                         
                         let matchedInstrumentsArr = [];
                         let matchedAliases = [];
                         
                         for (const inst of sortedInstruments) {
-                            const instNormalized = inst.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, ' ').trim();
-                            
+                            let instNormalized = inst.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
                             let instAliases = [instNormalized];
-                            if (instNormalized.includes('saxofon') || instNormalized.includes('saxo')) {
-                                instAliases.push(instNormalized.replace('saxofon', 'saxo'));
-                                instAliases.push(instNormalized.replace('saxofon', 'sax'));
-                                if (instNormalized.includes('alto')) {
-                                    instAliases.push(instNormalized.replace('alto', 'contralto'));
-                                    instAliases.push('contralto');
-                                }
-                                if (instNormalized.includes('baritono')) instAliases.push('baritono');
-                                if (instNormalized.includes('tenor')) instAliases.push('tenor');
-                                if (instNormalized.includes('soprano')) instAliases.push('soprano');
-                            }
-                            if (instNormalized.includes('flautin')) {
-                                instAliases.push(instNormalized.replace('flautin', 'piccolo'));
-                                instAliases.push(instNormalized.replace('flautin', 'fluati'));
-                            }
-                            if (instNormalized.includes('trompa')) {
-                                instAliases.push(instNormalized.replace('trompa', 'corno'));
-                                instAliases.push(instNormalized.replace('trompa', 'horn'));
-                                instAliases.push(instNormalized.replace('trompa', 'tompa'));
-                            }
+                            
+                            if (instNormalized.includes('trompa')) instAliases.push(instNormalized.replace('trompa', 'tompa'));
                             if (instNormalized.includes('bombardino')) {
                                 instAliases.push(instNormalized.replace('bombardino', 'bombardin'));
                                 instAliases.push(instNormalized.replace('bombardino', 'eufonio'));
                                 instAliases.push(instNormalized.replace('bombardino', 'euphonium'));
                             }
-                            if (instNormalized.includes('trombon')) {
-                                instAliases.push(instNormalized.replace('trombon', 'trombo'));
-                                instAliases.push('trombo');
-                            }
-                            if (instNormalized.includes('timbales')) {
-                                instAliases.push(instNormalized.replace('timbales', 'timbals'));
-                            }
-                            if (instNormalized.includes('fliscorno')) {
-                                instAliases.push(instNormalized.replace('fliscorno', 'friscor'));
-                            }
-                            if (instNormalized.includes('requinto')) {
-                                instAliases.push(instNormalized.replace('requinto', 'requin'));
-                            }
-                            if (instNormalized.includes('saxofon alto') || instNormalized.includes('saxo alto')) {
-                                instAliases.push('saxo alt');
-                            }
-                            if (instNormalized.includes('tuba')) {
-                                if (instNormalized.includes('do')) instAliases.push('tuba'); 
-                            }
-                            // Traducciones desde catalán / otros
-                            if (instNormalized.includes('clarinete')) {
-                                instAliases.push(instNormalized.replace('clarinete', 'clarinet'));
-                            }
+                            if (instNormalized.includes('tuba') && instNormalized.includes('do')) instAliases.push('tuba'); 
+                            
+                            if (instNormalized.includes('clarinete')) instAliases.push(instNormalized.replace('clarinete', 'clarinet'));
                             if (instNormalized.includes('violonchelo')) {
                                 instAliases.push(instNormalized.replace('violonchelo', 'violoncel'));
                                 instAliases.push(instNormalized.replace('violonchelo', 'cello'));
                             }
-                            if (instNormalized.includes('contrabajo')) {
-                                instAliases.push(instNormalized.replace('contrabajo', 'contrabaix'));
-                            }
-                            if (instNormalized.includes('fliscorno')) {
-                                instAliases.push(instNormalized.replace('fliscorno', 'fiscorn'));
-                            }
+                            if (instNormalized.includes('contrabajo')) instAliases.push(instNormalized.replace('contrabajo', 'contrabaix'));
+                            if (instNormalized.includes('fliscorno')) instAliases.push(instNormalized.replace('fliscorno', 'fiscorn'));
                             if (instNormalized.includes('platillos')) {
                                 instAliases.push(instNormalized.replace('platillos', 'plats'));
                                 instAliases.push(instNormalized.replace('platillos', 'platerets'));
                             }
-                            if (instNormalized.includes('caja')) {
-                                instAliases.push(instNormalized.replace('caja', 'caixa'));
-                            }
+                            if (instNormalized.includes('caja')) instAliases.push(instNormalized.replace('caja', 'caixa'));
                             
                             const toneMappings = [
                                 { es: /\b(do)\b/g, en: /\b(c)\b/g, es_str: 'do', en_str: 'c' },
@@ -427,13 +311,9 @@
                                 expandedAliases.push(alias);
                                 let noEn = alias.replace(/\ben\b/g, '').replace(/\s+/g, ' ').trim();
                                 if (noEn !== alias) expandedAliases.push(noEn);
-        
                                 for (let map of toneMappings) {
-                                    if (alias.match(map.es)) {
-                                        expandedAliases.push(alias.replace(map.es, map.en_str).replace(/\ben\b/g, '').replace(/\s+/g, ' ').trim());
-                                    } else if (alias.match(map.en)) {
-                                        expandedAliases.push(alias.replace(map.en, map.es_str).replace(/\ben\b/g, '').replace(/\s+/g, ' ').trim());
-                                    }
+                                    if (alias.match(map.es)) expandedAliases.push(alias.replace(map.es, map.en_str).replace(/\ben\b/g, '').replace(/\s+/g, ' ').trim());
+                                    else if (alias.match(map.en)) expandedAliases.push(alias.replace(map.en, map.es_str).replace(/\ben\b/g, '').replace(/\s+/g, ' ').trim());
                                 }
                             }
                             
@@ -444,13 +324,11 @@
                                 if (fileNormalized.includes(alias)) {
                                     found = true; foundAlias = alias; break;
                                 }
-                                
                                 let parts = alias.split(' ');
                                 if (parts.length > 1) {
                                     let allPartsFound = true;
                                     for (let p of parts) {
-                                        let regex = new RegExp('\\b' + p + '\\b');
-                                        if (!regex.test(fileNormalized)) { allPartsFound = false; break; }
+                                        if (!new RegExp('\\b' + p + '\\b').test(fileNormalized)) { allPartsFound = false; break; }
                                     }
                                     if (allPartsFound) { found = true; foundAlias = alias; break; }
                                 }
@@ -463,17 +341,10 @@
                                     let existingParts = existingAlias.split(' ');
                                     let allContained = true;
                                     for (let p of foundParts) {
-                                        if (!existingParts.includes(p)) {
-                                            allContained = false;
-                                            break;
-                                        }
+                                        if (!existingParts.includes(p)) { allContained = false; break; }
                                     }
-                                    if (allContained) {
-                                        isSubset = true;
-                                        break;
-                                    }
+                                    if (allContained) { isSubset = true; break; }
                                 }
-                                
                                 if (!isSubset) {
                                     matchedInstrumentsArr.push(inst);
                                     matchedAliases.push(foundAlias);
@@ -481,63 +352,55 @@
                             }
                         }
                         
-                                                let matchedType = "TODOS"; 
-                        if (fileNormalized.match(/(?:^|\s)1(?:st|o|a|er|\s|$)/) || fileNormalized.includes("primero") || fileNormalized.includes("primera")) {
-                            matchedType = "1º";
-                        } else if (fileNormalized.match(/(?:^|\s)2(?:nd|o|a|do|\s|$)/) || fileNormalized.includes("segundo") || fileNormalized.includes("segunda")) {
-                            matchedType = "2º";
-                        } else if (fileNormalized.match(/(?:^|\s)3(?:rd|o|a|er|\s|$)/) || fileNormalized.includes("tercero") || fileNormalized.includes("tercera")) {
-                            matchedType = "3º";
-                        } else if (fileNormalized.includes("principal") || fileNormalized.includes("pral") || fileNormalized.match(/\bsolo\b/)) {
-                            matchedType = "PRINCIPAL";
-                        }
+                        let matchedType = 'TODOS'; 
+                        if (fileNormalized.match(/(?:^|\s)1(?:st|o|a|er|\s|$)/) || fileNormalized.includes('primero') || fileNormalized.includes('primera')) matchedType = '1º';
+                        else if (fileNormalized.match(/(?:^|\s)2(?:nd|o|a|do|\s|$)/) || fileNormalized.includes('segundo') || fileNormalized.includes('segunda')) matchedType = '2º';
+                        else if (fileNormalized.match(/(?:^|\s)3(?:rd|o|a|er|\s|$)/) || fileNormalized.includes('tercero') || fileNormalized.includes('tercera')) matchedType = '3º';
+                        else if (fileNormalized.includes('principal') || fileNormalized.includes('pral') || fileNormalized.match(/\bsolo\b/)) matchedType = 'PRINCIPAL';
                         
-                        let uuid = "file_" + Math.random().toString(36).substr(2, 9);
-                        let tr = document.createElement("tr");
+                        let uuid = 'file_' + Math.random().toString(36).substr(2, 9);
+                        let tr = document.createElement('tr');
                         
-                        let tdFile = document.createElement("td");
-                        tdFile.className = "py-3 pl-3 pr-3 text-xs font-medium text-white break-all";
-                        tdFile.innerHTML = "\n" +
-                            file.name + "\n" +
-                            "<input type=\"file\" id=\"input_" + uuid + "\" name=\"smart_grid_files[" + uuid + "]\" class=\"hidden\">\n";
+                        let tdFile = document.createElement('td');
+                        tdFile.className = "py-3 pl-3 pr-3 text-xs font-medium text-white break-all border-b border-gray-700";
+                        tdFile.innerHTML = file.name + '<input type="file" id="input_' + uuid + '" name="smart_grid_files[' + uuid + ']" class="hidden">';
                         tr.appendChild(tdFile);
                         
                         for(let col = 0; col < 3; col++) {
-                            let td = document.createElement("td");
-                            td.className = "py-2 px-2";
+                            let td = document.createElement('td');
+                            td.className = "py-2 px-2 border-b border-gray-700";
                             
-                            let instName = "";
-                            let typeName = "";
-                            
+                            let instName = '';
+                            let typeName = '';
                             if (matchedInstrumentsArr[col]) {
                                 instName = matchedInstrumentsArr[col].originalName;
                                 typeName = matchedType;
                             }
                             
-                            td.innerHTML = "\n" +
-                                "<div class=\"flex flex-col gap-1\">\n" +
-                                    "<input type=\"text\" list=\"instrument_catalog_list\" name=\"smart_grid_instruments[" + uuid + "][]\" value=\"" + instName + "\" class=\"bg-gray-800 text-xs text-white rounded border border-gray-600 px-2 py-1.5 w-full focus:ring-indigo-500 focus:border-indigo-500\" placeholder=\"Escribir...\">\n" +
-                                    "<select name=\"smart_grid_types[" + uuid + "][]\" class=\"bg-gray-800 text-xs text-white rounded border border-gray-600 px-2 py-1 w-full focus:ring-indigo-500 focus:border-indigo-500\">\n" +
-                                        "<option value=\"\">- Tipo -</option>\n" +
-                                        "<option value=\"TODOS\" " + (typeName==='TODOS'?'selected':'') + ">TODOS</option>\n" +
-                                        "<option value=\"1º\" " + (typeName==='1º'?'selected':'') + ">1º</option>\n" +
-                                        "<option value=\"2º\" " + (typeName==='2º'?'selected':'') + ">2º</option>\n" +
-                                        "<option value=\"3º\" " + (typeName==='3º'?'selected':'') + ">3º</option>\n" +
-                                        "<option value=\"PRINCIPAL\" " + (typeName==='PRINCIPAL'?'selected':'') + ">PRINCIPAL</option>\n" +
-                                    "</select>\n" +
-                                "</div>\n";
+                            td.innerHTML = '<div class="flex flex-col gap-1">' +
+                                '<input type="text" list="instrument_catalog_list" name="smart_grid_instruments[' + uuid + '][]" value="' + instName + '" class="bg-gray-800 text-xs text-white rounded border border-gray-600 px-2 py-1.5 w-full focus:ring-indigo-500 focus:border-indigo-500" placeholder="Escribir...">' +
+                                '<select name="smart_grid_types[' + uuid + '][]" class="bg-gray-800 text-xs text-white rounded border border-gray-600 px-2 py-1 w-full focus:ring-indigo-500 focus:border-indigo-500">' +
+                                    '<option value="">- Tipo -</option>' +
+                                    '<option value="TODOS" ' + (typeName==='TODOS'?'selected':'') + '>TODOS</option>' +
+                                    '<option value="1º" ' + (typeName==='1º'?'selected':'') + '>1º</option>' +
+                                    '<option value="2º" ' + (typeName==='2º'?'selected':'') + '>2º</option>' +
+                                    '<option value="3º" ' + (typeName==='3º'?'selected':'') + '>3º</option>' +
+                                    '<option value="PRINCIPAL" ' + (typeName==='PRINCIPAL'?'selected':'') + '>PRINCIPAL</option>' +
+                                '</select>' +
+                            '</div>';
                             tr.appendChild(td);
                         }
                         
-                        document.getElementById("smart_grid_container").classList.remove("hidden");
-                        document.getElementById("smart_grid_body").appendChild(tr);
+                        document.getElementById('smart_grid_container').classList.remove('hidden');
+                        tbody.appendChild(tr);
                         
                         const dt = new DataTransfer();
                         dt.items.add(file);
-                        document.getElementById("input_" + uuid).files = dt.files;
+                        document.getElementById('input_' + uuid).files = dt.files;
                     }
                 });
             }
         });
     </script>
+
 </x-admin-layout>
