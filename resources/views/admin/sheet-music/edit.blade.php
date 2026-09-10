@@ -150,7 +150,7 @@
                                     $assignedTypes = isset($filesIndexed[$instrument->id]) ? array_keys($filesIndexed[$instrument->id]) : [];
                                     $hasFiles = count($assignedTypes) > 0;
                                 @endphp
-                                <div class="{{ $hasFiles ? 'bg-blue-900/40 border-blue-700' : 'bg-gray-800/50 border-gray-700' }} rounded-lg p-4 border transition-colors" x-data="{ expanded: false }">
+                                <div id="existing_card_{{ $instrument->id }}" class="{{ $hasFiles ? 'bg-blue-900/40 border-blue-700' : 'bg-gray-800/50 border-gray-700' }} rounded-lg p-4 border transition-colors" x-data="{ expanded: false }">
                                     <div class="flex items-center justify-between cursor-pointer" @click="expanded = !expanded">
                                         <div class="flex items-center gap-3">
                                             <h4 class="text-lg font-medium {{ $hasFiles ? 'text-blue-100' : 'text-gray-200' }}">{{ $instrument->name }}</h4>
@@ -186,7 +186,7 @@
                                                 </div>
                                                 
                                                 <div class="mt-2">
-                                                    <input type="file" name="files[{{ $instrument->id }}][{{ $tipo }}]" accept=".pdf,.jpg,.jpeg,.png,.bmp,.webp" class="block w-full text-xs text-gray-400 file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-gray-700 file:text-white hover:file:bg-gray-600">
+                                                    <input type="file" id="file_{{ $instrument->id }}_{{ $tipo }}" name="files[{{ $instrument->id }}][{{ $tipo }}]" accept=".pdf,.jpg,.jpeg,.png,.bmp,.webp" class="block w-full text-xs text-gray-400 file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-gray-700 file:text-white hover:file:bg-gray-600">
                                                 </div>
                                                 
                                                 @if($pivot)
@@ -257,7 +257,7 @@
                 div.id = 'card_' + inst.id;
                 div.className = 'relative flex items-start space-x-3 rounded-lg border border-indigo-500 bg-indigo-900/40 px-6 py-5 shadow-sm focus-within:ring-2 focus-within:ring-indigo-500 ring-1 ring-indigo-500 hover:border-gray-600 transition-colors';
                 
-                let selectHtml = '<select name="types[' + inst.id + ']" id="type_' + inst.id + '" class="mt-2 block w-full rounded-md border-0 bg-gray-900 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6 relative z-10">';
+                let selectHtml = '<select onchange="document.getElementById(\\\'file_' + inst.id + '\\\').name=\\\'files[' + inst.id + '][\\\' + this.value + \\\']\\\'" id="type_' + inst.id + '" class="mt-2 block w-full rounded-md border-0 bg-gray-900 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6 relative z-10">';
                 selectHtml += '<option value="TODOS">TODOS (Por defecto)</option>';
                 selectHtml += '<option value="1º">1º</option>';
                 selectHtml += '<option value="2º">2º</option>';
@@ -272,7 +272,7 @@
                             <span class="inline-flex items-center rounded-md bg-blue-500/10 px-2 py-1 text-xs font-medium text-blue-400 ring-1 ring-inset ring-blue-500/20">Nuevo</span>
                         </p>
                         <div class="mt-2 relative z-10">
-                            <input type="file" name="files[${inst.id}]" id="file_${inst.id}" accept=".pdf,image/*" class="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-gray-700 file:text-indigo-400 hover:file:bg-gray-600">
+                            <input type="file" name="files[${inst.id}][TODOS]" id="file_${inst.id}" accept=".pdf,image/*" class="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-gray-700 file:text-indigo-400 hover:file:bg-gray-600">
                         </div>
                         ${selectHtml}
                         <p id="label_${inst.id}" class="mt-2 text-xs text-gray-400"><span class="text-green-400 font-medium">✅ Archivos Locales Asignados</span></p>
@@ -342,6 +342,10 @@
                             if (instNormalized.includes('bombardino')) {
                                 instAliases.push(instNormalized.replace('bombardino', 'eufonio'));
                                 instAliases.push(instNormalized.replace('bombardino', 'euphonium'));
+                            }
+                            if (instNormalized.includes('trombon')) {
+                                instAliases.push(instNormalized.replace('trombon', 'trombo'));
+                                instAliases.push('trombo');
                             }
                             if (instNormalized.includes('tuba')) {
                                 if (instNormalized.includes('do')) instAliases.push('tuba'); 
@@ -469,7 +473,18 @@
                             logUl.appendChild(li);
                             
                             for (const inst of matchedInstrumentsArr) {
-                                const input = document.getElementById('file_' + inst.id);
+                                let inputId = 'file_' + inst.id + '_' + matchedType;
+                                let isExisting = false;
+                                if (document.getElementById(inputId)) {
+                                    isExisting = true;
+                                } else if (document.getElementById('file_' + inst.id + '_TODOS')) {
+                                    inputId = 'file_' + inst.id + '_TODOS';
+                                    isExisting = true;
+                                } else {
+                                    inputId = 'file_' + inst.id;
+                                }
+
+                                const input = document.getElementById(inputId);
                                 if (input) {
                                     if (window.uploadedInstrumentIds && window.uploadedInstrumentIds.includes(inst.id.toString())) {
                                         let liWarn = document.createElement('li');
@@ -491,6 +506,16 @@
                                     if (card) {
                                         card.classList.remove('border-gray-700', 'bg-gray-800');
                                         card.classList.add('border-indigo-500', 'bg-indigo-900/40', 'ring-1', 'ring-indigo-500');
+                                    }
+                                    
+                                    const existingCard = document.getElementById('existing_card_' + inst.id);
+                                    if (existingCard) {
+                                        existingCard.classList.remove('border-gray-700', 'bg-gray-800/50');
+                                        existingCard.classList.add('border-indigo-500', 'bg-indigo-900/40', 'ring-1', 'ring-indigo-500');
+                                        // Auto expand
+                                        if (existingCard.__x && existingCard.__x.$data) {
+                                            existingCard.__x.$data.expanded = true;
+                                        }
                                     }
                                     
                                     const label = document.getElementById('label_' + inst.id);
