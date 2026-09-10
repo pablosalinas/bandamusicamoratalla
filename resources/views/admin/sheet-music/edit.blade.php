@@ -138,6 +138,15 @@
                                         <h4 class="text-sm font-medium text-gray-300 mb-2">Resultados del análisis:</h4>
                                         <ul id="smart_upload_log" class="list-disc pl-5 text-sm space-y-1 max-h-48 overflow-y-auto bg-gray-900/50 p-3 rounded"></ul>
                                     </div>
+
+                                    <div id="missing_instruments_container" class="mt-4 hidden border-t border-gray-700 pt-3">
+                                        <h4 class="text-sm font-medium text-amber-400 mb-2">Instrumentos no reconocidos (Faltantes):</h4>
+                                        <p class="text-xs text-gray-400 mb-3">Los siguientes elementos encontrados en los nombres de archivo no se asociaron a ningún instrumento del catálogo. Puedes asignarlos manualmente a un instrumento existente o crearlos nuevos.</p>
+                                        <div id="missing_instruments_list" class="space-y-2 max-h-64 overflow-y-auto pr-2 mb-3"></div>
+                                        <button type="button" id="btn_create_missing" class="text-sm bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-1.5 px-4 rounded shadow-sm">
+                                            Procesar Seleccionados
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -363,6 +372,27 @@
                             }
                             if (instNormalized.includes('tuba')) {
                                 if (instNormalized.includes('do')) instAliases.push('tuba'); 
+                            }
+                            // Traducciones desde catalán / otros
+                            if (instNormalized.includes('clarinete')) {
+                                instAliases.push(instNormalized.replace('clarinete', 'clarinet'));
+                            }
+                            if (instNormalized.includes('violonchelo')) {
+                                instAliases.push(instNormalized.replace('violonchelo', 'violoncel'));
+                                instAliases.push(instNormalized.replace('violonchelo', 'cello'));
+                            }
+                            if (instNormalized.includes('contrabajo')) {
+                                instAliases.push(instNormalized.replace('contrabajo', 'contrabaix'));
+                            }
+                            if (instNormalized.includes('fliscorno')) {
+                                instAliases.push(instNormalized.replace('fliscorno', 'fiscorn'));
+                            }
+                            if (instNormalized.includes('platillos')) {
+                                instAliases.push(instNormalized.replace('platillos', 'plats'));
+                                instAliases.push(instNormalized.replace('platillos', 'platerets'));
+                            }
+                            if (instNormalized.includes('caja')) {
+                                instAliases.push(instNormalized.replace('caja', 'caixa'));
                             }
                             
                             const toneMappings = [
