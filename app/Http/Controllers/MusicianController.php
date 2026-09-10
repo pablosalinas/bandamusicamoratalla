@@ -133,8 +133,11 @@ class MusicianController extends Controller
         $sheetMusic = \App\Models\SheetMusic::find($sheetMusicInstrument->sheet_music_id);
         $instrument = \App\Models\InstrumentCatalog::find($sheetMusicInstrument->instrument_catalog_id);
         $extension = strtolower(pathinfo($sheetMusicInstrument->pdf_file_path, PATHINFO_EXTENSION));
+        
+        $backUrl = route('dashboard');
+        $downloadRoute = route('musician.sheet-music.download', ['sheetMusicInstrument' => $sheetMusicInstrument->id, 'stream' => 1]);
 
-        return view('musician.sheet-music.viewer', compact('sheetMusicInstrument', 'sheetMusic', 'instrument', 'extension'));
+        return view('musician.sheet-music.viewer', compact('sheetMusicInstrument', 'sheetMusic', 'instrument', 'extension', 'backUrl', 'downloadRoute'));
     }
 
     public function download(\App\Models\SheetMusicInstrument $sheetMusicInstrument)

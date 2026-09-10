@@ -57,7 +57,7 @@
     <!-- HUD -->
     <div id="hud" class="hud" :class="{ 'opacity-0 pointer-events-none': !showHud }">
         <div class="flex items-center gap-4">
-            <a href="{{ route('dashboard') }}" class="text-white bg-gray-700 hover:bg-gray-600 rounded px-3 py-1.5 text-sm font-medium transition">
+            <a href="{{ $backUrl }}" class="text-white bg-gray-700 hover:bg-gray-600 rounded px-3 py-1.5 text-sm font-medium transition">
                 ← Volver
             </a>
             <div class="hidden sm:block">
@@ -78,7 +78,14 @@
         </div>
     </div>
 
+
+    <!-- Floating Back Button -->
+    <a href="{{ $backUrl }}" class="fixed bottom-4 left-4 z-50 bg-gray-900/60 hover:bg-gray-800/80 text-white p-3 rounded-full shadow-lg backdrop-blur-sm border border-gray-700/50 transition">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+    </a>
+
     <!-- Zones -->
+
     <div class="touch-zones">
         <div class="zone zone-left" @click="goPrev" @dblclick.prevent=""></div>
         <div class="zone zone-center" @click="toggleHud" @dblclick.prevent=""></div>
@@ -93,7 +100,7 @@
                 Preparando partitura...
             </div>
         @else
-            <img src="{{ route('musician.sheet-music.download', ['sheetMusicInstrument' => $sheetMusicInstrument->id, 'stream' => 1]) }}" alt="Partitura" class="w-full">
+            <img src="{{ $downloadRoute }}" alt="Partitura" class="w-full">
         @endif
     </div>
 
@@ -204,7 +211,7 @@
         
         @if(in_array($extension, ['pdf']))
         // Renderizar PDF de forma continua
-        const url = "{{ route('musician.sheet-music.download', ['sheetMusicInstrument' => $sheetMusicInstrument->id, 'stream' => 1]) }}";
+        const url = "{!! $downloadRoute !!}";
         
         const container = document.getElementById('render-container');
         

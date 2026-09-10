@@ -126,6 +126,7 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     Route::post('sheet-music/{sheetMusic}/upload-grid-row-ajax', [\App\Http\Controllers\Admin\SheetMusicController::class, 'uploadGridRowAjax'])->name('sheet-music.upload-grid-row-ajax');
     Route::get('sheet-music/{sheetMusic}/download-all', [\App\Http\Controllers\Admin\SheetMusicController::class, 'downloadAll'])->name('sheet-music.download-all');
     Route::get('sheet-music-parts/{sheetMusicInstrument}/download', [\App\Http\Controllers\Admin\SheetMusicController::class, 'downloadPart'])->name('sheet-music.download-part');
+    Route::get('sheet-music-parts/{sheetMusicInstrument}/view', [\App\Http\Controllers\Admin\SheetMusicController::class, 'viewPart'])->name('sheet-music.view-part');
     
     Route::post('instruments/ajax-create', [\App\Http\Controllers\Admin\InstrumentController::class, 'ajaxCreate'])->name('instruments.ajax-create');
     Route::resource('instruments', \App\Http\Controllers\Admin\InstrumentController::class)->except(['show']);

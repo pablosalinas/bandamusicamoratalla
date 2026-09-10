@@ -426,6 +426,22 @@ class SheetMusicController extends Controller
         return response()->json(['success' => false, 'message' => 'No válido']);
     }
 
+    public function viewPart(SheetMusicInstrument $sheetMusicInstrument)
+    {
+        if (!$sheetMusicInstrument->pdf_file_path || !\Storage::disk('local')->exists($sheetMusicInstrument->pdf_file_path)) {
+            return back()->with('error', 'El archivo no existe.');
+        }
+
+        $sheetMusic = \App\Models\SheetMusic::find($sheetMusicInstrument->sheet_music_id);
+        $instrument = \App\Models\InstrumentCatalog::find($sheetMusicInstrument->instrument_catalog_id);
+        $extension = strtolower(pathinfo($sheetMusicInstrument->pdf_file_path, PATHINFO_EXTENSION));
+        
+        $backUrl = route('admin.sheet-music.edit', $sheetMusic->id);
+        $downloadRoute = route('admin.sheet-music.download-part', ['sheetMusicInstrument' => $sheetMusicInstrument->id, 'stream' => 1]);
+
+        return view('musician.sheet-music.viewer', compact('sheetMusicInstrument', 'sheetMusic', 'instrument', 'extension', 'backUrl', 'downloadRoute'));
+    }
+
     public function downloadPart(SheetMusicInstrument $sheetMusicInstrument)
     {
         if (!$sheetMusicInstrument->pdf_file_path || !\Storage::disk('local')->exists($sheetMusicInstrument->pdf_file_path)) {
@@ -438,10 +454,20 @@ class SheetMusicController extends Controller
         
         $safeInstName = str_replace(['/', '\\', ':', '*', '?', '"', '<', '>', '|'], '-', $instrumentName);
         $safeCategory = str_replace(['/', '\\', ':', '*', '?', '"', '<', '>', '|'], '-', $category);
-        $originalExt = pathinfo($sheetMusicInstrument->pdf_file_path, PATHINFO_EXTENSION);
-        $filename = "{$safeInstName} - {$safeCategory}.{$originalExt}";
         
-        return response()->download(\Storage::disk('local')->path($sheetMusicInstrument->pdf_file_path), $filename);
+        $extension = pathinfo($sheetMusicInstrument->pdf_file_path, PATHINFO_EXTENSION);
+        $fileName = "{$safeInstName}_{$safeCategory}.{$extension}";
+
+        if (request()->has('stream')) {
+            $path = \Storage::disk('local')->path($sheetMusicInstrument->pdf_file_path);
+            $mime = \Storage::disk('local')->mimeType($sheetMusicInstrument->pdf_file_path);
+            return response()->file($path, [
+                'Content-Type' => $mime,
+                'Content-Disposition' => 'inline; filename="' . $fileName . '"'
+            ]);
+        }
+
+        return \Storage::disk('local')->download($sheetMusicInstrument->pdf_file_path, $fileName);
     }
 
     public function downloadAll(SheetMusic $sheetMusic)
