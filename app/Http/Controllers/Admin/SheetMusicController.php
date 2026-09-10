@@ -349,7 +349,38 @@ class SheetMusicController extends Controller
             abort(404, 'Archivo no encontrado');
         }
 
-        return Storage::disk('local')->download($sheetMusic->pdf_file_path, $sheetMusic->title . '_guion.pdf');
+        $fileName = $sheetMusic->title . '_guion.pdf';
+        if (request()->has('stream')) {
+            $path = Storage::disk('local')->path($sheetMusic->pdf_file_path);
+            $mime = Storage::disk('local')->mimeType($sheetMusic->pdf_file_path);
+            return response()->file($path, [
+                'Content-Type' => $mime,
+                'Content-Disposition' => 'inline; filename="' . $fileName . '"'
+            ]);
+        }
+
+        return Storage::disk('local')->download($sheetMusic->pdf_file_path, $fileName);
+    }
+
+    public function view(SheetMusic $sheetMusic)
+    {
+        if (!$sheetMusic->pdf_file_path || !Storage::disk('local')->exists($sheetMusic->pdf_file_path)) {
+            return back()->with('error', 'El guión (archivo principal) no existe.');
+        }
+
+        // we will reuse the musician viewer, but it expects $sheetMusicInstrument. 
+        // Let's create a dummy object or just pass null and check in the view.
+        $sheetMusicInstrument = (object)[
+            'tipo_partitura' => 'Guión General',
+            'pdf_file_path' => $sheetMusic->pdf_file_path
+        ];
+        $instrument = (object)['name' => 'General'];
+        $extension = strtolower(pathinfo($sheetMusic->pdf_file_path, PATHINFO_EXTENSION));
+        
+        $backUrl = route('admin.sheet-music.index');
+        $downloadRoute = route('admin.sheet-music.download', ['sheetMusic' => $sheetMusic->id, 'stream' => 1]);
+
+        return view('musician.sheet-music.viewer', compact('sheetMusicInstrument', 'sheetMusic', 'instrument', 'extension', 'backUrl', 'downloadRoute'));
     }
     
             
