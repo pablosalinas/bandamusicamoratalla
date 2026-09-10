@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -135,18 +135,68 @@
                 },
                 
                 goNext() {
-                    if (this.halfPageMode) {
-                        window.scrollBy({ top: window.innerHeight * 0.5, behavior: 'smooth' });
-                    } else {
-                        window.scrollBy({ top: window.innerHeight * 0.9, behavior: 'smooth' });
+                    const elements = document.querySelectorAll('#render-container canvas, #render-container img');
+                    if (elements.length === 0) return;
+                    
+                    let currentY = window.scrollY;
+                    let targetY = null;
+                    
+                    for (let i = 0; i < elements.length; i++) {
+                        let rect = elements[i].getBoundingClientRect();
+                        let absoluteTop = rect.top + window.scrollY;
+                        let absoluteMid = absoluteTop + (rect.height / 2);
+                        
+                        if (this.halfPageMode) {
+                            if (absoluteMid > currentY + 5) {
+                                targetY = absoluteMid;
+                                break;
+                            } else if (absoluteTop + rect.height > currentY + 5) {
+                                targetY = absoluteTop + rect.height;
+                                break;
+                            }
+                        } else {
+                            if (absoluteTop > currentY + 5) {
+                                targetY = absoluteTop;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    if (targetY !== null) {
+                        window.scrollTo({ top: targetY, behavior: 'smooth' });
                     }
                 },
                 
                 goPrev() {
-                    if (this.halfPageMode) {
-                        window.scrollBy({ top: -window.innerHeight * 0.5, behavior: 'smooth' });
-                    } else {
-                        window.scrollBy({ top: -window.innerHeight * 0.9, behavior: 'smooth' });
+                    const elements = document.querySelectorAll('#render-container canvas, #render-container img');
+                    if (elements.length === 0) return;
+                    
+                    let currentY = window.scrollY;
+                    let targetY = null;
+                    
+                    for (let i = elements.length - 1; i >= 0; i--) {
+                        let rect = elements[i].getBoundingClientRect();
+                        let absoluteTop = rect.top + window.scrollY;
+                        let absoluteMid = absoluteTop + (rect.height / 2);
+                        
+                        if (this.halfPageMode) {
+                            if (absoluteMid < currentY - 5) {
+                                targetY = absoluteMid;
+                                break;
+                            } else if (absoluteTop < currentY - 5) {
+                                targetY = absoluteTop;
+                                break;
+                            }
+                        } else {
+                            if (absoluteTop < currentY - 5) {
+                                targetY = absoluteTop;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    if (targetY !== null) {
+                        window.scrollTo({ top: targetY, behavior: 'smooth' });
                     }
                 }
             }));
@@ -159,29 +209,27 @@
         const container = document.getElementById('render-container');
         
         let pdfDoc = null;
-        let scale = 1.5; // Escala base, se ajustará por ancho de pantalla
-        
-        // Ajustar escala según el ancho de pantalla para que ocupe todo el ancho
-        if (window.innerWidth < 768) {
-            scale = window.innerWidth / 500; // Aproximación móvil
-        } else {
-            scale = window.innerWidth / 800; // Aproximación tablet/desktop
-        }
         
         pdfjsLib.getDocument(url).promise.then(function(pdf) {
             document.getElementById('loading').style.display = 'none';
             pdfDoc = pdf;
             
-            // Renderizar todas las páginas una debajo de otra
-            for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-                renderPage(pageNum);
-            }
+            pdfDoc.getPage(1).then(function(firstPage) {
+                const unscaledViewport = firstPage.getViewport({ scale: 1.0 });
+                const scaleWidth = window.innerWidth / unscaledViewport.width;
+                const scaleHeight = window.innerHeight / unscaledViewport.height;
+                const scale = Math.min(scaleWidth, scaleHeight) * 0.98; 
+                
+                for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                    renderPage(pageNum, scale);
+                }
+            });
         }).catch(function(err) {
             console.error('Error al cargar PDF:', err);
             document.getElementById('loading').innerHTML = 'Error al cargar el PDF. Puede estar dañado o no disponible.';
         });
 
-        function renderPage(num) {
+        function renderPage(num, scale) {
             pdfDoc.getPage(num).then(function(page) {
                 const viewport = page.getViewport({scale: scale});
                 
