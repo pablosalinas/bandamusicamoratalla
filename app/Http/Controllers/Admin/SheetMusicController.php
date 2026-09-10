@@ -203,6 +203,79 @@ class SheetMusicController extends Controller
             }
         }
 
+        // Procesar subida de nuevos archivos desde el Grid inteligente
+        if ($request->hasFile('smart_grid_files')) {
+            foreach ($request->file('smart_grid_files') as $uuid => $file) {
+                if ($file->isValid()) {
+                    $instruments = $request->input("smart_grid_instruments.$uuid", []);
+                    $types = $request->input("smart_grid_types.$uuid", []);
+                    
+                    $validAssignments = [];
+                    for ($i = 0; $i < count($instruments); $i++) {
+                        $instName = trim($instruments[$i] ?? '');
+                        $typeName = trim($types[$i] ?? '');
+                        
+                        if (!empty($instName) && !empty($typeName)) {
+                            // Find or create instrument catalog entry
+                            $instrument = \App\Models\InstrumentCatalog::firstOrCreate(
+                                ['name' => strtoupper($instName)],
+                                ['type' => 'OTROS', 'is_active' => true]
+                            );
+                            
+                            $validAssignments[] = [
+                                'instrument_id' => $instrument->id,
+                                'tipo' => strtoupper($typeName)
+                            ];
+                        }
+                    }
+
+                    if (count($validAssignments) > 0) {
+                        $extension = strtolower($file->getClientOriginalExtension());
+                        
+                        if (in_array($extension, ['jpg', 'jpeg', 'png', 'bmp', 'webp'])) {
+                            $manager = new ImageManager(new Driver());
+                            $image = $manager->read($file->getPathname());
+                            
+                            $image->text('www.bandamusicamoratalla.com', $image->width() - 20, $image->height() - 20, function($font) use ($image) {
+                                $font->size(min($image->width() * 0.03, 30)); 
+                                $font->color('rgba(150, 150, 150, 0.5)');
+                                $font->align('right');
+                                $font->valign('bottom');
+                            });
+                            
+                            $filename = 'sheet-music-parts/' . uniqid() . '.jpg';
+                            Storage::disk('local')->put($filename, (string) $image->toJpeg(80));
+                            $path = $filename;
+                        } else {
+                            $path = $file->store('sheet-music-parts', 'local');
+                        }
+
+                        foreach ($validAssignments as $assignment) {
+                            $pivot = SheetMusicInstrument::where('sheet_music_id', $sheetMusic->id)
+                                ->where('instrument_catalog_id', $assignment['instrument_id'])
+                                ->where('tipo_partitura', $assignment['tipo'])
+                                ->first();
+                            
+                            if ($pivot && $pivot->pdf_file_path && Storage::disk('local')->exists($pivot->pdf_file_path)) {
+                                Storage::disk('local')->delete($pivot->pdf_file_path);
+                            }
+
+                            if ($pivot) {
+                                $pivot->update(['pdf_file_path' => $path]);
+                            } else {
+                                SheetMusicInstrument::create([
+                                    'sheet_music_id' => $sheetMusic->id,
+                                    'instrument_catalog_id' => $assignment['instrument_id'],
+                                    'tipo_partitura' => $assignment['tipo'],
+                                    'pdf_file_path' => $path
+                                ]);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         return redirect()->route('admin.sheet-music.edit', $sheetMusic)->with('success', 'Partitura y archivos actualizados correctamente.');
     }
 

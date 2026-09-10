@@ -134,18 +134,31 @@
                                     
                                     <input type="file" id="smart_folder_upload" webkitdirectory directory multiple class="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-500 cursor-pointer">
                                     
-                                    <div id="smart_upload_results" class="mt-4 hidden border-t border-gray-700 pt-3">
-                                        <h4 class="text-sm font-medium text-gray-300 mb-2">Resultados del análisis:</h4>
-                                        <ul id="smart_upload_log" class="list-disc pl-5 text-sm space-y-1 max-h-48 overflow-y-auto bg-gray-900/50 p-3 rounded"></ul>
-                                    </div>
+                                    <datalist id="instrument_catalog_list">
+                                        @foreach($instruments as $inst)
+                                            <option value="{{ $inst->name }}">
+                                        @endforeach
+                                    </datalist>
 
-                                    <div id="missing_instruments_container" class="mt-4 hidden border-t border-gray-700 pt-3">
-                                        <h4 class="text-sm font-medium text-amber-400 mb-2">Instrumentos no reconocidos (Faltantes):</h4>
-                                        <p class="text-xs text-gray-400 mb-3">Los siguientes elementos encontrados en los nombres de archivo no se asociaron a ningún instrumento del catálogo. Puedes asignarlos manualmente a un instrumento existente o crearlos nuevos.</p>
-                                        <div id="missing_instruments_list" class="space-y-2 max-h-64 overflow-y-auto pr-2 mb-3"></div>
-                                        <button type="button" id="btn_create_missing" class="text-sm bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-1.5 px-4 rounded shadow-sm">
-                                            Procesar Seleccionados
-                                        </button>
+                                    <div id="smart_grid_container" class="mt-4 hidden border-t border-gray-700 pt-3 overflow-x-auto pb-4">
+                                        <h4 class="text-sm font-medium text-amber-400 mb-2">Cuadrícula de Asignación de Archivos:</h4>
+                                        <p class="text-xs text-gray-400 mb-3">Revisa las asignaciones automáticas. Puedes añadir o modificar instrumentos y tipos. Escribe el nombre de un instrumento existente o uno nuevo (se creará automáticamente en MAYÚSCULAS).</p>
+                                        
+                                        <div class="inline-block min-w-full align-middle">
+                                            <table class="min-w-full divide-y divide-gray-700">
+                                                <thead class="bg-gray-900/80">
+                                                    <tr>
+                                                        <th scope="col" class="py-2.5 pl-3 pr-3 text-left text-xs font-medium text-gray-300 w-1/4">Archivo detectado</th>
+                                                        <th scope="col" class="py-2.5 px-3 text-left text-xs font-medium text-gray-300 w-1/4">Asignación 1</th>
+                                                        <th scope="col" class="py-2.5 px-3 text-left text-xs font-medium text-gray-300 w-1/4">Asignación 2</th>
+                                                        <th scope="col" class="py-2.5 px-3 text-left text-xs font-medium text-gray-300 w-1/4">Asignación 3</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="smart_grid_body" class="divide-y divide-gray-800 bg-gray-900/30">
+                                                    <!-- Fila template generada por JS -->
+                                                </tbody>
+                                            </table>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -351,6 +364,7 @@
                                 instAliases.push(instNormalized.replace('trompa', 'tompa'));
                             }
                             if (instNormalized.includes('bombardino')) {
+                                instAliases.push(instNormalized.replace('bombardino', 'bombardin'));
                                 instAliases.push(instNormalized.replace('bombardino', 'eufonio'));
                                 instAliases.push(instNormalized.replace('bombardino', 'euphonium'));
                             }
@@ -467,304 +481,63 @@
                             }
                         }
                         
-                        // FALTANTES
-                        let baseName = file.name.replace(/\.[a-z0-9]+$/i, '');
-                        baseName = baseName.replace(/[0-9]+/g, '');
-                        baseName = baseName.replace(/\b(en|do|re|mi|fa|sol|la|si|sib|mib|b|bb|solista|principal|pral)\b/gi, '');
-                        let tokens = baseName.split(/,| y | and | e |&|-|_|\//i);
-                        
-                        for (let token of tokens) {
-                            let cleanToken = token.trim().replace(/\s+/g, ' ');
-                            if (cleanToken.length > 2) {
-                                let isCovered = false;
-                                let tokenLower = cleanToken.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, ' ').trim();
-                                for (let matched of matchedInstrumentsArr) {
-                                    let matchedLower = matched.originalName.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, ' ').trim();
-                                    if (matchedLower.includes(tokenLower) || tokenLower.includes(matchedLower) || matchedAliases.some(a => a.includes(tokenLower) || tokenLower.includes(a))) {
-                                        isCovered = true; break;
-                                    }
-                                }
-                                if (!isCovered && tokenLower.length > 2) {
-                                    let isInDB = sortedInstruments.some(dbI => dbI.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').includes(tokenLower));
-                                    if (!isInDB) {
-                                        let titleName = cleanToken.charAt(0).toUpperCase() + cleanToken.slice(1).toLowerCase();
-                                        if (!missingCandidates[titleName]) {
-                                            missingCandidates[titleName] = { name: titleName, family: guessFamily(titleName), files: [] };
-                                        }
-                                        missingCandidates[titleName].files.push(file);
-                                    }
-                                }
-                            }
+                                                let matchedType = "TODOS"; 
+                        if (fileNormalized.match(/(?:^|\s)1(?:st|o|a|er|\s|$)/) || fileNormalized.includes("primero") || fileNormalized.includes("primera")) {
+                            matchedType = "1º";
+                        } else if (fileNormalized.match(/(?:^|\s)2(?:nd|o|a|do|\s|$)/) || fileNormalized.includes("segundo") || fileNormalized.includes("segunda")) {
+                            matchedType = "2º";
+                        } else if (fileNormalized.match(/(?:^|\s)3(?:rd|o|a|er|\s|$)/) || fileNormalized.includes("tercero") || fileNormalized.includes("tercera")) {
+                            matchedType = "3º";
+                        } else if (fileNormalized.includes("principal") || fileNormalized.includes("pral") || fileNormalized.match(/\bsolo\b/)) {
+                            matchedType = "PRINCIPAL";
                         }
                         
-                        let matchedType = 'TODOS'; 
-                        if (fileNormalized.match(/(?:^|\s)1(?:st|o|a|er|\s|$)/) || fileNormalized.includes('primero') || fileNormalized.includes('primera')) {
-                            matchedType = '1º';
-                        } else if (fileNormalized.match(/(?:^|\s)2(?:nd|o|a|do|\s|$)/) || fileNormalized.includes('segundo') || fileNormalized.includes('segunda')) {
-                            matchedType = '2º';
-                        } else if (fileNormalized.match(/(?:^|\s)3(?:rd|o|a|er|\s|$)/) || fileNormalized.includes('tercero') || fileNormalized.includes('tercera')) {
-                            matchedType = '3º';
-                        } else if (fileNormalized.includes('principal') || fileNormalized.includes('pral') || fileNormalized.match(/\bsolo\b/)) {
-                            matchedType = 'PRINCIPAL';
-                        }
+                        let uuid = "file_" + Math.random().toString(36).substr(2, 9);
+                        let tr = document.createElement("tr");
                         
-                        if (matchedInstrumentsArr.length > 0) {
-                            matchedCount++;
-                            let instNames = matchedInstrumentsArr.map(i => i.originalName).join(', ');
-                            let li = document.createElement('li');
-                            li.className = 'text-green-400';
-                            li.innerHTML = `✅ <b>${file.name}</b> ➞ ${instNames} (${matchedType})`;
-                            logUl.appendChild(li);
+                        let tdFile = document.createElement("td");
+                        tdFile.className = "py-3 pl-3 pr-3 text-xs font-medium text-white break-all";
+                        tdFile.innerHTML = "\n" +
+                            file.name + "\n" +
+                            "<input type=\"file\" id=\"input_" + uuid + "\" name=\"smart_grid_files[" + uuid + "]\" class=\"hidden\">\n";
+                        tr.appendChild(tdFile);
+                        
+                        for(let col = 0; col < 3; col++) {
+                            let td = document.createElement("td");
+                            td.className = "py-2 px-2";
                             
-                            for (const inst of matchedInstrumentsArr) {
-                                let inputId = 'file_' + inst.id + '_' + matchedType;
-                                let isExisting = false;
-                                if (document.getElementById(inputId)) {
-                                    isExisting = true;
-                                } else if (document.getElementById('file_' + inst.id + '_TODOS')) {
-                                    inputId = 'file_' + inst.id + '_TODOS';
-                                    isExisting = true;
-                                } else {
-                                    inputId = 'file_' + inst.id;
-                                }
-
-                                const input = document.getElementById(inputId);
-                                if (input) {
-                                    if (window.uploadedInstrumentIds && window.uploadedInstrumentIds.includes(inst.id.toString())) {
-                                        let liWarn = document.createElement('li');
-                                        liWarn.className = 'text-amber-400 text-xs ml-4';
-                                        liWarn.innerHTML = `⚠️ Omitido: el instrumento <b>${inst.originalName}</b> ya tiene partitura.`;
-                                        logUl.appendChild(liWarn);
-                                        skippedCount++;
-                                        continue;
-                                    }
-                                    
-                                    const dt = new DataTransfer();
-                                    if (input.files.length > 0) {
-                                        for (let j=0; j<input.files.length; j++) dt.items.add(input.files[j]);
-                                    }
-                                    dt.items.add(file);
-                                    input.files = dt.files;
-                                    
-                                    const card = document.getElementById('card_' + inst.id);
-                                    if (card) {
-                                        card.classList.remove('border-gray-700', 'bg-gray-800');
-                                        card.classList.add('border-indigo-500', 'bg-indigo-900/40', 'ring-1', 'ring-indigo-500');
-                                    }
-                                    
-                                    const existingCard = document.getElementById('existing_card_' + inst.id);
-                                    if (existingCard) {
-                                        existingCard.classList.remove('border-gray-700', 'bg-gray-800/50');
-                                        existingCard.classList.add('border-indigo-500', 'bg-indigo-900/40', 'ring-1', 'ring-indigo-500');
-                                        // Auto expand
-                                        if (existingCard.__x && existingCard.__x.$data) {
-                                            existingCard.__x.$data.expanded = true;
-                                        }
-                                    }
-                                    
-                                    const label = document.getElementById('label_' + inst.id);
-                                    if (label) {
-                                        label.innerHTML = `<span class="text-green-400 font-medium">✅ Archivos Locales: ${dt.files.length}</span>`;
-                                    }
-                                    
-                                    const select = document.getElementById('type_' + inst.id);
-                                    if (select) {
-                                        let foundOption = Array.from(select.options).find(opt => opt.value === matchedType);
-                                        if (foundOption) {
-                                            select.value = matchedType;
-                                        } else {
-                                            let todosOption = Array.from(select.options).find(opt => opt.value === 'TODOS');
-                                            if (todosOption) select.value = 'TODOS';
-                                        }
-                                    }
-                                }
+                            let instName = "";
+                            let typeName = "";
+                            
+                            if (matchedInstrumentsArr[col]) {
+                                instName = matchedInstrumentsArr[col].originalName;
+                                typeName = matchedType;
                             }
-                        } else {
-                            let li = document.createElement('li');
-                            li.className = 'text-gray-400';
-                            li.innerHTML = `❌ <b>${file.name}</b> ➞ No se encontró instrumento.`;
-                            logUl.appendChild(li);
+                            
+                            td.innerHTML = "\n" +
+                                "<div class=\"flex flex-col gap-1\">\n" +
+                                    "<input type=\"text\" list=\"instrument_catalog_list\" name=\"smart_grid_instruments[" + uuid + "][]\" value=\"" + instName + "\" class=\"bg-gray-800 text-xs text-white rounded border border-gray-600 px-2 py-1.5 w-full focus:ring-indigo-500 focus:border-indigo-500\" placeholder=\"Escribir...\">\n" +
+                                    "<select name=\"smart_grid_types[" + uuid + "][]\" class=\"bg-gray-800 text-xs text-white rounded border border-gray-600 px-2 py-1 w-full focus:ring-indigo-500 focus:border-indigo-500\">\n" +
+                                        "<option value=\"\">- Tipo -</option>\n" +
+                                        "<option value=\"TODOS\" " + (typeName==='TODOS'?'selected':'') + ">TODOS</option>\n" +
+                                        "<option value=\"1º\" " + (typeName==='1º'?'selected':'') + ">1º</option>\n" +
+                                        "<option value=\"2º\" " + (typeName==='2º'?'selected':'') + ">2º</option>\n" +
+                                        "<option value=\"3º\" " + (typeName==='3º'?'selected':'') + ">3º</option>\n" +
+                                        "<option value=\"PRINCIPAL\" " + (typeName==='PRINCIPAL'?'selected':'') + ">PRINCIPAL</option>\n" +
+                                    "</select>\n" +
+                                "</div>\n";
+                            tr.appendChild(td);
                         }
+                        
+                        document.getElementById("smart_grid_container").classList.remove("hidden");
+                        document.getElementById("smart_grid_body").appendChild(tr);
+                        
+                        const dt = new DataTransfer();
+                        dt.items.add(file);
+                        document.getElementById("input_" + uuid).files = dt.files;
                     }
-                    
-                    let liSummary = document.createElement('li');
-                    liSummary.className = 'text-white font-bold mt-2 pt-2 border-t border-gray-600';
-                    liSummary.innerHTML = `Proceso completado: ${matchedCount} archivos enlazados, ${files.length - matchedCount} no encontrados, ${skippedCount} omitidos.`;
-                    logUl.appendChild(liSummary);
-                    
-                    renderMissingInstruments(missingCandidates, instruments);
                 });
-            }
-            
-            function renderMissingInstruments(candidates, instrumentsArray) {
-                const container = document.getElementById('missing_instruments_container');
-                if (!container) return;
-                
-                const list = document.getElementById('missing_instruments_list');
-                list.innerHTML = '';
-                
-                let existingOptions = '<option value="">-- O asignar a uno existente --</option>';
-                [...instrumentsArray].sort((a,b) => a.originalName.localeCompare(b.originalName)).forEach(i => {
-                    existingOptions += `<option value="${i.id}">${i.originalName}</option>`;
-                });
-                
-                let count = 0;
-                for (let key in candidates) {
-                    count++;
-                    let cand = candidates[key];
-                    let div = document.createElement('div');
-                    div.className = 'flex items-center gap-3 bg-gray-800 p-3 rounded-md border border-gray-700';
-                    div.innerHTML = `
-                        <input type="checkbox" id="chk_missing_${count}" value="${key}" class="missing-chk w-5 h-5 rounded border-gray-500 text-indigo-600 focus:ring-indigo-600 bg-gray-700">
-                        <label for="chk_missing_${count}" class="text-white font-semibold flex-1 cursor-pointer select-none">${cand.name}</label>
-                        <div class="flex flex-col gap-1 w-48">
-                            <select id="sel_missing_${count}" class="bg-gray-900 border border-gray-600 text-white text-xs rounded-md px-2 py-1">
-                                <option value="VIENTO MADERA" ${cand.family==='VIENTO MADERA'?'selected':''}>Crear: Viento Madera</option>
-                                <option value="VIENTO METAL" ${cand.family==='VIENTO METAL'?'selected':''}>Crear: Viento Metal</option>
-                                <option value="PERCUSIÓN" ${cand.family==='PERCUSIÓN'?'selected':''}>Crear: Percusión</option>
-                                <option value="CUERDA" ${cand.family==='CUERDA'?'selected':''}>Crear: Cuerda</option>
-                                <option value="TECLA" ${cand.family==='TECLA'?'selected':''}>Crear: Tecla</option>
-                            </select>
-                            <select id="sel_assign_${count}" class="bg-gray-900 border border-indigo-600 text-white text-xs rounded-md px-2 py-1">
-                                ${existingOptions}
-                            </select>
-                        </div>
-                        <span class="text-xs text-gray-400 w-24 text-right">(${cand.files.length} archivo/s)</span>
-                    `;
-                    list.appendChild(div);
-                }
-                
-                if (count > 0) {
-                    container.classList.remove('hidden');
-                    const btn = document.getElementById('btn_create_missing');
-                    const newBtn = btn.cloneNode(true);
-                    btn.parentNode.replaceChild(newBtn, btn);
-                    
-                    newBtn.addEventListener('click', function() {
-                        let toCreate = [];
-                        let toAssign = [];
-                        let chks = list.querySelectorAll('.missing-chk:checked');
-                        
-                        chks.forEach(chk => {
-                            let key = chk.value;
-                            let selId = chk.id.replace('chk_', 'sel_');
-                            let assignId = chk.id.replace('chk_', 'sel_assign_');
-                            
-                            let family = document.getElementById(selId).value;
-                            let existingInstId = document.getElementById(assignId).value;
-                            
-                            if (existingInstId) {
-                                toAssign.push({ instId: existingInstId, files: candidates[key].files, el: chk.closest('.flex') });
-                            } else {
-                                toCreate.push({ name: candidates[key].name, type: family, files: candidates[key].files, el: chk.closest('.flex') });
-                            }
-                        });
-                        
-                        if (toCreate.length === 0 && toAssign.length === 0) return alert('Selecciona al menos un instrumento para procesar.');
-                        
-                        // Process existing assignments first
-                        if (toAssign.length > 0) {
-                            toAssign.forEach(item => {
-                                let targetInst = instrumentsArray.find(i => i.id == item.instId);
-                                if (targetInst) {
-                                    let inputId = 'file_' + targetInst.id + '_TODOS'; // fallback to TODOS by default when mapping manually
-                                    let input = document.getElementById(inputId);
-                                    if (!input) input = document.getElementById('file_' + targetInst.id);
-                                    
-                                    if (input) {
-                                        const dt = new DataTransfer();
-                                        if (input.files.length > 0) {
-                                            for (let j=0; j<input.files.length; j++) dt.items.add(input.files[j]);
-                                        }
-                                        item.files.forEach(f => dt.items.add(f));
-                                        input.files = dt.files;
-                                        
-                                        // Visual updates
-                                        const card = document.getElementById('card_' + targetInst.id);
-                                        if (card) {
-                                            card.classList.remove('border-gray-700', 'bg-gray-800');
-                                            card.classList.add('border-indigo-500', 'bg-indigo-900/40', 'ring-1', 'ring-indigo-500');
-                                        }
-                                        const existingCard = document.getElementById('existing_card_' + targetInst.id);
-                                        if (existingCard) {
-                                            existingCard.classList.remove('border-gray-700', 'bg-gray-800/50');
-                                            existingCard.classList.add('border-indigo-500', 'bg-indigo-900/40', 'ring-1', 'ring-indigo-500');
-                                            if (existingCard.__x && existingCard.__x.$data) existingCard.__x.$data.expanded = true;
-                                        }
-                                        const label = document.getElementById('label_' + targetInst.id);
-                                        if (label) label.innerHTML = `<span class="text-green-400 font-medium">✅ Archivos Locales: ${dt.files.length}</span>`;
-                                        
-                                        item.el.remove();
-                                    }
-                                }
-                            });
-                            
-                            if (toCreate.length === 0) {
-                                alert("Archivos asignados a instrumentos existentes correctamente.");
-                                if (list.children.length === 0) container.classList.add('hidden');
-                                return;
-                            }
-                        }
-
-                        if (!confirm('Se crearán ' + toCreate.length + ' instrumentos nuevos en el catálogo general. ¿Estás seguro?')) return;
-                        
-                        this.innerText = 'Procesando...';
-                        this.disabled = true;
-                        this.classList.add('opacity-50');
-                        
-                        fetch("{{ route('admin.instruments.ajax-create') }}", {
-                            method: "POST",
-                            headers: {
-                                "Content-Type": "application/json",
-                                "X-CSRF-TOKEN": "{{ csrf_token() }}"
-                            },
-                            body: JSON.stringify({ instruments: toCreate.map(c => ({ name: c.name, type: c.type })) })
-                        })
-                        .then(res => res.json())
-                        .then(data => {
-                            if (data.success) {
-                                alert("Instrumentos creados y archivos asignados correctamente.");
-                                data.instruments.forEach(newInst => {
-                                    instrumentsArray.push({ id: newInst.id, name: newInst.name, originalName: newInst.name });
-                                    
-                                    let matchedCandidate = toCreate.find(c => c.name.toUpperCase() === newInst.name.toUpperCase());
-                                    appendInstrumentRow(newInst);
-                                    
-                                    if (matchedCandidate) {
-                                        let input = document.getElementById('file_' + newInst.id);
-                                        if (input) {
-                                            const dt = new DataTransfer();
-                                            matchedCandidate.files.forEach(f => dt.items.add(f));
-                                            input.files = dt.files;
-                                            
-                                            // trigger visual changes
-                                            const card = document.getElementById('card_' + newInst.id);
-                                            if (card) {
-                                                card.classList.remove('border-gray-700', 'bg-gray-800');
-                                                card.classList.add('border-indigo-500', 'bg-indigo-900/40', 'ring-1', 'ring-indigo-500');
-                                            }
-                                        }
-                                        matchedCandidate.el.remove();
-                                    }
-                                });
-                                if (list.children.length === 0) container.classList.add('hidden');
-                            }
-                        })
-                        .catch(err => {
-                            console.error(err);
-                            alert("Hubo un error al crear los instrumentos.");
-                        })
-                        .finally(() => {
-                            this.innerText = 'Procesar Seleccionados';
-                            this.disabled = false;
-                            this.classList.remove('opacity-50');
-                        });
-                    });
-                } else {
-                    container.classList.add('hidden');
-                }
             }
         });
     </script>
-
 </x-admin-layout>
