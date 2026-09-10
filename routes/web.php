@@ -89,6 +89,7 @@ Route::view('/aviso-legal', 'legal')->name('legal');
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\MusicianController::class, 'index'])->name('dashboard');
     Route::get('/dashboard/sheet-music/{sheetMusicInstrument}/download', [\App\Http\Controllers\MusicianController::class, 'download'])->name('musician.sheet-music.download');
+    Route::get('/dashboard/sheet-music/{sheetMusicInstrument}/view', [\App\Http\Controllers\MusicianController::class, 'view'])->name('musician.sheet-music.view');
     Route::get('/planning', [\App\Http\Controllers\MusicianController::class, 'planning'])->name('musician.planning');
     Route::get('/planning/pdf', [\App\Http\Controllers\MusicianController::class, 'planningPdf'])->name('musician.planning.pdf');
     Route::view('/manual', 'musician.manual')->name('musician.manual');

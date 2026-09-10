@@ -109,6 +109,34 @@ class MusicianController extends Controller
         return view('dashboard', compact('user', 'availableParts', 'missedAttendances', 'currentFiscalYear'));
     }
 
+    public function view(\App\Models\SheetMusicInstrument $sheetMusicInstrument)
+    {
+        $user = Auth::user();
+        $user->load('inventories');
+        
+        $hasAccess = false;
+        foreach ($user->inventories as $inv) {
+            if ($inv->is_active && $inv->instrument_catalog_id == $sheetMusicInstrument->instrument_catalog_id) {
+                $hasAccess = true;
+                break;
+            }
+        }
+        
+        if (!$hasAccess && !$user->is_admin) {
+            return redirect()->back()->with('error', 'No tienes asignado este instrumento.');
+        }
+
+        if (!$sheetMusicInstrument->pdf_file_path || !\Storage::disk('local')->exists($sheetMusicInstrument->pdf_file_path)) {
+            return back()->with('error', 'El archivo físico no se encuentra en el servidor.');
+        }
+        
+        $sheetMusic = \App\Models\SheetMusic::find($sheetMusicInstrument->sheet_music_id);
+        $instrument = \App\Models\InstrumentCatalog::find($sheetMusicInstrument->instrument_catalog_id);
+        $extension = strtolower(pathinfo($sheetMusicInstrument->pdf_file_path, PATHINFO_EXTENSION));
+
+        return view('musician.sheet-music.viewer', compact('sheetMusicInstrument', 'sheetMusic', 'instrument', 'extension'));
+    }
+
     public function download(\App\Models\SheetMusicInstrument $sheetMusicInstrument)
     {
         $user = Auth::user();
@@ -140,6 +168,15 @@ class MusicianController extends Controller
         $instrument = \App\Models\InstrumentCatalog::find($sheetMusicInstrument->instrument_catalog_id);
         $extension = pathinfo($sheetMusicInstrument->pdf_file_path, PATHINFO_EXTENSION);
         $filename = $sheetMusic->title . '_' . $instrument->name . '_' . $sheetMusicInstrument->tipo_partitura . '.' . $extension;
+
+        if (request()->has('stream')) {
+            $path = Storage::disk('local')->path($sheetMusicInstrument->pdf_file_path);
+            $mime = Storage::disk('local')->mimeType($sheetMusicInstrument->pdf_file_path);
+            return response()->file($path, [
+                'Content-Type' => $mime,
+                'Content-Disposition' => 'inline; filename="' . $filename . '"'
+            ]);
+        }
 
         return Storage::disk('local')->download($sheetMusicInstrument->pdf_file_path, $filename);
     }
