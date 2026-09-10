@@ -142,68 +142,18 @@
                 },
                 
                 goNext() {
-                    const elements = document.querySelectorAll('#render-container canvas, #render-container img');
-                    if (elements.length === 0) return;
-                    
-                    let currentY = window.scrollY;
-                    let targetY = null;
-                    
-                    for (let i = 0; i < elements.length; i++) {
-                        let rect = elements[i].getBoundingClientRect();
-                        let absoluteTop = rect.top + window.scrollY;
-                        let absoluteMid = absoluteTop + (rect.height / 2);
-                        
-                        if (this.halfPageMode) {
-                            if (absoluteMid > currentY + 5) {
-                                targetY = absoluteMid;
-                                break;
-                            } else if (absoluteTop + rect.height > currentY + 5) {
-                                targetY = absoluteTop + rect.height;
-                                break;
-                            }
-                        } else {
-                            if (absoluteTop > currentY + 5) {
-                                targetY = absoluteTop;
-                                break;
-                            }
-                        }
-                    }
-                    
-                    if (targetY !== null) {
-                        window.scrollTo({ top: targetY, behavior: 'smooth' });
+                    if (this.halfPageMode) {
+                        window.scrollBy({ top: window.innerHeight * 0.5, behavior: 'smooth' });
+                    } else {
+                        window.scrollBy({ top: window.innerHeight * 0.9, behavior: 'smooth' });
                     }
                 },
                 
                 goPrev() {
-                    const elements = document.querySelectorAll('#render-container canvas, #render-container img');
-                    if (elements.length === 0) return;
-                    
-                    let currentY = window.scrollY;
-                    let targetY = null;
-                    
-                    for (let i = elements.length - 1; i >= 0; i--) {
-                        let rect = elements[i].getBoundingClientRect();
-                        let absoluteTop = rect.top + window.scrollY;
-                        let absoluteMid = absoluteTop + (rect.height / 2);
-                        
-                        if (this.halfPageMode) {
-                            if (absoluteMid < currentY - 5) {
-                                targetY = absoluteMid;
-                                break;
-                            } else if (absoluteTop < currentY - 5) {
-                                targetY = absoluteTop;
-                                break;
-                            }
-                        } else {
-                            if (absoluteTop < currentY - 5) {
-                                targetY = absoluteTop;
-                                break;
-                            }
-                        }
-                    }
-                    
-                    if (targetY !== null) {
-                        window.scrollTo({ top: targetY, behavior: 'smooth' });
+                    if (this.halfPageMode) {
+                        window.scrollBy({ top: -window.innerHeight * 0.5, behavior: 'smooth' });
+                    } else {
+                        window.scrollBy({ top: -window.innerHeight * 0.9, behavior: 'smooth' });
                     }
                 }
             }));
@@ -223,9 +173,10 @@
             
             pdfDoc.getPage(1).then(function(firstPage) {
                 const unscaledViewport = firstPage.getViewport({ scale: 1.0 });
-                const scaleWidth = window.innerWidth / unscaledViewport.width;
-                const scaleHeight = window.innerHeight / unscaledViewport.height;
-                const scale = Math.min(scaleWidth, scaleHeight) * 0.98; 
+                // We want the PDF to be as wide as the screen to maximize readability.
+                // We multiply by devicePixelRatio to ensure it's sharp on mobile (Retina) displays!
+                const pixelRatio = window.devicePixelRatio || 1;
+                const scale = (window.innerWidth / unscaledViewport.width) * pixelRatio;
                 
                 for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
                     renderPage(pageNum, scale);
@@ -245,9 +196,8 @@
                 canvas.height = viewport.height;
                 canvas.width = viewport.width;
                 
-                // Asegurar que el canvas ocupe todo el ancho visualmente
+                // Asegurar que el canvas ocupe todo el ancho visualmente (CSS logical pixels)
                 canvas.style.width = '100%';
-                canvas.style.maxWidth = viewport.width + 'px';
                 
                 container.appendChild(canvas);
                 
