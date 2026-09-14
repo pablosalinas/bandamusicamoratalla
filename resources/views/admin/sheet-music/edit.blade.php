@@ -417,8 +417,20 @@
                                 if (allContained) { isSubset = true; break; }
                             }
                             if (!isSubset) {
-                                matchedInstrumentsArr.push(inst);
-                                matchedAliases.push(foundAlias);
+                                let isDuplicate = false;
+                                for (let i = 0; i < matchedInstrumentsArr.length; i++) {
+                                    if (matchedInstrumentsArr[i].name.toLowerCase() === inst.name.toLowerCase()) {
+                                        isDuplicate = true;
+                                        if (inst.name === inst.name.toUpperCase()) {
+                                            matchedInstrumentsArr[i] = inst;
+                                        }
+                                        break;
+                                    }
+                                }
+                                if (!isDuplicate) {
+                                    matchedInstrumentsArr.push(inst);
+                                    matchedAliases.push(foundAlias);
+                                }
                             }
                         }
                     }
@@ -448,9 +460,10 @@
                         for (let part of leftoverParts) {
                             part = part.trim();
                             if (part.length > 2) {
-                                part = part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
-                                if (part.toLowerCase() === 'guitarra' || part.toLowerCase() === 'guitarra espanola') {
-                                    part = 'Guitarra española';
+                                if (part.toLowerCase() === 'guitarra' || part.toLowerCase() === 'guitarra espanola' || part.toLowerCase() === 'guitarra española') {
+                                    part = 'GUITARRA ESPAÑOLA';
+                                } else {
+                                    part = part.toUpperCase();
                                 }
                                 
                                 if (matchedInstrumentsArr.length < 3) {
