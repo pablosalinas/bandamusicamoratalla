@@ -321,6 +321,12 @@
                         }
                         if (instNormalized.includes('tuba') && instNormalized.includes('do')) instAliases.push('tuba'); 
                         
+                        if (instNormalized.includes('saxofon')) {
+                            let s = instNormalized.replace(/saxofones/g, 'saxos').replace(/saxofon/g, 'saxo');
+                            instAliases.push(s);
+                            instAliases.push(instNormalized.replace(/saxofones/g, 'saxophones').replace(/saxofon/g, 'saxophone'));
+                            instAliases.push(instNormalized.replace(/saxofones/g, 'saxes').replace(/saxofon/g, 'sax'));
+                        }
                         if (instNormalized.includes('clarinete')) instAliases.push(instNormalized.replace('clarinete', 'clarinet'));
                         if (instNormalized.includes('violonchelo')) {
                             instAliases.push(instNormalized.replace('violonchelo', 'violoncel'));
