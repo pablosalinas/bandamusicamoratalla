@@ -466,7 +466,17 @@
                                     part = part.toUpperCase();
                                 }
                                 
-                                if (matchedInstrumentsArr.length < 3) {
+                                let isAlreadyMatched = false;
+                                for(let m of matchedInstrumentsArr) {
+                                    let mNorm = m.originalName.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                                    let pNorm = part.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                                    if(mNorm.includes(pNorm) || pNorm.includes(mNorm)) {
+                                        isAlreadyMatched = true; 
+                                        break;
+                                    }
+                                }
+                                
+                                if (!isAlreadyMatched && matchedInstrumentsArr.length < 3) {
                                     matchedInstrumentsArr.push({ originalName: part, isNew: true });
                                     isNewProposal = true;
                                 }
