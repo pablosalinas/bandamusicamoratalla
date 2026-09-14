@@ -411,7 +411,7 @@
             @if($news->count() > 0)
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                     @foreach($news as $item)
-                          <div x-data="{ openNews: false, activeNewsSlide: 0, newsSlides: {{ json_encode($item->newsImages->map(function($i) { 
+                          <div x-init="$watch('openNews', val => { if(!val) $el.querySelectorAll('video').forEach(v => v.pause()) })" x-data="{ openNews: false, activeNewsSlide: 0, newsSlides: {{ json_encode($item->newsImages->map(function($i) { 
                               $ext = strtolower(pathinfo($i->url, PATHINFO_EXTENSION));
                               $isVideo = in_array($ext, ['mp4', 'mov', 'webm', 'avi']);
                               return ['url' => $i->url, 'desc' => $i->description, 'type' => $isVideo ? 'video' : 'image']; 
@@ -466,7 +466,7 @@
                                         <div class="p-6 overflow-y-auto">
                                             @if($item->newsImages->count() > 0)
                                                 <!-- Carrusel dentro de modal -->
-                                                <div class="relative rounded-xl overflow-hidden bg-black mb-8 aspect-video flex items-center justify-center group/carousel">
+                                                <div class="relative rounded-xl overflow-hidden bg-black mb-8 aspect-video flex items-center justify-center group/carousel" x-init="$watch('activeNewsSlide', () => $el.querySelectorAll('video').forEach(v => v.pause()))">
                                                     <template x-for="(slide, index) in newsSlides" :key="index">
                                                         <div x-show="activeNewsSlide === index" x-transition.opacity class="absolute inset-0 flex flex-col items-center justify-center">
                                                             <template x-if="slide.type === 'image'">
@@ -529,8 +529,12 @@
 
             <div class="glass-panel p-8 rounded-2xl flex flex-col md:flex-row gap-8 items-start">
                 @if(isset($bandHistoryImages) && $bandHistoryImages->count() > 0)
-                    <div class="w-full md:w-1/3 flex-shrink-0" x-data="{ openLightbox: false, activeSlide: 0, slides: {{ json_encode($bandHistoryImages->map(function($i) { return ['url' => $i->url, 'desc' => $i->description]; })) }} }">
-                        <div class="relative rounded-xl overflow-hidden shadow-lg border border-gray-800 cursor-pointer group" @click="openLightbox = true; activeSlide = 0">
+                    <div class="w-full md:w-1/3 flex-shrink-0" x-data="{ openLightbox: false, activeSlide: 0, slides: {{ json_encode($bandHistoryImages->map(function($i) {
+                            $ext = strtolower(pathinfo($i->url, PATHINFO_EXTENSION));
+                            $isVideo = in_array($ext, ['mp4', 'mov', 'webm', 'avi']);
+                            return ['url' => $i->url, 'desc' => $i->description, 'type' => $isVideo ? 'video' : 'image'];
+                        })) }} }">
+                        <div x-init="$watch('openLightbox', val => { if(!val) $el.closest('[x-data]').querySelectorAll('video').forEach(v => v.pause()) })" class="relative rounded-xl overflow-hidden shadow-lg border border-gray-800 cursor-pointer group" @click="openLightbox = true; activeSlide = 0">
                             <img src="{{ $bandHistoryImages->first()->url }}" alt="Historia" class="w-full aspect-[4/3] object-cover transition-transform duration-500 group-hover:scale-105">
                             <div class="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-colors"></div>
                             
@@ -543,7 +547,7 @@
                         </div>
                         
                         <template x-teleport="body">
-                            <div x-show="openLightbox" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-sm" style="display: none;" @keydown.escape.window="openLightbox = false" @keydown.right.window="activeSlide = (activeSlide + 1) % slides.length" @keydown.left.window="activeSlide = (activeSlide - 1 + slides.length) % slides.length">
+                            <div x-show="openLightbox" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-sm" style="display: none;" @keydown.escape.window="openLightbox = false" x-init="$watch('openLightbox', val => { if(!val) $el.querySelectorAll('video').forEach(v => v.pause()) })" @keydown.right.window="activeSlide = (activeSlide + 1) % slides.length" @keydown.left.window="activeSlide = (activeSlide - 1 + slides.length) % slides.length">
                                 <button @click="openLightbox = false" class="absolute top-6 right-6 text-white/70 hover:text-white bg-black/50 hover:bg-amber-600 rounded-full p-2 transition-colors z-[110]">
                                     <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                                 </button>
@@ -556,10 +560,15 @@
                                     <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
                                 </button>
 
-                                <div class="w-full h-full flex flex-col items-center justify-center">
+                                <div class="w-full h-full flex flex-col items-center justify-center" x-init="$watch('activeSlide', () => $el.querySelectorAll('video').forEach(v => v.pause()))">
                                     <template x-for="(slide, index) in slides" :key="index">
                                         <div x-show="activeSlide === index" x-transition.opacity.duration.300ms class="absolute inset-0 flex flex-col items-center justify-center p-4 md:p-12 z-[105]">
-                                            <img :src="slide.url" class="max-h-[75vh] max-w-full object-contain rounded-lg shadow-2xl">
+                                            <template x-if="slide.type === 'video'">
+                                                <video :src="slide.url" class="max-h-[75vh] max-w-full object-contain rounded-lg shadow-2xl" controls></video>
+                                            </template>
+                                            <template x-if="slide.type !== 'video'">
+                                                <img :src="slide.url" class="max-h-[75vh] max-w-full object-contain rounded-lg shadow-2xl">
+                                            </template>
                                             <p x-show="slide.desc" class="mt-4 text-white text-base md:text-lg font-medium text-center bg-black/70 px-6 py-2 rounded-full backdrop-blur-sm" x-text="slide.desc"></p>
                                         </div>
                                     </template>
@@ -598,13 +607,25 @@
             @if(isset($mediaArchives) && $mediaArchives->count() > 0)
                 <div class="flex overflow-x-auto gap-6 pb-8 snap-x snap-mandatory scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900" style="scrollbar-width: thin;">
                     @foreach($mediaArchives as $media)
-                        <div x-data="{ openLightbox: false, lightboxSlides: {{ json_encode($media->images->map(function($i) { return asset('storage/' . $i->file_path); })) }}, activeLightboxSlide: 0 }" class="glass-panel rounded-2xl overflow-hidden hover:-translate-y-1 transition-all duration-300 group flex flex-col flex-none w-[65vw] sm:w-[220px] lg:w-[240px] snap-center">
+                        <div x-data="{ openLightbox: false, lightboxSlides: {{ json_encode($media->images->map(function($i) { 
+                            $ext = strtolower(pathinfo($i->file_path, PATHINFO_EXTENSION));
+                            $isVideo = in_array($ext, ['mp4', 'mov', 'webm', 'avi']);
+                            return ['url' => asset('storage/' . $i->file_path), 'type' => $isVideo ? 'video' : 'image'];
+                        })) }}, activeLightboxSlide: 0 }" class="glass-panel rounded-2xl overflow-hidden hover:-translate-y-1 transition-all duration-300 group flex flex-col flex-none w-[65vw] sm:w-[220px] lg:w-[240px] snap-center">
                             @if($media->images->count() > 0)
                                 <!-- Carrusel de Imágenes -->
                                 <div class="relative aspect-video bg-gray-900" x-data="{ activeSlide: 1, totalSlides: {{ $media->images->count() }} }">
                                     @foreach($media->images as $index => $image)
                                         <div x-show="activeSlide === {{ $index + 1 }}" @click="openLightbox = true; activeLightboxSlide = {{ $index }}" class="absolute inset-0 transition-opacity duration-500 ease-in-out cursor-pointer group/img">
-                                            <img src="{{ asset('storage/' . $image->file_path) }}" class="w-full h-full object-contain select-none transition-transform duration-500 group-hover/img:scale-105" oncontextmenu="return false;" draggable="false">
+                                            @php
+                                              $mExt = strtolower(pathinfo($image->file_path, PATHINFO_EXTENSION));
+                                              $mIsVideo = in_array($mExt, ['mp4', 'mov', 'webm', 'avi']);
+                                          @endphp
+                                          @if($mIsVideo)
+                                              <video src="{{ asset('storage/' . $image->file_path) }}" class="w-full h-full object-contain select-none transition-transform duration-500 group-hover/img:scale-105" oncontextmenu="return false;" draggable="false" muted loop autoplay playsinline></video>
+                                          @else
+                                              <img src="{{ asset('storage/' . $image->file_path) }}" class="w-full h-full object-contain select-none transition-transform duration-500 group-hover/img:scale-105" oncontextmenu="return false;" draggable="false">
+                                          @endif
                                             <div class="absolute inset-0 bg-black/50 opacity-0 group-hover/img:opacity-100 flex items-center justify-center transition-opacity">
                                                  <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path></svg>
                                             </div>
@@ -663,7 +684,7 @@
                             <!-- Lightbox de Imágenes -->
                             @if($media->images->count() > 0)
                             <template x-teleport="body">
-                                <div x-show="openLightbox" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-sm" style="display: none;" @keydown.escape.window="openLightbox = false" @keydown.right.window="if(openLightbox) activeLightboxSlide = (activeLightboxSlide + 1) % lightboxSlides.length" @keydown.left.window="if(openLightbox) activeLightboxSlide = (activeLightboxSlide - 1 + lightboxSlides.length) % lightboxSlides.length">
+                                <div x-show="openLightbox" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-sm" style="display: none;" @keydown.escape.window="openLightbox = false" x-init="$watch('openLightbox', val => { if(!val) $el.querySelectorAll('video').forEach(v => v.pause()) })" @keydown.right.window="if(openLightbox) activeLightboxSlide = (activeLightboxSlide + 1) % lightboxSlides.length" @keydown.left.window="if(openLightbox) activeLightboxSlide = (activeLightboxSlide - 1 + lightboxSlides.length) % lightboxSlides.length">
                                     <button @click="openLightbox = false" class="absolute top-6 right-6 text-white/70 hover:text-white bg-black/50 hover:bg-amber-600 rounded-full p-2 transition-colors z-[110]">
                                         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                                     </button>
@@ -676,10 +697,15 @@
                                         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
                                     </button>
 
-                                    <div class="w-full h-full flex flex-col items-center justify-center">
-                                        <template x-for="(url, index) in lightboxSlides" :key="index">
+                                    <div class="w-full h-full flex flex-col items-center justify-center" x-init="$watch('activeLightboxSlide', () => $el.querySelectorAll('video').forEach(v => v.pause()))">
+                                        <template x-for="(slide, index) in lightboxSlides" :key="index">
                                             <div x-show="activeLightboxSlide === index" x-transition.opacity.duration.300ms class="absolute inset-0 flex items-center justify-center p-4 md:p-12 z-[105]">
-                                                <img :src="url" class="max-h-[85vh] max-w-full object-contain rounded-lg shadow-2xl">
+                                                <template x-if="slide.type === 'video'">
+                                                    <video :src="slide.url" class="max-h-[85vh] max-w-full object-contain rounded-lg shadow-2xl" controls></video>
+                                                </template>
+                                                <template x-if="slide.type !== 'video'">
+                                                    <img :src="slide.url" class="max-h-[85vh] max-w-full object-contain rounded-lg shadow-2xl">
+                                                </template>
                                             </div>
                                         </template>
                                     </div>
