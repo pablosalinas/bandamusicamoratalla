@@ -357,14 +357,14 @@
     @endif
 
     <!-- Hero Section -->
-    <section id="inicio" class="relative min-h-[70vh] flex items-center justify-center overflow-hidden pt-10">
+    <section id="inicio" class="relative min-h-[40vh] flex items-center justify-center overflow-hidden py-8">
         <!-- Background Image & Gradient overlay -->
         <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1511192336575-5a79af67a629?q=80&w=2000&auto=format&fit=crop')] bg-cover bg-center opacity-30 transform scale-105 animate-[pulse_10s_ease-in-out_infinite_alternate]"></div>
         <div class="absolute inset-0 bg-gradient-to-b from-gray-950/40 via-gray-950/80 to-gray-950"></div>
         <div class="absolute inset-0 bg-gradient-to-r from-amber-900/20 to-transparent mix-blend-overlay"></div>
 
-        <div class="relative z-10 text-center max-w-4xl px-6 mt-10">
-            <div class="inline-flex flex-col sm:flex-row items-center justify-center px-5 py-2 mb-6 rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-400 text-sm font-semibold tracking-wide uppercase shadow-[0_0_10px_rgba(245,158,11,0.1)] gap-2">
+        <div class="relative z-10 text-center max-w-4xl px-6 mt-4">
+            <div class="inline-flex flex-col sm:flex-row items-center justify-center px-5 py-2 mb-4 rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-400 text-sm font-semibold tracking-wide uppercase shadow-[0_0_10px_rgba(245,158,11,0.1)] gap-2">
                 <span>Desde 1854</span>
                 <span class="hidden sm:inline text-amber-500/50">•</span>
                 <span>{{ date('Y') - 1854 + 1 }} años de historia</span>
@@ -382,15 +382,15 @@
                 $lowestOrderLogoSrc = str_starts_with($lowestOrderLogo, 'images/') ? asset($lowestOrderLogo) : asset('storage/' . $lowestOrderLogo);
             @endphp
             
-            <div class="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-8 mb-6">
-                <img src="{{ $lowestOrderLogoSrc }}" alt="Logo Banda de Música de Moratalla" class="w-24 h-24 md:w-32 md:h-32 object-contain rounded-full shadow-[0_0_20px_rgba(245,158,11,0.3)] border-2 border-amber-500/20 shrink-0">
-                <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight text-center md:text-left mb-0">
+            <div class="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-6 mb-4">
+                <img src="{{ $lowestOrderLogoSrc }}" alt="Logo Banda de Música de Moratalla" class="w-16 h-16 md:w-24 md:h-24 object-contain rounded-full shadow-[0_0_20px_rgba(245,158,11,0.3)] border-2 border-amber-500/20 shrink-0">
+                <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight text-center md:text-left mb-0">
                     El Alma Sonora de <br/>
                     <span class="text-gold">Moratalla</span>
                 </h1>
             </div>
             
-            <p class="text-lg md:text-2xl text-gray-300 mb-10 leading-relaxed font-light max-w-2xl mx-auto">
+            <p class="text-base md:text-lg text-gray-300 mb-4 leading-relaxed font-light max-w-2xl mx-auto">
                 Acompañamos cada momento especial de nuestro pueblo con pasión, dedicación y excelencia musical.
             </p>
         </div>
