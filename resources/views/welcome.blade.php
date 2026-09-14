@@ -431,9 +431,11 @@
                                 </div>
                             @endif
                             <div class="p-6 md:p-8 flex-1 flex flex-col">
+                                @if(!$item->event_date)
                                 <div class="text-xs text-amber-500 font-semibold tracking-wide uppercase mb-3">
                                     {{ $item->created_at->format('d/m/Y') }}
                                 </div>
+                                @endif
                                 <h3 class="text-xl font-bold text-white mb-4 line-clamp-2 group-hover:text-amber-400 transition-colors">{{ $item->title }}</h3>
                                 <p class="text-gray-400 leading-relaxed line-clamp-3 mb-6 flex-1">
                                     {{ Str::limit(html_entity_decode(strip_tags($item->content), ENT_QUOTES, 'UTF-8'), 120) }}
@@ -497,9 +499,11 @@
                                             
                                             <div class="prose prose-invert prose-amber max-w-none">
                                                 <div class="flex items-center gap-4 text-sm text-gray-400 mb-6 border-b border-gray-800 pb-4">
-                                                    <span>📅 Publicado: {{ $item->created_at->format('d/m/Y') }}</span>
+                                                    @if(!$item->event_date)
+                                                        <span>📅 Publicado: {{ $item->created_at->format('d/m/Y') }}</span>
+                                                    @endif
                                                     @if($item->event_date)
-                                                        <span class="text-amber-500 font-medium">🎯 Evento: {{ $item->event_date->format('d/m/Y') }}</span>
+                                                        <span class="text-amber-500 font-medium">🎫 Evento: {{ $item->event_date->format('d/m/Y') }}</span>
                                                     @endif
                                                 </div>
                                                 {!! $item->content !!}

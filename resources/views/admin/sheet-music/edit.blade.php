@@ -319,6 +319,15 @@
                             instAliases.push(instNormalized.replace('bombardino', 'eufonio'));
                             instAliases.push(instNormalized.replace('bombardino', 'euphonium'));
                             instAliases.push(instNormalized.replace('bombardino', 'eufonium'));
+                            
+                            // Por defecto Bombardino en DO
+                            if (instNormalized.includes('do')) {
+                                instAliases.push('bombardino');
+                                instAliases.push('bombardin');
+                                instAliases.push('eufonio');
+                                instAliases.push('euphonium');
+                                instAliases.push('eufonium');
+                            }
                         }
                         if (instNormalized.includes('tuba') && instNormalized.includes('do')) {
                             instAliases.push('tuba');
@@ -413,10 +422,10 @@
                     }
                     
                     let matchedType = 'TODOS'; 
-                    if (fileNormalized.match(/(?:^|[^0-9])1(?:st|o|a|er|º|ª)?(?:[^a-z0-9]|$)/i) || fileNormalized.includes('primero') || fileNormalized.includes('primera')) matchedType = '1º';
-                    else if (fileNormalized.match(/(?:^|[^0-9])2(?:nd|o|a|do|º|ª)?(?:[^a-z0-9]|$)/i) || fileNormalized.includes('segundo') || fileNormalized.includes('segunda')) matchedType = '2º';
-                    else if (fileNormalized.match(/(?:^|[^0-9])3(?:rd|o|a|er|ro|º|ª)?(?:[^a-z0-9]|$)/i) || fileNormalized.includes('tercero') || fileNormalized.includes('tercera')) matchedType = '3º';
-                    else if (fileNormalized.match(/(?:^|[^0-9])4(?:th|o|a|to|º|ª)?(?:[^a-z0-9]|$)/i) || fileNormalized.includes('cuarto') || fileNormalized.includes('cuarta')) matchedType = '4º';
+                    if (fileNormalized.match(/(?:^|[^a-z0-9])(?:1(?:st|o|a|er|º|ª)?|i)(?:[^a-z0-9]|$)/i) || fileNormalized.includes('primero') || fileNormalized.includes('primera')) matchedType = '1º';
+                    else if (fileNormalized.match(/(?:^|[^a-z0-9])(?:2(?:nd|o|a|do|º|ª)?|ii)(?:[^a-z0-9]|$)/i) || fileNormalized.includes('segundo') || fileNormalized.includes('segunda')) matchedType = '2º';
+                    else if (fileNormalized.match(/(?:^|[^a-z0-9])(?:3(?:rd|o|a|er|ro|º|ª)?|iii)(?:[^a-z0-9]|$)/i) || fileNormalized.includes('tercero') || fileNormalized.includes('tercera')) matchedType = '3º';
+                    else if (fileNormalized.match(/(?:^|[^a-z0-9])(?:4(?:th|o|a|to|º|ª)?|iv)(?:[^a-z0-9]|$)/i) || fileNormalized.includes('cuarto') || fileNormalized.includes('cuarta')) matchedType = '4º';
                     else if (fileNormalized.includes('principal') || fileNormalized.includes('pral') || fileNormalized.match(/\bsolo\b/i)) matchedType = 'PRINCIPAL';
                     
                     let isAlreadyUploaded = false;
