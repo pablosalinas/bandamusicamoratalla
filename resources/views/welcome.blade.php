@@ -397,78 +397,11 @@
     </section>
 
 
-    <!-- Historia Section -->
-    <section id="historia" class="py-12 relative">
-        <div class="max-w-7xl mx-auto px-6 lg:px-8">
-            <div class="text-center mb-8">
-                <h2 class="text-3xl md:text-5xl font-bold mb-4">Historia de la Banda</h2>
-                <div class="h-1 w-20 bg-amber-500 mx-auto rounded-full"></div>
-            </div>
-
-            <div class="glass-panel p-8 rounded-2xl flex flex-col md:flex-row gap-8 items-start">
-                @if(isset($bandHistoryImages) && $bandHistoryImages->count() > 0)
-                    <div class="w-full md:w-1/3 flex-shrink-0" x-data="{ openLightbox: false, activeSlide: 0, slides: {{ json_encode($bandHistoryImages->map(function($i) { return ['url' => $i->url, 'desc' => $i->description]; })) }} }">
-                        <div class="relative rounded-xl overflow-hidden shadow-lg border border-gray-800 cursor-pointer group" @click="openLightbox = true; activeSlide = 0">
-                            <img src="{{ $bandHistoryImages->first()->url }}" alt="Historia" class="w-full aspect-[4/3] object-cover transition-transform duration-500 group-hover:scale-105">
-                            <div class="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-colors"></div>
-                            
-                            @if($bandHistoryImages->count() > 1)
-                                <div class="absolute bottom-4 right-4 bg-amber-600/90 backdrop-blur-sm text-white px-3 py-1.5 rounded-full text-sm font-semibold flex items-center shadow-lg">
-                                    <svg class="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                                    Ver {{ $bandHistoryImages->count() }} fotos
-                                </div>
-                            @endif
-                        </div>
-                        
-                        <template x-teleport="body">
-                            <div x-show="openLightbox" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-sm" style="display: none;" @keydown.escape.window="openLightbox = false" @keydown.right.window="activeSlide = (activeSlide + 1) % slides.length" @keydown.left.window="activeSlide = (activeSlide - 1 + slides.length) % slides.length">
-                                <button @click="openLightbox = false" class="absolute top-6 right-6 text-white/70 hover:text-white bg-black/50 hover:bg-amber-600 rounded-full p-2 transition-colors z-[110]">
-                                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                                </button>
-                                
-                                <button x-show="slides.length > 1" @click="activeSlide = (activeSlide - 1 + slides.length) % slides.length" class="absolute left-6 top-1/2 -translate-y-1/2 text-white/70 hover:text-white bg-black/50 hover:bg-amber-600 rounded-full p-3 transition-colors z-[110]">
-                                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
-                                </button>
-                                
-                                <button x-show="slides.length > 1" @click="activeSlide = (activeSlide + 1) % slides.length" class="absolute right-6 top-1/2 -translate-y-1/2 text-white/70 hover:text-white bg-black/50 hover:bg-amber-600 rounded-full p-3 transition-colors z-[110]">
-                                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-                                </button>
-
-                                <div class="w-full h-full flex flex-col items-center justify-center">
-                                    <template x-for="(slide, index) in slides" :key="index">
-                                        <div x-show="activeSlide === index" x-transition.opacity.duration.300ms class="absolute inset-0 flex flex-col items-center justify-center p-4 md:p-12 z-[105]">
-                                            <img :src="slide.url" class="max-h-[75vh] max-w-full object-contain rounded-lg shadow-2xl">
-                                            <p x-show="slide.desc" class="mt-4 text-white text-base md:text-lg font-medium text-center bg-black/70 px-6 py-2 rounded-full backdrop-blur-sm" x-text="slide.desc"></p>
-                                        </div>
-                                    </template>
-                                </div>
-                                
-                                <div x-show="slides.length > 1" class="absolute bottom-8 left-1/2 -translate-x-1/2 flex space-x-3 bg-black/40 px-4 py-2 rounded-full backdrop-blur-sm z-[110]">
-                                    <template x-for="(_, index) in slides" :key="index">
-                                        <button @click="activeSlide = index" class="w-3 h-3 rounded-full transition-colors" :class="activeSlide === index ? 'bg-amber-500' : 'bg-white/40 hover:bg-white/60'"></button>
-                                    </template>
-                                </div>
-                            </div>
-                        </template>
-                    </div>
-                @endif
-
-                <div class="prose prose-invert prose-amber flex-1 max-w-none text-gray-300 leading-relaxed">
-                    @if(empty($band_history))
-                        <p class="text-gray-400 italic text-center">La historia de la banda aún no ha sido publicada.</p>
-                    @else
-                        {!! $band_history !!}
-                    @endif
-                </div>
-            </div>
-        </div>
-    </section>
-
     <!-- Noticias Section -->
     <section id="noticias" class="py-12 relative bg-gray-950/50">
         <div class="max-w-7xl mx-auto px-6 lg:px-8">
             <div class="text-center mb-8">
-                <h2 class="text-3xl md:text-5xl font-bold mb-4">Últimas Noticias</h2>
+                <h2 class="text-3xl md:text-5xl font-bold mb-4">Noticias y Eventos</h2>
                 <div class="h-1 w-20 bg-amber-500 mx-auto rounded-full"></div>
                 <p class="mt-6 text-gray-400 max-w-2xl mx-auto text-lg">
                     Mantente informado sobre nuestros conciertos, eventos y novedades de la banda.
@@ -566,6 +499,73 @@
                     <p>No hay noticias disponibles en este momento.</p>
                 </div>
             @endif
+        </div>
+    </section>
+
+    <!-- Historia Section -->
+    <section id="historia" class="py-12 relative">
+        <div class="max-w-7xl mx-auto px-6 lg:px-8">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl md:text-5xl font-bold mb-4">Historia de la Banda</h2>
+                <div class="h-1 w-20 bg-amber-500 mx-auto rounded-full"></div>
+            </div>
+
+            <div class="glass-panel p-8 rounded-2xl flex flex-col md:flex-row gap-8 items-start">
+                @if(isset($bandHistoryImages) && $bandHistoryImages->count() > 0)
+                    <div class="w-full md:w-1/3 flex-shrink-0" x-data="{ openLightbox: false, activeSlide: 0, slides: {{ json_encode($bandHistoryImages->map(function($i) { return ['url' => $i->url, 'desc' => $i->description]; })) }} }">
+                        <div class="relative rounded-xl overflow-hidden shadow-lg border border-gray-800 cursor-pointer group" @click="openLightbox = true; activeSlide = 0">
+                            <img src="{{ $bandHistoryImages->first()->url }}" alt="Historia" class="w-full aspect-[4/3] object-cover transition-transform duration-500 group-hover:scale-105">
+                            <div class="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-colors"></div>
+                            
+                            @if($bandHistoryImages->count() > 1)
+                                <div class="absolute bottom-4 right-4 bg-amber-600/90 backdrop-blur-sm text-white px-3 py-1.5 rounded-full text-sm font-semibold flex items-center shadow-lg">
+                                    <svg class="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                    Ver {{ $bandHistoryImages->count() }} fotos
+                                </div>
+                            @endif
+                        </div>
+                        
+                        <template x-teleport="body">
+                            <div x-show="openLightbox" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-sm" style="display: none;" @keydown.escape.window="openLightbox = false" @keydown.right.window="activeSlide = (activeSlide + 1) % slides.length" @keydown.left.window="activeSlide = (activeSlide - 1 + slides.length) % slides.length">
+                                <button @click="openLightbox = false" class="absolute top-6 right-6 text-white/70 hover:text-white bg-black/50 hover:bg-amber-600 rounded-full p-2 transition-colors z-[110]">
+                                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                </button>
+                                
+                                <button x-show="slides.length > 1" @click="activeSlide = (activeSlide - 1 + slides.length) % slides.length" class="absolute left-6 top-1/2 -translate-y-1/2 text-white/70 hover:text-white bg-black/50 hover:bg-amber-600 rounded-full p-3 transition-colors z-[110]">
+                                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                                </button>
+                                
+                                <button x-show="slides.length > 1" @click="activeSlide = (activeSlide + 1) % slides.length" class="absolute right-6 top-1/2 -translate-y-1/2 text-white/70 hover:text-white bg-black/50 hover:bg-amber-600 rounded-full p-3 transition-colors z-[110]">
+                                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                                </button>
+
+                                <div class="w-full h-full flex flex-col items-center justify-center">
+                                    <template x-for="(slide, index) in slides" :key="index">
+                                        <div x-show="activeSlide === index" x-transition.opacity.duration.300ms class="absolute inset-0 flex flex-col items-center justify-center p-4 md:p-12 z-[105]">
+                                            <img :src="slide.url" class="max-h-[75vh] max-w-full object-contain rounded-lg shadow-2xl">
+                                            <p x-show="slide.desc" class="mt-4 text-white text-base md:text-lg font-medium text-center bg-black/70 px-6 py-2 rounded-full backdrop-blur-sm" x-text="slide.desc"></p>
+                                        </div>
+                                    </template>
+                                </div>
+                                
+                                <div x-show="slides.length > 1" class="absolute bottom-8 left-1/2 -translate-x-1/2 flex space-x-3 bg-black/40 px-4 py-2 rounded-full backdrop-blur-sm z-[110]">
+                                    <template x-for="(_, index) in slides" :key="index">
+                                        <button @click="activeSlide = index" class="w-3 h-3 rounded-full transition-colors" :class="activeSlide === index ? 'bg-amber-500' : 'bg-white/40 hover:bg-white/60'"></button>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                @endif
+
+                <div class="prose prose-invert prose-amber flex-1 max-w-none text-gray-300 leading-relaxed">
+                    @if(empty($band_history))
+                        <p class="text-gray-400 italic text-center">La historia de la banda aún no ha sido publicada.</p>
+                    @else
+                        {!! $band_history !!}
+                    @endif
+                </div>
+            </div>
         </div>
     </section>
 
