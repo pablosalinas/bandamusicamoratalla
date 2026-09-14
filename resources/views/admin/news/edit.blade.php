@@ -95,7 +95,7 @@
                     <div class="sm:col-span-6">
                         <label for="news_image" class="block text-sm font-medium leading-6 text-white">Subir nueva imagen</label>
                         <div class="mt-2 flex items-center gap-4">
-                            <input type="file" name="image" id="news_image" accept="image/*" required class="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-gray-800 file:text-amber-500 hover:file:bg-gray-700">
+                            <input type="file" name="image" id="news_image" accept="image/*,video/*" required class="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-gray-800 file:text-amber-500 hover:file:bg-gray-700">
                             <button type="submit" class="rounded-md bg-amber-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-amber-500">
                                 Añadir Imagen
                             </button>

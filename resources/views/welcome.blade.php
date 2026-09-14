@@ -411,10 +411,22 @@
             @if($news->count() > 0)
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                     @foreach($news as $item)
-                        <div x-data="{ openNews: false, activeNewsSlide: 0, newsSlides: {{ json_encode($item->newsImages->map(function($i) { return ['url' => $i->url, 'desc' => $i->description]; })) }} }" class="glass-panel rounded-2xl overflow-hidden hover:shadow-[0_0_30px_rgba(245,158,11,0.1)] transition-all duration-500 transform hover:-translate-y-2 flex flex-col cursor-pointer group" @click="openNews = true">
+                          <div x-data="{ openNews: false, activeNewsSlide: 0, newsSlides: {{ json_encode($item->newsImages->map(function($i) { 
+                              $ext = strtolower(pathinfo($i->url, PATHINFO_EXTENSION));
+                              $isVideo = in_array($ext, ['mp4', 'mov', 'webm', 'avi']);
+                              return ['url' => $i->url, 'desc' => $i->description, 'type' => $isVideo ? 'video' : 'image']; 
+                          })) }} }" class="glass-panel rounded-2xl overflow-hidden hover:shadow-[0_0_30px_rgba(245,158,11,0.1)] transition-all duration-500 transform hover:-translate-y-2 flex flex-col cursor-pointer group" @click="openNews = true">
                             @if($item->mainImage)
+                                @php
+                                    $mainExt = strtolower(pathinfo($item->mainImage->url, PATHINFO_EXTENSION));
+                                    $mainIsVideo = in_array($mainExt, ['mp4', 'mov', 'webm', 'avi']);
+                                @endphp
                                 <div class="h-48 w-full overflow-hidden relative">
-                                    <img src="{{ $item->mainImage->url }}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                                    @if($mainIsVideo)
+                                        <video src="{{ $item->mainImage->url }}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" muted loop autoplay playsinline></video>
+                                    @else
+                                        <img src="{{ $item->mainImage->url }}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                                    @endif
                                     <div class="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-colors"></div>
                                 </div>
                             @endif
@@ -457,7 +469,12 @@
                                                 <div class="relative rounded-xl overflow-hidden bg-black mb-8 aspect-video flex items-center justify-center group/carousel">
                                                     <template x-for="(slide, index) in newsSlides" :key="index">
                                                         <div x-show="activeNewsSlide === index" x-transition.opacity class="absolute inset-0 flex flex-col items-center justify-center">
-                                                            <img :src="slide.url" class="max-w-full max-h-full object-contain">
+                                                            <template x-if="slide.type === 'image'">
+                                                                <img :src="slide.url" class="max-w-full max-h-full object-contain">
+                                                            </template>
+                                                            <template x-if="slide.type === 'video'">
+                                                                <video :src="slide.url" class="max-w-full max-h-full object-contain" controls></video>
+                                                            </template>
                                                             <p x-show="slide.desc" class="absolute bottom-4 text-white text-sm md:text-base bg-black/70 px-4 py-1.5 rounded-full backdrop-blur-sm" x-text="slide.desc"></p>
                                                         </div>
                                                     </template>

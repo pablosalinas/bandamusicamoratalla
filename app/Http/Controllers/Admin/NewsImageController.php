@@ -12,7 +12,7 @@ class NewsImageController extends Controller
     public function store(Request $request, NewsActivity $news)
     {
         $request->validate([
-            'image' => 'required|image|mimes:jpg,jpeg,png,webp|max:10240',
+            'image' => 'required|file|mimes:jpg,jpeg,png,webp,mp4,mov,avi,webm|max:30720',
         ]);
 
         $file = $request->file('image');
