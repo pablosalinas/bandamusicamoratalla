@@ -280,7 +280,7 @@
                                 </template>
                                 
                                 <template x-if="slide.description">
-                                    <div class="absolute bottom-4 left-0 right-0 mx-auto w-11/12 text-center">
+                                    <div class="absolute top-4 left-0 right-0 mx-auto w-11/12 text-center z-[110]">
                                         <div class="inline-block bg-black/60 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-white/10 shadow-lg">
                                             <p class="text-white text-sm md:text-base font-medium tracking-wide drop-shadow-md line-clamp-2" x-text="slide.description"></p>
                                         </div>
@@ -339,7 +339,7 @@
                         </template>
                         
                         <template x-if="slide.description">
-                            <div class="absolute bottom-10 left-0 right-0 mx-auto w-11/12 max-w-3xl text-center">
+                            <div class="absolute top-10 left-0 right-0 mx-auto w-11/12 max-w-3xl text-center z-[110]">
                                 <div class="inline-block bg-black/70 backdrop-blur-md px-8 py-4 rounded-xl border border-white/20 shadow-2xl">
                                     <p class="text-white text-xl md:text-2xl font-semibold tracking-wide drop-shadow-lg" x-text="slide.description"></p>
                                 </div>
@@ -475,7 +475,7 @@
                                                             <template x-if="slide.type === 'video'">
                                                                 <video :src="slide.url" class="max-w-full max-h-full object-contain" controls></video>
                                                             </template>
-                                                            <p x-show="slide.desc" class="absolute bottom-4 text-white text-sm md:text-base bg-black/70 px-4 py-1.5 rounded-full backdrop-blur-sm" x-text="slide.desc"></p>
+                                                            <p x-show="slide.desc" class="absolute top-4 text-white text-sm md:text-base bg-black/70 px-4 py-1.5 rounded-full backdrop-blur-sm z-[110]" x-text="slide.desc"></p>
                                                         </div>
                                                     </template>
                                                     
@@ -569,7 +569,7 @@
                                             <template x-if="slide.type !== 'video'">
                                                 <img :src="slide.url" class="max-h-[75vh] max-w-full object-contain rounded-lg shadow-2xl">
                                             </template>
-                                            <p x-show="slide.desc" class="mt-4 text-white text-base md:text-lg font-medium text-center bg-black/70 px-6 py-2 rounded-full backdrop-blur-sm" x-text="slide.desc"></p>
+                                            <p x-show="slide.desc" class="absolute top-6 text-white text-base md:text-lg font-medium text-center bg-black/70 px-6 py-2 rounded-full backdrop-blur-sm z-[110]" x-text="slide.desc"></p>
                                         </div>
                                     </template>
                                 </div>
