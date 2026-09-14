@@ -419,9 +419,12 @@
                             if (!isSubset) {
                                 let isDuplicate = false;
                                 for (let i = 0; i < matchedInstrumentsArr.length; i++) {
-                                    if (matchedInstrumentsArr[i].name.toLowerCase() === inst.name.toLowerCase()) {
+                                    let existName = matchedInstrumentsArr[i].name.toLowerCase();
+                                    let newName = inst.name.toLowerCase();
+                                    
+                                    if (existName === newName || matchedAliases[i] === foundAlias || matchedAliases[i].includes(foundAlias) || foundAlias.includes(matchedAliases[i])) {
                                         isDuplicate = true;
-                                        if (inst.name === inst.name.toUpperCase()) {
+                                        if (inst.name === inst.name.toUpperCase() && existName === newName) {
                                             matchedInstrumentsArr[i] = inst;
                                         }
                                         break;
