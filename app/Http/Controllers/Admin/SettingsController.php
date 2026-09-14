@@ -123,7 +123,7 @@ class SettingsController extends Controller
     {
         $request->validate([
             'media' => 'required|array',
-            'media.*' => 'file|mimes:jpeg,png,jpg,gif,mp4,mov,avi|max:51200' // Max 50MB per file
+            'media.*' => 'file|mimes:jpeg,png,jpg,gif,mp4,mov,avi|max:30720' // Max 30MB per file
         ]);
 
         if ($request->hasFile('media')) {
@@ -172,7 +172,7 @@ class SettingsController extends Controller
     {
         $request->validate([
             'logos' => 'required|array',
-            'logos.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:5120'
+            'logos.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:10240'
         ]);
 
         $rawLogos = json_decode(\App\Models\SiteSetting::getSetting('site_logos', '[]'), true) ?: [];

@@ -424,7 +424,7 @@
                                 </div>
                                 <h3 class="text-xl font-bold text-white mb-4 line-clamp-2 group-hover:text-amber-400 transition-colors">{{ $item->title }}</h3>
                                 <p class="text-gray-400 leading-relaxed line-clamp-3 mb-6 flex-1">
-                                    {{ Str::limit(strip_tags($item->content), 120) }}
+                                    {{ Str::limit(html_entity_decode(strip_tags($item->content), ENT_QUOTES, 'UTF-8'), 120) }}
                                 </p>
                                 @if($item->event_date)
                                 <div class="mt-auto pt-4 border-t border-gray-800 flex items-center text-sm text-gray-300">

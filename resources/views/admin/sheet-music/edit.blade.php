@@ -1,4 +1,4 @@
-﻿<x-admin-layout>
+<x-admin-layout>
     <x-slot name="header">
         <div class="sm:flex sm:items-center">
             <div class="sm:flex-auto">
@@ -286,7 +286,14 @@
                 
                 for (let i = 0; i < files.length; i++) {
                     const file = files[i];
-                    let fileNormalized = file.name.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+                    
+                    // Ignorar archivos de sistema (Apple .DS_Store, Android, etc) y carpetas MACOSX
+                    if (file.name.startsWith('.') || (file.webkitRelativePath && file.webkitRelativePath.includes('__MACOSX'))) continue;
+                    
+                    // Procesar solo PDF o imágenes
+                    if (!file.name.match(/\.(pdf|jpg|jpeg|png|webp|bmp)$/i)) continue;
+
+                    let fileNormalized = file.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
                     
                     let matchedInstrumentsArr = [];
                     let matchedAliases = [];
@@ -295,7 +302,18 @@
                         let instNormalized = inst.name.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
                         let instAliases = [instNormalized];
                         
-                        if (instNormalized.includes('trompa')) instAliases.push(instNormalized.replace('trompa', 'tompa'));
+                        if (instNormalized.includes('trompa')) {
+                            instAliases.push(instNormalized.replace('trompa', 'tompa'));
+                            instAliases.push(instNormalized.replace('trompa', 'horn'));
+                            // Si la trompa es en FA, le añadimos alias genéricos para atrapar partituras sin tono
+                            if (instNormalized.includes('fa')) {
+                                instAliases.push('trompa');
+                                instAliases.push('trompas');
+                                instAliases.push('horn');
+                                instAliases.push('french horn');
+                                instAliases.push('corno');
+                            }
+                        }
                         if (instNormalized.includes('bombardino')) {
                             instAliases.push(instNormalized.replace('bombardino', 'bombardin'));
                             instAliases.push(instNormalized.replace('bombardino', 'eufonio'));

@@ -11,7 +11,7 @@ class BandHistoryImageController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'image' => 'required|image|mimes:jpg,jpeg,png,webp|max:5120',
+            'image' => 'required|image|mimes:jpg,jpeg,png,webp|max:10240',
         ]);
 
         $file = $request->file('image');

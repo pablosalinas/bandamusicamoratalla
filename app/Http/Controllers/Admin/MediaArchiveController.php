@@ -34,7 +34,7 @@ class MediaArchiveController extends Controller
                 'required',
                 'file',
                 function ($attribute, $value, $fail) use ($request) {
-                    $maxSize = 20480; // 20MB for both video and audio
+                    $maxSize = 30720; // 30MB for both video and audio
                     if ($value->getSize() > $maxSize * 1024) {
                         $fail("El archivo no debe ser mayor de {$maxSize} KB.");
                     }
@@ -57,7 +57,7 @@ class MediaArchiveController extends Controller
                 }
             ],
             'images' => 'nullable|array',
-            'images.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:5120'
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:10240'
         ]);
 
         $path = $request->file('file')->store('media_archive', 'public');
@@ -102,7 +102,7 @@ class MediaArchiveController extends Controller
             'music_type' => 'nullable|string|max:255',
             'performance_date' => 'nullable|date',
             'images' => 'nullable|array',
-            'images.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:5120'
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:10240'
         ]);
 
         $mediaArchive->update([

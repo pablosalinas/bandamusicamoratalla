@@ -30,7 +30,7 @@ class BudgetMovementController extends Controller
             'type' => 'required|in:income,expense',
             'description' => 'required|string|max:255',
             'amount' => 'required|numeric|min:0.01',
-            'document' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'document' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
         ]);
 
         $data = [
@@ -96,7 +96,7 @@ class BudgetMovementController extends Controller
             'type' => 'required|in:income,expense',
             'description' => 'required|string|max:255',
             'amount' => 'required|numeric|min:0.01',
-            'document' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'document' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
         ]);
 
         $data = [
