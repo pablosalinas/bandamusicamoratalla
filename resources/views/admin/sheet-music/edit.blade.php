@@ -585,7 +585,7 @@
                 
                 for (let input of filesToUpload) {
                     current++;
-                    submitBtn.innerText = "Subiendo archivo " + current + " de " + total + " (pausa 3s)...";
+                    submitBtn.innerText = "Subiendo archivo " + current + " de " + total + " (pausa 1s)...";
                     
                     let uuid = input.getAttribute('data-uuid');
                     let formData = new FormData();
