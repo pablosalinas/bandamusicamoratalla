@@ -619,7 +619,7 @@
                     input.value = ''; 
                     
                     if (current < total) {
-                        await new Promise(r => setTimeout(r, 3000));
+                        await new Promise(r => setTimeout(r, 1000));
                     }
                 }
                 
