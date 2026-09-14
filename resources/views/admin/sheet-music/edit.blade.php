@@ -389,6 +389,8 @@
                                     // skip "bajo" if it's actually "contrabajo"
                                 } else if (alias === 'bass' && fileNormalized.includes('contrabass')) {
                                     // skip
+                                } else if (alias === 'corno' && (fileNormalized.includes('fliscorno') || fileNormalized.includes('fiscorn') || fileNormalized.includes('corno ingles'))) {
+                                    // skip
                                 } else {
                                     found = true; foundAlias = alias; break;
                                 }
@@ -421,6 +423,28 @@
                         }
                     }
                     
+                    let isNewProposal = false;
+                    if (matchedInstrumentsArr.length === 0) {
+                        let proposedName = file.name
+                            .replace(/\.[^/.]+$/, "") // Quitar extensión
+                            .replace(/(?:^|\s)(?:1(?:st|o|a|er|º|ª)?|2(?:nd|o|a|do|º|ª)?|3(?:rd|o|a|er|ro|º|ª)?|4(?:th|o|a|to|º|ª)?|i|ii|iii|iv)(?:\s|$)/gi, " ") // Quitar tipo
+                            .replace(/[-_]/g, " ") // Cambiar guiones por espacios
+                            .replace(/\b(sol|fa|do|re|mi|la|si|mib|sib|lab|bemol|sostenido)\b/gi, "") // Quitar tonos
+                            .replace(/\b(en|principal|pral|solo)\b/gi, "") // Quitar palabras comunes
+                            .replace(/\d+/g, "") // Quitar numeros restantes
+                            .replace(/\s+/g, " ")
+                            .trim();
+                            
+                        if (proposedName) {
+                            proposedName = proposedName.charAt(0).toUpperCase() + proposedName.slice(1).toLowerCase();
+                            if (proposedName.toLowerCase() === 'guitarra española' || proposedName.toLowerCase() === 'guitarra espanola') {
+                                proposedName = 'Guitarra';
+                            }
+                            matchedInstrumentsArr.push({ originalName: proposedName, isNew: true });
+                            isNewProposal = true;
+                        }
+                    }
+
                     let matchedType = 'TODOS'; 
                     if (fileNormalized.match(/(?:^|[^a-z0-9])(?:1(?:st|o|a|er|º|ª)?|i)(?:[^a-z0-9]|$)/i) || fileNormalized.includes('primero') || fileNormalized.includes('primera')) matchedType = '1º';
                     else if (fileNormalized.match(/(?:^|[^a-z0-9])(?:2(?:nd|o|a|do|º|ª)?|ii)(?:[^a-z0-9]|$)/i) || fileNormalized.includes('segundo') || fileNormalized.includes('segunda')) matchedType = '2º';
@@ -443,6 +467,8 @@
                     
                     if (isAlreadyUploaded) {
                         tr.className = "bg-green-900/30 border-l-4 border-green-500";
+                    } else if (isNewProposal) {
+                        tr.className = "bg-amber-900/30 border-l-4 border-amber-500";
                     } else {
                         tr.className = "border-l-4 border-transparent";
                     }
