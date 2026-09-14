@@ -424,8 +424,8 @@
                     }
                     
                     let isNewProposal = false;
-                    if (matchedInstrumentsArr.length === 0) {
-                        let proposedName = file.name
+                    if (matchedInstrumentsArr.length < 3) {
+                        let cleanedName = file.name
                             .replace(/\.[^/.]+$/, "") // Quitar extensión
                             .replace(/(?:^|\s)(?:1(?:st|o|a|er|º|ª)?|2(?:nd|o|a|do|º|ª)?|3(?:rd|o|a|er|ro|º|ª)?|4(?:th|o|a|to|º|ª)?|i|ii|iii|iv)(?:\s|$)/gi, " ") // Quitar tipo
                             .replace(/[-_]/g, " ") // Cambiar guiones por espacios
@@ -433,15 +433,31 @@
                             .replace(/\b(en|principal|pral|solo)\b/gi, "") // Quitar palabras comunes
                             .replace(/\d+/g, "") // Quitar numeros restantes
                             .replace(/\s+/g, " ")
-                            .trim();
-                            
-                        if (proposedName) {
-                            proposedName = proposedName.charAt(0).toUpperCase() + proposedName.slice(1).toLowerCase();
-                            if (proposedName.toLowerCase() === 'guitarra española' || proposedName.toLowerCase() === 'guitarra espanola') {
-                                proposedName = 'Guitarra';
+                            .trim()
+                            .toLowerCase();
+
+                        // Quitar aliases ya encontrados
+                        for (let alias of matchedAliases) {
+                            let escapedAlias = alias.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                            cleanedName = cleanedName.replace(new RegExp('\\b' + escapedAlias + '\\b', 'gi'), " ");
+                        }
+
+                        // Separar por conectores
+                        let leftoverParts = cleanedName.split(/[,&/+]+|\by\b|\bo\b|\be\b|\bor\b|\band\b/gi);
+
+                        for (let part of leftoverParts) {
+                            part = part.trim();
+                            if (part.length > 2) {
+                                part = part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
+                                if (part.toLowerCase() === 'guitarra' || part.toLowerCase() === 'guitarra espanola') {
+                                    part = 'Guitarra española';
+                                }
+                                
+                                if (matchedInstrumentsArr.length < 3) {
+                                    matchedInstrumentsArr.push({ originalName: part, isNew: true });
+                                    isNewProposal = true;
+                                }
                             }
-                            matchedInstrumentsArr.push({ originalName: proposedName, isNew: true });
-                            isNewProposal = true;
                         }
                     }
 
