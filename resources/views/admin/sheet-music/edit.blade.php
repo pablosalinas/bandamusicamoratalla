@@ -422,9 +422,12 @@
                                     let existName = matchedInstrumentsArr[i].name.toLowerCase();
                                     let newName = inst.name.toLowerCase();
                                     
-                                    if (existName === newName || matchedAliases[i] === foundAlias || matchedAliases[i].includes(foundAlias) || foundAlias.includes(matchedAliases[i])) {
+                                    let canonicalExist = existName.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/saxofones/g, 'saxos').replace(/saxofon/g, 'saxo').replace(/eufonio|euphonium|bombardino/g, 'eufonium').replace(/\btuba\b/g, 'bajo').replace(/\s+/g, ' ').trim();
+                                    let canonicalNew = newName.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/saxofones/g, 'saxos').replace(/saxofon/g, 'saxo').replace(/eufonio|euphonium|bombardino/g, 'eufonium').replace(/\btuba\b/g, 'bajo').replace(/\s+/g, ' ').trim();
+                                    
+                                    if (canonicalExist === canonicalNew || canonicalExist.includes(canonicalNew) || canonicalNew.includes(canonicalExist) || matchedAliases[i] === foundAlias || matchedAliases[i].includes(foundAlias) || foundAlias.includes(matchedAliases[i])) {
                                         isDuplicate = true;
-                                        if (inst.name === inst.name.toUpperCase() && existName === newName) {
+                                        if (inst.name === inst.name.toUpperCase() && canonicalExist === canonicalNew) {
                                             matchedInstrumentsArr[i] = inst;
                                         }
                                         break;
@@ -442,7 +445,7 @@
                     if (matchedInstrumentsArr.length < 3) {
                         let cleanedName = file.name
                             .replace(/\.[^/.]+$/, "") // Quitar extensión
-                            .replace(/(?:^|\s)(?:1(?:st|o|a|er|º|ª)?|2(?:nd|o|a|do|º|ª)?|3(?:rd|o|a|er|ro|º|ª)?|4(?:th|o|a|to|º|ª)?|i|ii|iii|iv)(?:\s|$)/gi, " ") // Quitar tipo
+                            .replace(/(?:^|\s|,|_|-)(?:1(?:st|o|a|er|º|ª)?|2(?:nd|o|a|do|º|ª)?|3(?:rd|o|a|er|ro|º|ª)?|4(?:th|o|a|to|º|ª)?|i|ii|iii|iv)(?:\s|,|_|-|$)/gi, " ") // Quitar tipo
                             .replace(/[-_]/g, " ") // Cambiar guiones por espacios
                             .replace(/\b(sol|fa|do|re|mi|la|si|mib|sib|lab|bemol|sostenido)\b/gi, "") // Quitar tonos
                             .replace(/\b(en|principal|pral|solo)\b/gi, "") // Quitar palabras comunes
@@ -462,7 +465,8 @@
 
                         for (let part of leftoverParts) {
                             part = part.trim();
-                            if (part.length > 2) {
+                            let alphaOnly = part.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ]/g, '').toLowerCase();
+                            if (part.length > 2 && alphaOnly.length > 2 && !/^(uno|dos|tres|cuatro|cinco|seis)$/.test(alphaOnly) && !/^(iii|iv|v|vi|vii|viii|ix|x)$/.test(alphaOnly)) {
                                 if (part.toLowerCase() === 'guitarra' || part.toLowerCase() === 'guitarra espanola' || part.toLowerCase() === 'guitarra española') {
                                     part = 'GUITARRA ESPAÑOLA';
                                 } else {
