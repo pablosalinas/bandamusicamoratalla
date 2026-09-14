@@ -464,7 +464,7 @@
                         let leftoverParts = cleanedName.split(/[,&/+]+|\by\b|\bo\b|\be\b|\bor\b|\band\b/gi);
 
                         for (let part of leftoverParts) {
-                            part = part.trim();
+                            part = part.replace(/\.(pdf|jpg|jpeg|png|webp|bmp)/gi, '').replace(/[()[\]{}_-]/g, ' ').replace(/\s+/g, ' ').trim();
                             let alphaOnly = part.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ]/g, '').toLowerCase();
                             if (part.length > 2 && alphaOnly.length > 2 && !/^(uno|dos|tres|cuatro|cinco|seis)$/.test(alphaOnly) && !/^(iii|iv|v|vi|vii|viii|ix|x)$/.test(alphaOnly)) {
                                 if (part.toLowerCase() === 'guitarra' || part.toLowerCase() === 'guitarra espanola' || part.toLowerCase() === 'guitarra española') {
