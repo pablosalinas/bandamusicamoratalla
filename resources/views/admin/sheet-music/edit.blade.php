@@ -318,8 +318,15 @@
                             instAliases.push(instNormalized.replace('bombardino', 'bombardin'));
                             instAliases.push(instNormalized.replace('bombardino', 'eufonio'));
                             instAliases.push(instNormalized.replace('bombardino', 'euphonium'));
+                            instAliases.push(instNormalized.replace('bombardino', 'eufonium'));
                         }
-                        if (instNormalized.includes('tuba') && instNormalized.includes('do')) instAliases.push('tuba'); 
+                        if (instNormalized.includes('tuba') && instNormalized.includes('do')) {
+                            instAliases.push('tuba');
+                            instAliases.push('bajo');
+                            instAliases.push('bajos');
+                            instAliases.push('bass');
+                            instAliases.push('basses');
+                        } 
                         
                         if (instNormalized.includes('saxofon')) {
                             let s = instNormalized.replace(/saxofones/g, 'saxos').replace(/saxofon/g, 'saxo');
@@ -369,7 +376,13 @@
                         for (let alias of expandedAliases) {
                             alias = alias.replace(/\s+/g, ' ').trim();
                             if (fileNormalized.includes(alias)) {
-                                found = true; foundAlias = alias; break;
+                                if (alias === 'bajo' && fileNormalized.includes('contrabajo')) {
+                                    // skip "bajo" if it's actually "contrabajo"
+                                } else if (alias === 'bass' && fileNormalized.includes('contrabass')) {
+                                    // skip
+                                } else {
+                                    found = true; foundAlias = alias; break;
+                                }
                             }
                             let parts = alias.split(' ');
                             if (parts.length > 1) {
