@@ -266,7 +266,7 @@
             </div>
         </form>
         
-        <form action="{{ route('sheet-music.delete-all-parts', $sheetMusic) }}" method="POST" id="form-delete-all-parts" class="hidden">
+        <form action="{{ route('admin.sheet-music.delete-all-parts', $sheetMusic) }}" method="POST" id="form-delete-all-parts" class="hidden">
             @csrf
         </form>
     </div>
