@@ -467,24 +467,34 @@ class SheetMusicController extends Controller
         
         $instruments = \App\Models\InstrumentCatalog::where('is_active', true)->get(['id', 'name'])->toArray();
         
+        $jsonTempPath = sys_get_temp_dir() . DIRECTORY_SEPARATOR . uniqid('instruments_') . '.json';
+        file_put_contents($jsonTempPath, json_encode($instruments));
+        
         $pythonScript = base_path('app/Services/pdf_splitter.py');
         $pythonExecutable = 'python';
         if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
             $pythonExecutable = 'python.exe';
+            $exactPath = 'C:\\Users\\User\\AppData\\Local\\Programs\\Python\\Python315\\python.exe';
+            if (file_exists($exactPath)) {
+                $pythonExecutable = $exactPath;
+            }
         }
 
-        $command = escapeshellcmd("$pythonExecutable \"$pythonScript\" \"$pdfPath\" \"" . addslashes(json_encode($instruments)) . "\"");
+        $command = escapeshellcmd($pythonExecutable) . " " . escapeshellarg($pythonScript) . " " . escapeshellarg($pdfPath) . " " . escapeshellarg($jsonTempPath) . " 2>&1";
         
         $output = shell_exec($command);
         
+        @unlink($jsonTempPath);
+        
         if (!$output) {
-            return response()->json(['success' => false, 'message' => 'Error al ejecutar el script de Python.']);
+            return response()->json(['success' => false, 'message' => 'Error al ejecutar el script de Python. No hay salida.']);
         }
 
         $result = json_decode(trim($output), true);
 
         if (!$result || !isset($result['success']) || !$result['success']) {
-            return response()->json(['success' => false, 'message' => $result['message'] ?? 'Error desconocido en el script.']);
+            $errorMessage = $result['message'] ?? 'Error desconocido en el script: ' . substr(trim($output), 0, 500);
+            return response()->json(['success' => false, 'message' => $errorMessage]);
         }
 
         $processed = 0;
