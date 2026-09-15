@@ -37,12 +37,20 @@ def expand_aliases(inst_name):
     inst_normalized = normalize_text(inst_name)
     inst_aliases = [inst_normalized]
     
+    if 'flautin' in inst_normalized or 'piccolo' in inst_normalized:
+        inst_aliases.append(inst_normalized.replace('flautin', 'piccolo'))
+    if 'flauta' in inst_normalized:
+        inst_aliases.append(inst_normalized.replace('flauta', 'flute'))
+    if 'oboe' in inst_normalized:
+        inst_aliases.append('oboe')
+    if 'fagot' in inst_normalized:
+        inst_aliases.extend(['bassoon', 'fagotto'])
+    if 'requinto' in inst_normalized:
+        inst_aliases.extend(['eb clarinet', 'requinto'])
     if 'trompa' in inst_normalized:
         inst_aliases.append(inst_normalized.replace('trompa', 'tompa'))
         inst_aliases.append(inst_normalized.replace('trompa', 'horn'))
-        if 'fa' in inst_normalized:
-            inst_aliases.extend(['trompa', 'trompas', 'horn', 'french horn', 'corno'])
-    
+        inst_aliases.extend(['french horn', 'corno'])
     if 'bombardino' in inst_normalized:
         inst_aliases.extend([
             inst_normalized.replace('bombardino', 'bombardin'),
@@ -50,32 +58,48 @@ def expand_aliases(inst_name):
             inst_normalized.replace('bombardino', 'euphonium'),
             inst_normalized.replace('bombardino', 'eufonium')
         ])
-        if 'do' in inst_normalized:
-            inst_aliases.extend(['bombardino', 'bombardin', 'eufonio', 'euphonium', 'eufonium'])
-            
-    if 'tuba' in inst_normalized and 'do' in inst_normalized:
+    if 'tuba' in inst_normalized:
         inst_aliases.extend(['tuba', 'bajo', 'bajos', 'bass', 'basses'])
-        
-    if 'saxofon' in inst_normalized:
+    if 'saxofon' in inst_normalized or 'saxo' in inst_normalized:
         s = inst_normalized.replace('saxofones', 'saxos').replace('saxofon', 'saxo')
         inst_aliases.append(s)
         inst_aliases.append(inst_normalized.replace('saxofones', 'saxophones').replace('saxofon', 'saxophone'))
         inst_aliases.append(inst_normalized.replace('saxofones', 'saxes').replace('saxofon', 'sax'))
-        
     if 'clarinete' in inst_normalized:
         inst_aliases.append(inst_normalized.replace('clarinete', 'clarinet'))
     if 'violonchelo' in inst_normalized:
         inst_aliases.append(inst_normalized.replace('violonchelo', 'violoncel'))
         inst_aliases.append(inst_normalized.replace('violonchelo', 'cello'))
+        inst_aliases.append(inst_normalized.replace('violonchelo', 'violoncello'))
     if 'contrabajo' in inst_normalized:
         inst_aliases.append(inst_normalized.replace('contrabajo', 'contrabaix'))
+        inst_aliases.append(inst_normalized.replace('contrabajo', 'double bass'))
+        inst_aliases.append(inst_normalized.replace('contrabajo', 'string bass'))
     if 'fliscorno' in inst_normalized:
         inst_aliases.append(inst_normalized.replace('fliscorno', 'fiscorn'))
-    if 'platillos' in inst_normalized:
-        inst_aliases.append(inst_normalized.replace('platillos', 'plats'))
-        inst_aliases.append(inst_normalized.replace('platillos', 'platerets'))
+        inst_aliases.append(inst_normalized.replace('fliscorno', 'flugelhorn'))
+        inst_aliases.append(inst_normalized.replace('fliscorno', 'flugel'))
+    if 'trompeta' in inst_normalized:
+        inst_aliases.append(inst_normalized.replace('trompeta', 'trumpet'))
+    if 'trombon' in inst_normalized:
+        inst_aliases.append(inst_normalized.replace('trombon', 'trombone'))
+    if 'platillos' in inst_normalized or 'platos' in inst_normalized:
+        inst_aliases.append('plats')
+        inst_aliases.append('platerets')
+        inst_aliases.append('cymbals')
+        inst_aliases.append('piatti')
     if 'caja' in inst_normalized:
         inst_aliases.append(inst_normalized.replace('caja', 'caixa'))
+        inst_aliases.append('snare drum')
+    if 'bombo' in inst_normalized:
+        inst_aliases.append('bass drum')
+        inst_aliases.append('gran cassa')
+    if 'timbales' in inst_normalized:
+        inst_aliases.append('timpani')
+    if 'campanas' in inst_normalized:
+        inst_aliases.append('chimes')
+        inst_aliases.append('tubular bells')
+        inst_aliases.append('campanelli')
         
     expanded_aliases = []
     for alias in inst_aliases:

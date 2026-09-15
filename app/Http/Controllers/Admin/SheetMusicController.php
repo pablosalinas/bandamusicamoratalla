@@ -471,12 +471,18 @@ class SheetMusicController extends Controller
         file_put_contents($jsonTempPath, json_encode($instruments));
         
         $pythonScript = base_path('app/Services/pdf_splitter.py');
-        $pythonExecutable = 'python';
+        $pythonExecutable = 'python3';
         if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
             $pythonExecutable = 'python.exe';
             $exactPath = 'C:\\Users\\User\\AppData\\Local\\Programs\\Python\\Python315\\python.exe';
             if (file_exists($exactPath)) {
                 $pythonExecutable = $exactPath;
+            }
+        } else {
+            // Check if python3 exists, else fallback to python
+            $python3Exists = shell_exec('command -v python3');
+            if (!$python3Exists) {
+                $pythonExecutable = 'python';
             }
         }
 
