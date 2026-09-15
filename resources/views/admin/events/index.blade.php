@@ -19,7 +19,32 @@
         </div>
     </x-slot>
 
-    <div class="mt-8 flow-root">
+    <!-- Filtros -->
+    <div class="mt-8 bg-gray-900 px-4 py-3 sm:rounded-lg border border-gray-800 shadow-sm">
+        <form action="{{ route('admin.events.index') }}" method="GET" class="flex flex-col sm:flex-row gap-4 items-end">
+            <div>
+                <label class="block text-sm font-medium text-gray-300 mb-1">Estado</label>
+                <select name="status" class="block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-gray-700 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6">
+                    <option value="pendientes" {{ request('status', 'pendientes') === 'pendientes' ? 'selected' : '' }}>Próximos / Pendientes</option>
+                    <option value="todos" {{ request('status') === 'todos' ? 'selected' : '' }}>Todos los eventos</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-300 mb-1">Desde</label>
+                <input type="date" name="start_date" value="{{ request('start_date') }}" class="block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-gray-700 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6" style="color-scheme: dark;">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-300 mb-1">Hasta</label>
+                <input type="date" name="end_date" value="{{ request('end_date') }}" class="block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-gray-700 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6" style="color-scheme: dark;">
+            </div>
+            <div>
+                <button type="submit" class="inline-flex items-center rounded-md bg-gray-700 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-600">Filtrar</button>
+                <a href="{{ route('admin.events.index') }}" class="ml-2 inline-flex items-center rounded-md bg-transparent px-3 py-2 text-sm font-semibold text-gray-400 hover:text-white">Limpiar</a>
+            </div>
+        </form>
+    </div>
+
+    <div class="mt-6 flow-root">
         <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
             <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
                 <div class="overflow-hidden shadow ring-1 ring-white/10 sm:rounded-lg">

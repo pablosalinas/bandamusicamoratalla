@@ -11,9 +11,27 @@ use Carbon\Carbon;
 
 class EventController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $events = Event::orderBy('event_date', 'desc')->paginate(15);
+        $query = Event::query();
+
+        // Filtro: Pendientes vs Todos
+        $status = $request->input('status', 'pendientes');
+        if ($status === 'pendientes') {
+            $query->where('event_date', '>=', Carbon::today());
+        }
+
+        // Filtro: Rango de fechas
+        if ($request->filled('start_date')) {
+            $query->where('event_date', '>=', Carbon::parse($request->start_date)->startOfDay());
+        }
+        if ($request->filled('end_date')) {
+            $query->where('event_date', '<=', Carbon::parse($request->end_date)->endOfDay());
+        }
+
+        // Orden temporal ascendente
+        $events = $query->orderBy('event_date', 'asc')->paginate(30)->withQueryString();
+
         return view('admin.events.index', compact('events'));
     }
 
