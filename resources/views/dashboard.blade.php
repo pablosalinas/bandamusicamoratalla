@@ -150,10 +150,17 @@
                         </div>
                     </div>
                     
-                    <h4 class="text-lg font-semibold mb-4 border-b border-gray-800 pb-2 text-white">Tus Partituras Disponibles</h4>
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4 border-b border-gray-800 pb-2">
+                        <h4 class="text-lg font-semibold text-white">Tus Partituras Disponibles</h4>
+                        @if($availableParts->count() > 0)
+                        <div class="mt-2 sm:mt-0 w-full sm:w-64">
+                            <input type="text" id="sheet-music-search" placeholder="Buscar partitura..." class="block w-full rounded-md border-0 bg-gray-900 py-1.5 text-white shadow-sm ring-1 ring-inset ring-gray-700 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6">
+                        </div>
+                        @endif
+                    </div>
                     
                     @if($availableParts->count() > 0)
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div id="sheet-music-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             @foreach($availableParts as $part)
                                 <div class="bg-gray-950 border border-gray-800 rounded-lg p-5 shadow-sm hover:border-gray-700 transition-colors">
                                     <h5 class="font-bold text-lg text-amber-500">{{ $part->title }}</h5>
@@ -205,10 +212,20 @@
             </div>
         </div>
 
-        @if(isset($missedAttendances) && $missedAttendances->count() > 0)
+        @if(isset($missedAttendances))
         <div class="bg-gray-900 border border-gray-800 shadow-sm sm:rounded-lg mt-8">
             <div class="p-6 text-gray-300">
-                <h4 class="text-lg font-semibold mb-4 border-b border-gray-800 pb-2 text-white">Historial de Faltas de Asistencia</h4>
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4 border-b border-gray-800 pb-2">
+                    <h4 class="text-lg font-semibold text-white">Historial de Faltas de Asistencia</h4>
+                    <form action="{{ route('dashboard') }}" method="GET" class="mt-3 sm:mt-0 flex items-center gap-2">
+                        <input type="date" name="start_date" value="{{ request('start_date', now()->subYear()->toDateString()) }}" class="block w-full sm:w-auto rounded-md border-0 bg-gray-900 py-1.5 text-white shadow-sm ring-1 ring-inset ring-gray-700 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6" style="color-scheme: dark;">
+                        <span class="text-gray-500">-</span>
+                        <input type="date" name="end_date" value="{{ request('end_date', now()->toDateString()) }}" class="block w-full sm:w-auto rounded-md border-0 bg-gray-900 py-1.5 text-white shadow-sm ring-1 ring-inset ring-gray-700 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6" style="color-scheme: dark;">
+                        <button type="submit" class="inline-flex items-center rounded-md bg-gray-700 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-600">Filtrar</button>
+                    </form>
+                </div>
+                
+                @if($missedAttendances->count() > 0)
                 <div class="overflow-hidden shadow ring-1 ring-white/10 sm:rounded-lg">
                     <table class="min-w-full divide-y divide-gray-800">
                         <thead class="bg-gray-900">
@@ -239,10 +256,36 @@
                         </tbody>
                     </table>
                 </div>
+                @else
+                    <p class="text-gray-500 italic mt-4">No tienes faltas registradas en este periodo.</p>
+                @endif
             </div>
         </div>
-        @endif
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('sheet-music-search');
+            const grid = document.getElementById('sheet-music-grid');
+            
+            if (searchInput && grid) {
+                const cards = grid.querySelectorAll('div.bg-gray-950');
+                
+                searchInput.addEventListener('input', function(e) {
+                    const term = e.target.value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                    
+                    cards.forEach(card => {
+                        const text = card.textContent.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                        if (text.includes(term)) {
+                            card.style.display = 'block';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                });
+            }
+        });
+    </script>
 </x-admin-layout>
 
 <!-- Modal Parental Consent para Músicos -->

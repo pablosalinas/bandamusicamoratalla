@@ -91,9 +91,15 @@ class MusicianController extends Controller
             $availableParts = $availableParts->sortBy('title')->values();
         }
 
+        $startDate = request('start_date', now()->subYear()->toDateString());
+        $endDate = request('end_date', now()->toDateString());
+
         $missedAttendances = \App\Models\Attendance::with('event')
             ->where('user_id', $user->id)
             ->whereIn('status', ['absent', 'excused'])
+            ->whereHas('event', function ($query) use ($startDate, $endDate) {
+                $query->whereBetween('event_date', [$startDate, $endDate]);
+            })
             ->get()
             ->sortByDesc(function($attendance) {
                 return $attendance->event->event_date;
