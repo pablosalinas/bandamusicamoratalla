@@ -267,6 +267,8 @@
             existingNames["{{ $inst->name }}"] = "{{ $inst->id }}";
         @endforeach
 
+        let smartGridFilesMap = {};
+
         const folderUpload = document.getElementById('smart_folder_upload');
         if (folderUpload) {
             folderUpload.addEventListener('change', function(e) {
@@ -275,6 +277,7 @@
                 
                 const tbody = document.getElementById('smart_grid_body');
                 tbody.innerHTML = '';
+                smartGridFilesMap = {};
                 
                 const instruments = [
                     @foreach($instruments as $inst)
@@ -512,6 +515,8 @@
                     }
 
                     let uuid = 'file_' + Math.random().toString(36).substr(2, 9);
+                    smartGridFilesMap[uuid] = file;
+
                     let tr = document.createElement('tr');
                     
                     if (isAlreadyUploaded) {
@@ -524,7 +529,7 @@
                     
                     let tdFile = document.createElement('td');
                     tdFile.className = "py-3 pl-3 pr-3 text-xs font-medium text-white break-all border-b border-gray-700";
-                    tdFile.innerHTML = file.name + '<input type="file" id="input_' + uuid + '" name="smart_grid_files[' + uuid + ']" class="hidden smart-file-input" data-uuid="' + uuid + '">';
+                    tdFile.innerHTML = file.name + '<div class="hidden smart-file-uuid" data-uuid="' + uuid + '"></div>';
                     tr.appendChild(tdFile);
                     
                     for(let col = 0; col < 3; col++) {
@@ -555,10 +560,6 @@
                     
                     document.getElementById('smart_grid_container').classList.remove('hidden');
                     tbody.appendChild(tr);
-                    
-                    const dt = new DataTransfer();
-                    dt.items.add(file);
-                    document.getElementById('input_' + uuid).files = dt.files;
                 }
             });
         }
@@ -567,30 +568,31 @@
         const submitBtn = mainForm.querySelector('button[type="submit"]');
         
         mainForm.addEventListener('submit', async function(e) {
-            const gridFiles = document.querySelectorAll('.smart-file-input');
-            let filesToUpload = [];
-            gridFiles.forEach(input => {
-                if (input.files.length > 0) {
-                    filesToUpload.push(input);
+            const gridFileRows = document.querySelectorAll('.smart-file-uuid');
+            let uuidsToUpload = [];
+            gridFileRows.forEach(div => {
+                let uuid = div.getAttribute('data-uuid');
+                if (smartGridFilesMap[uuid]) {
+                    uuidsToUpload.push(uuid);
                 }
             });
             
-            if (filesToUpload.length > 0) {
+            if (uuidsToUpload.length > 0) {
                 e.preventDefault();
                 submitBtn.disabled = true;
                 
                 const originalText = submitBtn.innerText;
                 let current = 0;
-                let total = filesToUpload.length;
+                let total = uuidsToUpload.length;
                 
-                for (let input of filesToUpload) {
+                for (let uuid of uuidsToUpload) {
                     current++;
                     submitBtn.innerText = "Subiendo archivo " + current + " de " + total + " (pausa 1s)...";
                     
-                    let uuid = input.getAttribute('data-uuid');
+                    let file = smartGridFilesMap[uuid];
                     let formData = new FormData();
                     formData.append('_token', document.querySelector('input[name="_token"]').value);
-                    formData.append('file', input.files[0]);
+                    formData.append('file', file);
                     
                     let instInputs = document.querySelectorAll('input[name="smart_grid_instruments[' + uuid + '][]"]');
                     let typeInputs = document.querySelectorAll('select[name="smart_grid_types[' + uuid + '][]"]');
@@ -610,18 +612,20 @@
                         });
                         
                         if (!response.ok) {
-                            console.error("Error subiendo", input.files[0].name);
+                            console.error("Error subiendo", file.name);
                         }
                     } catch(err) {
                         console.error(err);
                     }
                     
-                    input.value = ''; 
+                    delete smartGridFilesMap[uuid];
                     
                     if (current < total) {
                         await new Promise(r => setTimeout(r, 1000));
                     }
                 }
+                
+                document.getElementById('smart_grid_body').innerHTML = '';
                 
                 submitBtn.innerText = "Guardando formulario principal...";
                 mainForm.submit();
