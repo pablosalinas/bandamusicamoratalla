@@ -457,6 +457,76 @@ class SheetMusicController extends Controller
         return response()->json(['success' => false, 'message' => 'No válido']);
     }
 
+    public function splitPdfAjax(Request $request, SheetMusic $sheetMusic)
+    {
+        if (!$sheetMusic->pdf_file_path || !Storage::disk('local')->exists($sheetMusic->pdf_file_path)) {
+            return response()->json(['success' => false, 'message' => 'El PDF general no existe.']);
+        }
+
+        $pdfPath = Storage::disk('local')->path($sheetMusic->pdf_file_path);
+        
+        $instruments = \App\Models\InstrumentCatalog::where('is_active', true)->get(['id', 'name'])->toArray();
+        
+        $pythonScript = base_path('app/Services/pdf_splitter.py');
+        $pythonExecutable = 'python';
+        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+            $pythonExecutable = 'python.exe';
+        }
+
+        $command = escapeshellcmd("$pythonExecutable \"$pythonScript\" \"$pdfPath\" \"" . addslashes(json_encode($instruments)) . "\"");
+        
+        $output = shell_exec($command);
+        
+        if (!$output) {
+            return response()->json(['success' => false, 'message' => 'Error al ejecutar el script de Python.']);
+        }
+
+        $result = json_decode(trim($output), true);
+
+        if (!$result || !isset($result['success']) || !$result['success']) {
+            return response()->json(['success' => false, 'message' => $result['message'] ?? 'Error desconocido en el script.']);
+        }
+
+        $processed = 0;
+        foreach ($result['results'] as $split) {
+            if ($split['instrument_id']) {
+                $newPath = 'sheet-music-parts/' . uniqid() . '.pdf';
+                Storage::disk('local')->put($newPath, file_get_contents($split['file_path']));
+                
+                $pivot = SheetMusicInstrument::where('sheet_music_id', $sheetMusic->id)
+                    ->where('instrument_catalog_id', $split['instrument_id'])
+                    ->where('tipo_partitura', $split['type'])
+                    ->first();
+                    
+                if ($pivot) {
+                    if ($pivot->pdf_file_path && Storage::disk('local')->exists($pivot->pdf_file_path)) {
+                        Storage::disk('local')->delete($pivot->pdf_file_path);
+                    }
+                    $pivot->update(['pdf_file_path' => $newPath]);
+                } else {
+                    SheetMusicInstrument::create([
+                        'sheet_music_id' => $sheetMusic->id,
+                        'instrument_catalog_id' => $split['instrument_id'],
+                        'tipo_partitura' => $split['type'],
+                        'pdf_file_path' => $newPath
+                    ]);
+                }
+                
+                // Cleanup temp file
+                @unlink($split['file_path']);
+                $processed++;
+            } else {
+                // If unknown instrument, just cleanup
+                @unlink($split['file_path']);
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => "Se han extraído $processed particellas exitosamente."
+        ]);
+    }
+
     public function viewPart(SheetMusicInstrument $sheetMusicInstrument)
     {
         if (!$sheetMusicInstrument->pdf_file_path || !\Storage::disk('local')->exists($sheetMusicInstrument->pdf_file_path)) {

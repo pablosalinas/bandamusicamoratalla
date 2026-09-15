@@ -67,13 +67,20 @@
                         <label for="pdf_file" class="block text-sm font-medium leading-6 text-white">Reemplazar Archivo PDF (Guión General / Partitura Completa)</label>
                         
                         @if($sheetMusic->pdf_file_path)
-                            <div class="mt-2 mb-3">
+                            <div class="mt-2 mb-3 flex items-center justify-between">
                                 <span class="inline-flex items-center gap-x-1.5 rounded-md bg-blue-400/10 px-2 py-1 text-sm font-medium text-blue-400">
                                     <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                                         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" />
                                     </svg>
                                     Archivo actual subido
                                 </span>
+                                
+                                <button type="button" id="btn-split-pdf" class="inline-flex items-center gap-x-1.5 rounded-md bg-indigo-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
+                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H9.75" />
+                                    </svg>
+                                    Dividir en Particellas
+                                </button>
                             </div>
                         @endif
 
@@ -631,7 +638,66 @@
                 mainForm.submit();
             }
         });
+        const btnSplit = document.getElementById('btn-split-pdf');
+        if (btnSplit) {
+            btnSplit.addEventListener('click', async function() {
+                if (!confirm('¿Deseas extraer automáticamente las particellas de este PDF? (Este proceso puede tardar unos segundos o minutos dependiendo del tamaño del archivo)')) {
+                    return;
+                }
+                
+                document.getElementById('split-modal').classList.remove('hidden');
+                
+                try {
+                    const response = await fetch("{{ route('admin.sheet-music.split-pdf', $sheetMusic) }}", {
+                        method: "POST",
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
+                        }
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        alert(data.message);
+                        window.location.reload();
+                    } else {
+                        alert('Error: ' + data.message);
+                        document.getElementById('split-modal').classList.add('hidden');
+                    }
+                } catch (err) {
+                    console.error(err);
+                    alert('Ocurrió un error en la conexión.');
+                    document.getElementById('split-modal').classList.add('hidden');
+                }
+            });
+        }
     });
 </script>
+
+<!-- Split Modal -->
+<div id="split-modal" class="relative z-50 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+  <div class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity"></div>
+  <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+    <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+      <div class="relative transform overflow-hidden rounded-lg bg-gray-800 px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-sm sm:p-6">
+        <div>
+          <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-indigo-900">
+            <svg class="h-6 w-6 text-indigo-400 animate-spin" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+          </div>
+          <div class="mt-3 text-center sm:mt-5">
+            <h3 class="text-base font-semibold leading-6 text-white" id="modal-title">Procesando PDF</h3>
+            <div class="mt-2">
+              <p class="text-sm text-gray-400">Analizando el texto del guión general para separar particellas. Por favor, no cierres esta ventana.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 </x-admin-layout>

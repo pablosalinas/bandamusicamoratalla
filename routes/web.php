@@ -125,6 +125,7 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     Route::get('sheet-music/{sheetMusic}/view', [\App\Http\Controllers\Admin\SheetMusicController::class, 'view'])->name('sheet-music.view');
     Route::post('sheet-music/{sheetMusic}/upload-part-ajax', [\App\Http\Controllers\Admin\SheetMusicController::class, 'uploadPartAjax'])->name('sheet-music.upload-part-ajax');
     Route::post('sheet-music/{sheetMusic}/upload-grid-row-ajax', [\App\Http\Controllers\Admin\SheetMusicController::class, 'uploadGridRowAjax'])->name('sheet-music.upload-grid-row-ajax');
+    Route::post('sheet-music/{sheetMusic}/split-pdf', [\App\Http\Controllers\Admin\SheetMusicController::class, 'splitPdfAjax'])->name('sheet-music.split-pdf');
     Route::get('sheet-music/{sheetMusic}/download-all', [\App\Http\Controllers\Admin\SheetMusicController::class, 'downloadAll'])->name('sheet-music.download-all');
     Route::get('sheet-music-parts/{sheetMusicInstrument}/download', [\App\Http\Controllers\Admin\SheetMusicController::class, 'downloadPart'])->name('sheet-music.download-part');
     Route::get('sheet-music-parts/{sheetMusicInstrument}/view', [\App\Http\Controllers\Admin\SheetMusicController::class, 'viewPart'])->name('sheet-music.view-part');
