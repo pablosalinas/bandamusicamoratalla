@@ -336,6 +336,21 @@ class SheetMusicController extends Controller
         return response()->json(['success' => true]);
     }
 
+    public function deleteAllParts(SheetMusic $sheetMusic)
+    {
+        $pivots = SheetMusicInstrument::where('sheet_music_id', $sheetMusic->id)->get();
+        $count = 0;
+        foreach ($pivots as $pivot) {
+            if ($pivot->pdf_file_path && Storage::disk('local')->exists($pivot->pdf_file_path)) {
+                Storage::disk('local')->delete($pivot->pdf_file_path);
+            }
+            $pivot->delete();
+            $count++;
+        }
+
+        return redirect()->back()->with('success', "Se han borrado y desasignado todas las particellas de esta obra ({$count} eliminadas).");
+    }
+
     public function destroy(SheetMusic $sheetMusic)
     {
         $sheetMusic->delete();

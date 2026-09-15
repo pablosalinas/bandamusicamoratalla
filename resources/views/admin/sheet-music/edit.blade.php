@@ -256,11 +256,18 @@
             </div>
             
             <div class="flex items-center justify-end gap-x-6 border-t border-gray-800 px-4 py-4 sm:px-8">
+                <button type="button" onclick="if(confirm('¿Estás seguro de que quieres borrar TODOS los archivos y desasignar todos los instrumentos? Esta acción no se puede deshacer.')) document.getElementById('form-delete-all-parts').submit();" class="rounded-md bg-red-600 px-6 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 mr-auto">
+                    Vaciar Particellas
+                </button>
                 <a href="{{ route('admin.sheet-music.index') }}" class="text-sm font-semibold leading-6 text-white">Cancelar</a>
                 <button type="submit" class="rounded-md bg-blue-600 px-6 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
                     Actualizar Partitura
                 </button>
             </div>
+        </form>
+        
+        <form action="{{ route('sheet-music.delete-all-parts', $sheetMusic) }}" method="POST" id="form-delete-all-parts" class="hidden">
+            @csrf
         </form>
     </div>
     
