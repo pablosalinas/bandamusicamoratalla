@@ -181,6 +181,12 @@
                             </a>
                         </div>
                         
+                        @if($userInstruments->count() > 0)
+                        <div class="mb-4">
+                            <input type="text" id="instrument-search" placeholder="Buscar instrumento asignado..." class="block w-full sm:w-64 rounded-md border-0 bg-gray-900 py-1.5 text-white shadow-sm ring-1 ring-inset ring-gray-700 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6">
+                        </div>
+                        @endif
+                        
                         <div class="flex flex-col gap-4">
                             @forelse($userInstruments as $inst)
                                 <div class="flex flex-col sm:flex-row items-center justify-between p-4 bg-gray-950 rounded-lg border {{ $inst->is_active ? 'border-gray-800' : 'border-red-900/50 opacity-70' }}">
@@ -213,13 +219,21 @@
                                 <p class="text-sm text-gray-400">Registro de asistencia del músico a los ensayos y actos.</p>
                             </div>
                             <div class="mt-3 sm:ml-4 sm:mt-0">
-                                <span class="isolate inline-flex rounded-md shadow-sm">
-                                    <button type="button" onclick="window.location.href='{{ route('admin.users.edit', ['user' => $user->id, 'attendance_filter' => 'absent']) }}'" class="relative inline-flex items-center rounded-l-md px-3 py-2 text-sm font-semibold {{ $filter === 'absent' ? 'bg-amber-600 text-white' : 'bg-gray-800 text-gray-300 hover:bg-gray-700' }} ring-1 ring-inset ring-gray-700 focus:z-10">Faltas Injustificadas</button>
-                                    <button type="button" onclick="window.location.href='{{ route('admin.users.edit', ['user' => $user->id, 'attendance_filter' => 'excused']) }}'" class="relative -ml-px inline-flex items-center px-3 py-2 text-sm font-semibold {{ $filter === 'excused' ? 'bg-amber-600 text-white' : 'bg-gray-800 text-gray-300 hover:bg-gray-700' }} ring-1 ring-inset ring-gray-700 focus:z-10">Faltas Justificadas</button>
-                                    <button type="button" onclick="window.location.href='{{ route('admin.users.edit', ['user' => $user->id, 'attendance_filter' => 'present']) }}'" class="relative -ml-px inline-flex items-center rounded-r-md px-3 py-2 text-sm font-semibold {{ $filter === 'present' ? 'bg-amber-600 text-white' : 'bg-gray-800 text-gray-300 hover:bg-gray-700' }} ring-1 ring-inset ring-gray-700 focus:z-10">Asistencias</button>
+                                <span class="isolate inline-flex rounded-md shadow-sm mb-3 sm:mb-0">
+                                    <button type="button" onclick="window.location.href='{{ route('admin.users.edit', ['user' => $user->id, 'attendance_filter' => 'absent', 'start_date' => request('start_date', now()->subYear()->toDateString()), 'end_date' => request('end_date', now()->toDateString())]) }}'" class="relative inline-flex items-center rounded-l-md px-3 py-2 text-sm font-semibold {{ $filter === 'absent' ? 'bg-amber-600 text-white' : 'bg-gray-800 text-gray-300 hover:bg-gray-700' }} ring-1 ring-inset ring-gray-700 focus:z-10">Faltas Injustificadas</button>
+                                    <button type="button" onclick="window.location.href='{{ route('admin.users.edit', ['user' => $user->id, 'attendance_filter' => 'excused', 'start_date' => request('start_date', now()->subYear()->toDateString()), 'end_date' => request('end_date', now()->toDateString())]) }}'" class="relative -ml-px inline-flex items-center px-3 py-2 text-sm font-semibold {{ $filter === 'excused' ? 'bg-amber-600 text-white' : 'bg-gray-800 text-gray-300 hover:bg-gray-700' }} ring-1 ring-inset ring-gray-700 focus:z-10">Faltas Justificadas</button>
+                                    <button type="button" onclick="window.location.href='{{ route('admin.users.edit', ['user' => $user->id, 'attendance_filter' => 'present', 'start_date' => request('start_date', now()->subYear()->toDateString()), 'end_date' => request('end_date', now()->toDateString())]) }}'" class="relative -ml-px inline-flex items-center rounded-r-md px-3 py-2 text-sm font-semibold {{ $filter === 'present' ? 'bg-amber-600 text-white' : 'bg-gray-800 text-gray-300 hover:bg-gray-700' }} ring-1 ring-inset ring-gray-700 focus:z-10">Asistencias</button>
                                 </span>
                             </div>
                         </div>
+
+                        <form action="{{ route('admin.users.edit', $user) }}" method="GET" class="mb-4 flex flex-col sm:flex-row items-center gap-2">
+                            <input type="hidden" name="attendance_filter" value="{{ $filter }}">
+                            <input type="date" name="start_date" value="{{ request('start_date', now()->subYear()->toDateString()) }}" class="block w-full sm:w-auto rounded-md border-0 bg-gray-900 py-1.5 text-white shadow-sm ring-1 ring-inset ring-gray-700 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6" style="color-scheme: dark;">
+                            <span class="text-gray-500">-</span>
+                            <input type="date" name="end_date" value="{{ request('end_date', now()->toDateString()) }}" class="block w-full sm:w-auto rounded-md border-0 bg-gray-900 py-1.5 text-white shadow-sm ring-1 ring-inset ring-gray-700 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6" style="color-scheme: dark;">
+                            <button type="submit" class="inline-flex w-full sm:w-auto justify-center items-center rounded-md bg-gray-700 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-600">Filtrar Fechas</button>
+                        </form>
                         
                         @if($attendances->count() > 0)
                             <div class="overflow-hidden shadow ring-1 ring-white/10 sm:rounded-lg">

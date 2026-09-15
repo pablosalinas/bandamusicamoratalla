@@ -1,6 +1,6 @@
 import sys
 import json
-import fitz
+import pymupdf as fitz
 import re
 import os
 import io
@@ -9,7 +9,7 @@ try:
     import pytesseract
     from PIL import Image
     TESSERACT_AVAILABLE = True
-except ImportError:
+except Exception:
     TESSERACT_AVAILABLE = False
 
 # Mapeos de tonos

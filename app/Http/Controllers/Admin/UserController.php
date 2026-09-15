@@ -77,9 +77,15 @@ class UserController extends Controller
         ];
         $statuses = $statusMap[$filter] ?? ['absent'];
 
+        $startDate = $request->query('start_date', now()->subYear()->toDateString());
+        $endDate = $request->query('end_date', now()->toDateString());
+
         $attendances = \App\Models\Attendance::with('event')
             ->where('user_id', $user->id)
             ->whereIn('status', $statuses)
+            ->whereHas('event', function ($query) use ($startDate, $endDate) {
+                $query->whereBetween('event_date', [$startDate, $endDate]);
+            })
             ->get()
             ->sortByDesc(function($attendance) {
                 return $attendance->event->event_date;
