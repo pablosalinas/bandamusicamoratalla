@@ -149,6 +149,8 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     Route::put('news-images/{image}', [\App\Http\Controllers\Admin\NewsImageController::class, 'update'])->name('news.images.update');
     Route::delete('news-images/{image}', [\App\Http\Controllers\Admin\NewsImageController::class, 'destroy'])->name('news.images.destroy');
     
+    Route::post('events/bulk-create', [\App\Http\Controllers\Admin\EventController::class, 'bulkCreate'])->name('events.bulk-create');
+    Route::post('events/bulk-delete', [\App\Http\Controllers\Admin\EventController::class, 'bulkDelete'])->name('events.bulk-delete');
     Route::resource('events', \App\Http\Controllers\Admin\EventController::class);
     Route::get('events/{event}/attendance', [\App\Http\Controllers\Admin\EventController::class, 'attendance'])->name('events.attendance');
     Route::post('events/{event}/attendance', [\App\Http\Controllers\Admin\EventController::class, 'storeAttendance'])->name('events.attendance.store');

@@ -112,4 +112,83 @@ class EventController extends Controller
 
         return redirect()->route('admin.events.index')->with('success', 'Control de asistencia guardado correctamente.');
     }
+
+    public function bulkCreate(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'type' => 'required|string|max:255',
+            'start_date' => 'required|date|before_or_equal:end_date',
+            'end_date' => 'required|date|after_or_equal:start_date',
+            'day_of_week' => 'required|integer|between:0,6',
+            'time' => 'required|date_format:H:i',
+        ]);
+
+        $startDate = Carbon::parse($request->start_date);
+        $endDate = Carbon::parse($request->end_date);
+        $dayOfWeek = (int) $request->day_of_week;
+        $timeParts = explode(':', $request->time);
+        
+        $currentDate = $startDate->copy();
+        
+        // Find the first matching day of week
+        while ($currentDate->dayOfWeek !== $dayOfWeek) {
+            $currentDate->addDay();
+        }
+        
+        $count = 0;
+        $insertData = [];
+        
+        while ($currentDate->lte($endDate)) {
+            $eventDate = $currentDate->copy()->setTime((int)$timeParts[0], (int)$timeParts[1]);
+            
+            $insertData[] = [
+                'name' => $request->name,
+                'type' => $request->type,
+                'event_date' => $eventDate,
+                'is_active' => 1,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ];
+            
+            $count++;
+            $currentDate->addWeek();
+        }
+        
+        if (!empty($insertData)) {
+            Event::insert($insertData);
+        }
+        
+        return redirect()->route('admin.events.index')->with('success', "Se han generado $count eventos exitosamente.");
+    }
+
+    public function bulkDelete(Request $request)
+    {
+        $request->validate([
+            'from_date' => 'required|date',
+            'to_date' => 'required|date|after_or_equal:from_date',
+            'type' => 'nullable|string'
+        ]);
+
+        $fromDate = Carbon::parse($request->from_date)->startOfDay();
+        $toDate = Carbon::parse($request->to_date)->endOfDay();
+        $today = Carbon::now()->startOfDay();
+        
+        // Never allow deleting past events (must be >= today)
+        if ($fromDate->lt($today)) {
+            $fromDate = $today;
+        }
+
+        $query = Event::where('event_date', '>=', $fromDate)
+                     ->where('event_date', '<=', $toDate);
+                     
+        if ($request->filled('type')) {
+            $query->where('type', $request->type);
+        }
+        
+        $count = $query->count();
+        $query->delete();
+        
+        return redirect()->route('admin.events.index')->with('success', "Se han eliminado $count eventos futuros.");
+    }
 }
