@@ -30,7 +30,7 @@ class EventController extends Controller
         }
 
         // Orden temporal ascendente
-        $events = $query->orderBy('event_date', 'asc')->paginate(30)->withQueryString();
+        $events = $query->orderBy('event_date', 'asc')->paginate(60)->withQueryString();
 
         return view('admin.events.index', compact('events'));
     }
