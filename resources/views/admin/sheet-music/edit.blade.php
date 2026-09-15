@@ -2,7 +2,24 @@
     <x-slot name="header">
         <div class="sm:flex sm:items-center">
             <div class="sm:flex-auto">
-                <h2 class="text-3xl font-bold leading-tight tracking-tight text-white">Editar Obra: {{ $sheetMusic->title }}</h2>
+                <h2 class="text-3xl font-bold leading-tight tracking-tight text-white flex flex-col sm:flex-row sm:items-center gap-3">
+                    <span>Editar Obra: {{ $sheetMusic->title }}</span>
+                    @if($sheetMusic->pdf_file_path)
+                        <span class="inline-flex items-center rounded-md bg-emerald-500/10 px-3 py-1 text-sm font-medium text-emerald-400 ring-1 ring-inset ring-emerald-500/20" title="Guión / Partitura completa subida">
+                            <svg class="mr-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                            </svg>
+                            Guión Subido
+                        </span>
+                    @else
+                        <span class="inline-flex items-center rounded-md bg-red-500/10 px-3 py-1 text-sm font-medium text-red-400 ring-1 ring-inset ring-red-500/20" title="Falta subir el Guión General">
+                            <svg class="mr-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                            Falta Guión
+                        </span>
+                    @endif
+                </h2>
             </div>
             <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
                 <a href="{{ route('admin.sheet-music.index') }}" class="block rounded-md bg-gray-800 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-gray-700">

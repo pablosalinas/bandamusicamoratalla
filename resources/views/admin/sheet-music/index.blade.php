@@ -77,7 +77,24 @@
                             @forelse ($sheetMusics as $sheet)
                                 <tr>
                                     <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
-                                        <div class="font-medium text-white">{{ $sheet->title }}</div>
+                                        <div class="font-medium text-white flex flex-col sm:flex-row sm:items-center gap-2">
+                                            <span>{{ $sheet->title }}</span>
+                                            @if($sheet->pdf_file_path)
+                                                <span class="inline-flex items-center rounded-md bg-emerald-500/10 px-2 py-0.5 text-xs font-medium text-emerald-400 ring-1 ring-inset ring-emerald-500/20" title="Guión / Partitura completa subida">
+                                                    <svg class="mr-1 h-3 w-3" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                                                    </svg>
+                                                    Guión Subido
+                                                </span>
+                                            @else
+                                                <span class="inline-flex items-center rounded-md bg-red-500/10 px-2 py-0.5 text-xs font-medium text-red-400 ring-1 ring-inset ring-red-500/20" title="Falta subir el Guión General">
+                                                    <svg class="mr-1 h-3 w-3" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                                    </svg>
+                                                    Falta Guión
+                                                </span>
+                                            @endif
+                                        </div>
                                     </td>
                                     <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-400">
                                         {{ $sheet->composer ?? 'Desconocido' }}
