@@ -1,6 +1,9 @@
 import sys
 import json
-import pymupdf as fitz
+try:
+    import pymupdf as fitz
+except ImportError:
+    import fitz
 import re
 import os
 import io
@@ -154,10 +157,11 @@ def main():
         return
         
     pdf_path = sys.argv[1]
-    instruments_json = sys.argv[2]
+    instruments_json_path = sys.argv[2]
     
     try:
-        instruments = json.loads(instruments_json)
+        with open(instruments_json_path, 'r', encoding='utf-8') as f:
+            instruments = json.load(f)
         for inst in instruments:
             inst['aliases'] = expand_aliases(inst['name'])
             

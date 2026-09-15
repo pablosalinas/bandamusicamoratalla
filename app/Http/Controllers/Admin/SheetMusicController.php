@@ -490,7 +490,13 @@ class SheetMusicController extends Controller
             return response()->json(['success' => false, 'message' => 'Error al ejecutar el script de Python. No hay salida.']);
         }
 
-        $result = json_decode(trim($output), true);
+        $output = trim($output);
+        $jsonStart = strpos($output, '{');
+        if ($jsonStart !== false) {
+            $output = substr($output, $jsonStart);
+        }
+
+        $result = json_decode($output, true);
 
         if (!$result || !isset($result['success']) || !$result['success']) {
             $errorMessage = $result['message'] ?? 'Error desconocido en el script: ' . substr(trim($output), 0, 500);
