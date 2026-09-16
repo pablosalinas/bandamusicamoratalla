@@ -48,7 +48,46 @@
             animation: slogan-shine 4s linear infinite, slogan-float 3s ease-in-out infinite;
             display: inline-block;
         }
+
+        /* Protección de imágenes y recursos multimedia contra copiado y descargas */
+        img, video, audio, picture {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-user-drag: none;
+            -khtml-user-drag: none;
+            -moz-user-drag: none;
+            -o-user-drag: none;
+            user-drag: none;
+            pointer-events: auto;
+        }
+        /* Deshabilitar menú de descarga en vídeos HTML5 nativos */
+        video::-internal-media-controls-download-button {
+            display:none;
+        }
+        video::-webkit-media-controls-enclosure {
+            overflow:hidden;
+        }
+        video::-webkit-media-controls-panel {
+            width: calc(100% + 30px); 
+        }
     </style>
+    <script>
+        // Bloqueo estricto de clic derecho y arrastre en imágenes y vídeos
+        document.addEventListener('contextmenu', function(e) {
+            if (e.target && (e.target.tagName === 'IMG' || e.target.tagName === 'VIDEO' || e.target.tagName === 'AUDIO' || e.target.closest('img') || e.target.closest('video') || e.target.closest('picture'))) {
+                e.preventDefault();
+                return false;
+            }
+        }, false);
+        document.addEventListener('dragstart', function(e) {
+            if (e.target && (e.target.tagName === 'IMG' || e.target.tagName === 'VIDEO' || e.target.tagName === 'AUDIO' || e.target.closest('img') || e.target.closest('video') || e.target.closest('picture'))) {
+                e.preventDefault();
+                return false;
+            }
+        }, false);
+    </script>
 </head>
 <body class="antialiased bg-gray-950 text-gray-200" x-data="{ scrolled: false, mobileMenuOpen: false }" @scroll.window="scrolled = (window.pageYOffset > 20)">
 

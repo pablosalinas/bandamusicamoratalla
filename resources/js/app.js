@@ -4,16 +4,16 @@ import Alpine from 'alpinejs';
 
 window.Alpine = Alpine;
 
-// Protección de imágenes en toda la web: bloquear clic derecho y arrastre
+// Protección de recursos multimedia en toda la web: bloquear clic derecho y arrastre
 document.addEventListener('contextmenu', function (e) {
-    if (e.target && (e.target.tagName === 'IMG' || e.target.closest('img') || e.target.tagName === 'PICTURE')) {
+    if (e.target && (e.target.matches('img, video, audio, picture, svg') || e.target.closest('img, video, audio, picture, svg'))) {
         e.preventDefault();
         return false;
     }
 }, false);
 
 document.addEventListener('dragstart', function (e) {
-    if (e.target && (e.target.tagName === 'IMG' || e.target.closest('img') || e.target.tagName === 'PICTURE')) {
+    if (e.target && (e.target.matches('img, video, audio, picture, svg') || e.target.closest('img, video, audio, picture, svg'))) {
         e.preventDefault();
         return false;
     }

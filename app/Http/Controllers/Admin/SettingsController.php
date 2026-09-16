@@ -59,10 +59,28 @@ class SettingsController extends Controller
             'parental_consent_pdf' => \App\Models\SiteSetting::getSetting('parental_consent_pdf', ''),
         ];
         
-        $carouselMedia = \App\Models\CarouselMedia::orderBy('sort_order')->get();
-        $bandHistoryImages = \App\Models\BandHistoryImage::orderBy('sort_order')->get();
-        
-        return view('admin.settings.index', compact('settings', 'carouselMedia', 'bandHistoryImages', 'backupPassword'));
+        $dashboardCards = \App\Models\SiteSetting::getDashboardCards();
+        foreach ($dashboardCards as $key => &$card) {
+            $card['enabled'] = \App\Models\SiteSetting::isDashboardCardEnabled($key);
+        }
+
+        return view('admin.settings.index', compact('settings', 'carouselMedia', 'bandHistoryImages', 'backupPassword', 'dashboardCards'));
+    }
+
+    public function updateDashboardCards(Request $request)
+    {
+        $cards = \App\Models\SiteSetting::getDashboardCards();
+        $submittedCards = $request->input('cards', []);
+
+        foreach (array_keys($cards) as $cardKey) {
+            $isEnabled = isset($submittedCards[$cardKey]) && $submittedCards[$cardKey] == '1' ? '1' : '0';
+            \App\Models\SiteSetting::updateOrCreate(
+                ['key' => $cardKey],
+                ['value' => $isEnabled, 'type' => 'boolean']
+            );
+        }
+
+        return redirect()->route('admin.settings.index', ['tab' => 'tarjetas'])->with('success', 'Tarjetas del panel de control actualizadas correctamente.');
     }
 
     public function update(Request $request)
@@ -142,7 +160,13 @@ class SettingsController extends Controller
             }
         }
 
-        return redirect()->route('admin.settings.index')->with('success', 'Archivos añadidos al carrusel correctamente.');
+        return redirect()->route('admin.settings.index', ['tab' => 'apariencia'])->with('success', 'Archivos añadidos al carrusel correctamente.');
+    }
+
+    public function updateCarouselMedia(Request $request, \App\Models\CarouselMedia $media)
+    {
+        $media->update($request->only('description'));
+        return redirect()->route('admin.settings.index', ['tab' => 'apariencia'])->with('success', 'Descripción del carrusel actualizada.');
     }
 
     public function destroyCarouselMedia(\App\Models\CarouselMedia $media)
@@ -151,21 +175,8 @@ class SettingsController extends Controller
             \Illuminate\Support\Facades\Storage::disk('public')->delete($media->file_path);
         }
         $media->delete();
-        
-        return redirect()->route('admin.settings.index')->with('success', 'Archivo eliminado del carrusel.');
-    }
 
-    public function updateCarouselMedia(Request $request, \App\Models\CarouselMedia $media)
-    {
-        $request->validate([
-            'description' => 'nullable|string|max:255',
-        ]);
-        
-        $media->update([
-            'description' => $request->description
-        ]);
-        
-        return redirect()->route('admin.settings.index')->with('success', 'Descripción actualizada.');
+        return redirect()->route('admin.settings.index', ['tab' => 'apariencia'])->with('success', 'Elemento del carrusel eliminado.');
     }
 
     public function storeLogo(Request $request)
@@ -202,7 +213,7 @@ class SettingsController extends Controller
             ['value' => json_encode(array_values($currentLogos)), 'type' => 'text']
         );
 
-        return redirect()->route('admin.settings.index')->with('success', 'Logos añadidos correctamente.');
+        return redirect()->route('admin.settings.index', ['tab' => 'apariencia'])->with('success', 'Logos añadidos correctamente.');
     }
 
     public function destroyLogo(Request $request)
@@ -226,27 +237,22 @@ class SettingsController extends Controller
             ['value' => json_encode(array_values($currentLogos)), 'type' => 'text']
         );
 
-        return redirect()->route('admin.settings.index')->with('success', 'Logo eliminado correctamente.');
+        return redirect()->route('admin.settings.index', ['tab' => 'apariencia'])->with('success', 'Logo eliminado correctamente.');
     }
 
     public function updateLogoOrder(Request $request)
     {
-        $request->validate([
-            'path' => 'required|string',
-            'order' => 'required|integer'
-        ]);
-
         $path = $request->input('path');
         $order = $request->input('order');
-
         $rawLogos = json_decode(\App\Models\SiteSetting::getSetting('site_logos', '[]'), true) ?: [];
         $currentLogos = [];
+
         foreach ($rawLogos as $logo) {
             if (is_string($logo)) {
-                $currentLogos[] = ['path' => $logo, 'order' => ($logo === $path ? $order : 999)];
+                $currentLogos[] = ['path' => $logo, 'order' => $logo === $path ? ($order ?: 999) : 999];
             } else if (is_array($logo)) {
-                if (isset($logo['path']) && $logo['path'] === $path) {
-                    $logo['order'] = $order;
+                if (($logo['path'] ?? '') === $path) {
+                    $logo['order'] = $order ?: 999;
                 }
                 $currentLogos[] = $logo;
             }
@@ -257,7 +263,7 @@ class SettingsController extends Controller
             ['value' => json_encode(array_values($currentLogos)), 'type' => 'text']
         );
 
-        return redirect()->route('admin.settings.index')->with('success', 'Orden actualizado.');
+        return redirect()->route('admin.settings.index', ['tab' => 'apariencia'])->with('success', 'Orden del logo actualizado.');
     }
 
     public function downloadParentalConsent()

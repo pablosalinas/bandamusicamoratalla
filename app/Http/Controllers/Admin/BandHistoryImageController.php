@@ -23,7 +23,11 @@ class BandHistoryImageController extends Controller
             mkdir($uploadDir, 0755, true);
         }
 
+        $targetPath = $uploadDir . DIRECTORY_SEPARATOR . $filename;
         $file->move($uploadDir, $filename);
+
+        // Aplicar marca de agua automática
+        \App\Services\ImageWatermarkService::applyWatermark($targetPath);
 
         $maxSort = BandHistoryImage::max('sort_order') ?? 0;
 
@@ -32,7 +36,7 @@ class BandHistoryImageController extends Controller
             'sort_order' => $maxSort + 1,
         ]);
 
-        return back()->with('success', 'Imagen añadida correctamente.');
+        return redirect()->route('admin.settings.index', ['tab' => 'apariencia'])->with('success', 'Imagen añadida correctamente a la Historia de la Banda.');
     }
 
     public function update(Request $request, BandHistoryImage $image)
@@ -44,18 +48,18 @@ class BandHistoryImageController extends Controller
 
         $image->update($validated);
 
-        return back()->with('success', 'Imagen actualizada.');
+        return redirect()->route('admin.settings.index', ['tab' => 'apariencia'])->with('success', 'Imagen de Historia actualizada.');
     }
 
     public function destroy(BandHistoryImage $image)
     {
         $filePath = public_path('uploads/band-history/' . $image->file_path);
         if (file_exists($filePath)) {
-            unlink($filePath);
+            @unlink($filePath);
         }
 
         $image->delete();
 
-        return back()->with('success', 'Imagen eliminada.');
+        return redirect()->route('admin.settings.index', ['tab' => 'apariencia'])->with('success', 'Imagen eliminada de la Historia.');
     }
 }

@@ -171,6 +171,7 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
         // Settings
         Route::get('settings', [\App\Http\Controllers\Admin\SettingsController::class, 'index'])->name('settings.index');
         Route::post('settings', [\App\Http\Controllers\Admin\SettingsController::class, 'update'])->name('settings.update');
+        Route::post('settings/dashboard-cards', [\App\Http\Controllers\Admin\SettingsController::class, 'updateDashboardCards'])->name('settings.dashboard-cards.update');
         Route::post('settings/carousel', [\App\Http\Controllers\Admin\SettingsController::class, 'storeCarouselMedia'])->name('settings.carousel.store');
         Route::put('settings/carousel/{media}', [\App\Http\Controllers\Admin\SettingsController::class, 'updateCarouselMedia'])->name('settings.carousel.update');
         Route::delete('settings/carousel/{media}', [\App\Http\Controllers\Admin\SettingsController::class, 'destroyCarouselMedia'])->name('settings.carousel.destroy');

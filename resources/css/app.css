@@ -2,8 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Protección contra descarga y copia de imágenes */
-img, svg, picture {
+/* Protección contra descarga y copia de imágenes y multimedia */
+img, svg, picture, video, audio {
     -webkit-user-drag: none;
     -khtml-user-drag: none;
     -moz-user-drag: none;
@@ -14,5 +14,15 @@ img, svg, picture {
     -moz-user-select: none;
     -ms-user-select: none;
     -webkit-touch-callout: none;
+}
+
+video::-internal-media-controls-download-button {
+    display: none !important;
+}
+video::-webkit-media-controls-enclosure {
+    overflow: hidden;
+}
+video::-webkit-media-controls-panel {
+    width: calc(100% + 30px);
 }
 
