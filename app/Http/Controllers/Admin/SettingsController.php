@@ -59,6 +59,9 @@ class SettingsController extends Controller
             'parental_consent_pdf' => \App\Models\SiteSetting::getSetting('parental_consent_pdf', ''),
         ];
         
+        $carouselMedia = \App\Models\CarouselMedia::orderBy('sort_order')->get();
+        $bandHistoryImages = \App\Models\BandHistoryImage::orderBy('sort_order')->get();
+
         $dashboardCards = \App\Models\SiteSetting::getDashboardCards();
         foreach ($dashboardCards as $key => &$card) {
             $card['enabled'] = \App\Models\SiteSetting::isDashboardCardEnabled($key);
