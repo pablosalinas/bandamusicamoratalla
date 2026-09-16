@@ -5,6 +5,7 @@
         </h2>
     </x-slot>
 
+    @if(\App\Models\SiteSetting::hasAnyDashboardCardEnabled())
     <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         
         <!-- Stats Card 1: Usuarios -->
@@ -402,6 +403,76 @@
         @endif
 
     </div>
+    @else
+    <!-- Estado sin tarjetas activas: Presentación creativa de la Banda -->
+    @php
+        $rawLogos = json_decode(\App\Models\SiteSetting::getSetting('site_logos', '[]'), true) ?: [];
+        $logosArray = [];
+        foreach ($rawLogos as $logo) {
+            if (is_string($logo)) $logosArray[] = ['path' => $logo, 'order' => 999];
+            else if (is_array($logo)) $logosArray[] = $logo;
+        }
+        usort($logosArray, function($a, $b) { return ($a['order'] ?? 999) <=> ($b['order'] ?? 999); });
+        $mainLogo = count($logosArray) > 0 ? $logosArray[0]['path'] : 'images/logo.jpg';
+        $mainLogoSrc = str_starts_with($mainLogo, 'images/') ? asset($mainLogo) : asset('storage/' . $mainLogo);
+        $bandName = \App\Models\SiteSetting::getSetting('band_name', 'Banda de Música de Moratalla');
+        $slogan = \App\Models\SiteSetting::getSetting('site_slogan', 'Tu banda');
+    @endphp
+
+    <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-900 via-gray-950 to-amber-950/30 border border-amber-500/20 shadow-2xl p-8 sm:p-14 text-center my-4">
+        <!-- Luces y efectos de fondo -->
+        <div class="absolute -top-24 -left-24 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute -bottom-24 -right-24 w-96 h-96 bg-yellow-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute inset-0 bg-[radial-gradient(#f59e0b_1px,transparent_1px)] [background-size:24px_24px] opacity-10 pointer-events-none"></div>
+
+        <div class="relative z-10 flex flex-col items-center justify-center max-w-2xl mx-auto">
+            <!-- Emblema / Logo con aura dorada -->
+            <div class="relative mb-6 group">
+                <div class="absolute -inset-1.5 bg-gradient-to-r from-amber-500 to-yellow-600 rounded-full blur opacity-50 group-hover:opacity-80 transition duration-500 animate-pulse"></div>
+                <div class="relative w-32 h-32 sm:w-40 sm:h-40 rounded-full bg-gray-950 p-3 shadow-2xl border border-amber-500/30 flex items-center justify-center overflow-hidden">
+                    <img src="{{ $mainLogoSrc }}" alt="{{ $bandName }}" class="w-full h-full object-contain filter drop-shadow-[0_0_15px_rgba(245,158,11,0.5)]">
+                </div>
+            </div>
+
+            <!-- Distintivo Histórico -->
+            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-400 text-xs font-semibold tracking-widest uppercase mb-4 shadow-sm">
+                <span>Desde 1854</span>
+                <span class="text-amber-500/40">•</span>
+                <span>{{ date('Y') - 1854 + 1 }} años de historia</span>
+            </div>
+
+            <!-- Nombre de la Banda con tipografía dorada -->
+            <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight text-white mb-3">
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-yellow-500 drop-shadow">
+                    {{ $bandName }}
+                </span>
+            </h1>
+
+            <!-- Lema de la Banda -->
+            <p class="text-base sm:text-lg text-amber-300/80 font-medium italic tracking-wide max-w-md mb-6">
+                “{{ $slogan }}”
+            </p>
+
+            <div class="h-px w-24 bg-gradient-to-r from-transparent via-amber-500/50 to-transparent my-2"></div>
+
+            <p class="text-xs sm:text-sm text-gray-400 max-w-lg mt-3 leading-relaxed">
+                Todas las tarjetas estadísticas del panel están actualmente desactivadas. Utiliza el menú lateral para acceder directamente a cualquier sección o pulsa abajo para personalizarlas.
+            </p>
+
+            <!-- Acceso a configurar tarjetas -->
+            <div class="mt-6 flex flex-wrap gap-3 justify-center">
+                <a href="{{ route('admin.settings.index', ['tab' => 'tarjetas']) }}" class="inline-flex items-center gap-2 rounded-xl bg-amber-600/90 hover:bg-amber-500 px-5 py-2.5 text-xs sm:text-sm font-semibold text-white shadow-lg shadow-amber-900/30 border border-amber-400/30 transition-all hover:scale-105">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    Personalizar Tarjetas
+                </a>
+                <a href="{{ url('/') }}" target="_blank" class="inline-flex items-center gap-2 rounded-xl bg-gray-800/80 hover:bg-gray-700 px-5 py-2.5 text-xs sm:text-sm font-semibold text-gray-300 border border-gray-700 transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                    Ver Web Pública
+                </a>
+            </div>
+        </div>
+    </div>
+    @endif
 
     <!-- Welcome Section -->
     <div class="mt-8 overflow-hidden rounded-xl bg-gray-900 border border-gray-800 shadow-xl relative">

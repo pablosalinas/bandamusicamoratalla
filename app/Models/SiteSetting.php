@@ -23,6 +23,16 @@ class SiteSetting extends Model
         return $val === '1' || $val === true || $val === 1 || $val === 'true';
     }
 
+    public static function hasAnyDashboardCardEnabled(): bool
+    {
+        foreach (array_keys(self::getDashboardCards()) as $key) {
+            if (self::isDashboardCardEnabled($key)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public static function getDashboardCards(): array
     {
         return [

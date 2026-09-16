@@ -81,30 +81,23 @@
             </div>
 
             <!-- TARJETAS DEL PANEL DE CONTROL -->
-            <div x-show="tab === 'tarjetas'" x-cloak x-data="{
-                selectAll() {
-                    this.$el.querySelectorAll('input[type=checkbox]').forEach(el => el.checked = true);
-                },
-                deselectAll() {
-                    this.$el.querySelectorAll('input[type=checkbox]').forEach(el => el.checked = false);
-                }
-            }">
+            <div x-show="tab === 'tarjetas'" x-cloak>
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                     <div>
                         <h3 class="text-2xl font-semibold text-white">Tarjetas del Panel de Control</h3>
                         <p class="text-sm text-gray-400 mt-1">Activa o desactiva las tarjetas de acceso rápido y estadísticas que se muestran en el Panel de Control principal.</p>
                     </div>
                     <div class="flex items-center gap-2">
-                        <button type="button" @click="selectAll()" class="rounded-md bg-gray-800 hover:bg-gray-700 px-3 py-1.5 text-xs font-medium text-gray-300 transition-colors border border-gray-700">
+                        <button type="button" onclick="document.querySelectorAll('#dashboard-cards-form input[type=checkbox]').forEach(el => el.checked = true)" class="rounded-md bg-gray-800 hover:bg-gray-700 px-3.5 py-2 text-xs font-semibold text-gray-200 transition-colors border border-gray-700 cursor-pointer shadow-sm active:scale-95">
                             Activar todas
                         </button>
-                        <button type="button" @click="deselectAll()" class="rounded-md bg-gray-800 hover:bg-gray-700 px-3 py-1.5 text-xs font-medium text-gray-300 transition-colors border border-gray-700">
+                        <button type="button" onclick="document.querySelectorAll('#dashboard-cards-form input[type=checkbox]').forEach(el => el.checked = false)" class="rounded-md bg-gray-800 hover:bg-gray-700 px-3.5 py-2 text-xs font-semibold text-gray-200 transition-colors border border-gray-700 cursor-pointer shadow-sm active:scale-95">
                             Desactivar todas
                         </button>
                     </div>
                 </div>
 
-                <form action="{{ route('admin.settings.dashboard-cards.update') }}" method="POST" class="bg-gray-900 shadow-sm ring-1 ring-gray-800 sm:rounded-xl">
+                <form id="dashboard-cards-form" action="{{ route('admin.settings.dashboard-cards.update') }}" method="POST" class="bg-gray-900 shadow-sm ring-1 ring-gray-800 sm:rounded-xl">
                     @csrf
                     <div class="p-6 divide-y divide-gray-800/80">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pb-6">
