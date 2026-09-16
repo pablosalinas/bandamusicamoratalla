@@ -402,10 +402,10 @@
         <div class="absolute inset-0 bg-gradient-to-b from-gray-950/40 via-gray-950/80 to-gray-950"></div>
         <div class="absolute inset-0 bg-gradient-to-r from-amber-900/20 to-transparent mix-blend-overlay"></div>
 
-        <div class="relative z-10 text-center max-w-4xl px-6 mt-4">
-            <div class="inline-flex flex-col sm:flex-row items-center justify-center px-5 py-2 mb-4 rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-400 text-sm font-semibold tracking-wide uppercase shadow-[0_0_10px_rgba(245,158,11,0.1)] gap-2">
+        <div class="relative z-10 text-center max-w-3xl px-4 mt-2">
+            <div class="inline-flex items-center justify-center px-3.5 py-1 mb-3 rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-400 text-xs font-semibold tracking-wider uppercase shadow-sm gap-2">
                 <span>Desde 1854</span>
-                <span class="hidden sm:inline text-amber-500/50">•</span>
+                <span class="text-amber-500/50">•</span>
                 <span>{{ date('Y') - 1854 + 1 }} años de historia</span>
             </div>
             
@@ -421,15 +421,14 @@
                 $lowestOrderLogoSrc = str_starts_with($lowestOrderLogo, 'images/') ? asset($lowestOrderLogo) : asset('storage/' . $lowestOrderLogo);
             @endphp
             
-            <div class="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-6 mb-4">
-                <img src="{{ $lowestOrderLogoSrc }}" alt="Logo Banda de Música de Moratalla" class="w-16 h-16 md:w-24 md:h-24 object-contain rounded-full shadow-[0_0_20px_rgba(245,158,11,0.3)] border-2 border-amber-500/20 shrink-0">
-                <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight text-center md:text-left mb-0">
-                    El Alma Sonora de <br/>
-                    <span class="text-gold">Moratalla</span>
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-2">
+                <img src="{{ $lowestOrderLogoSrc }}" alt="Logo Banda de Música de Moratalla" class="w-12 h-12 sm:w-14 sm:h-14 object-contain rounded-full shadow-[0_0_15px_rgba(245,158,11,0.25)] border border-amber-500/30 shrink-0">
+                <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-center sm:text-left mb-0">
+                    El Alma Sonora de <span class="text-gold">Moratalla</span>
                 </h1>
             </div>
             
-            <p class="text-base md:text-lg text-gray-300 mb-4 leading-relaxed font-light max-w-2xl mx-auto">
+            <p class="text-xs sm:text-sm text-gray-400 mb-2 leading-relaxed font-light max-w-xl mx-auto">
                 Acompañamos cada momento especial de nuestro pueblo con pasión, dedicación y excelencia musical.
             </p>
         </div>
