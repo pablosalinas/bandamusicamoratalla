@@ -437,12 +437,12 @@
 
 
     <!-- Noticias Section -->
-    <section id="noticias" class="py-12 relative bg-gray-950/50">
+    <section id="noticias" class="py-8 relative bg-gray-950/50">
         <div class="max-w-7xl mx-auto px-6 lg:px-8">
-            <div class="text-center mb-8">
-                <h2 class="text-3xl md:text-5xl font-bold mb-4">Noticias y Eventos</h2>
-                <div class="h-1 w-20 bg-amber-500 mx-auto rounded-full"></div>
-                <p class="mt-6 text-gray-400 max-w-2xl mx-auto text-lg">
+            <div class="text-center mb-6">
+                <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-white mb-2">Noticias y Eventos</h2>
+                <div class="h-0.5 w-12 bg-amber-500 mx-auto rounded-full"></div>
+                <p class="mt-2 text-gray-400 max-w-xl mx-auto text-sm">
                     Mantente informado sobre nuestros conciertos, eventos y novedades de la banda.
                 </p>
             </div>
@@ -563,11 +563,11 @@
     </section>
 
     <!-- Historia Section -->
-    <section id="historia" class="py-12 relative">
+    <section id="historia" class="py-8 relative">
         <div class="max-w-7xl mx-auto px-6 lg:px-8">
-            <div class="text-center mb-8">
-                <h2 class="text-3xl md:text-5xl font-bold mb-4">Historia de la Banda</h2>
-                <div class="h-1 w-20 bg-amber-500 mx-auto rounded-full"></div>
+            <div class="text-center mb-6">
+                <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-white mb-2">Historia de la Banda</h2>
+                <div class="h-0.5 w-12 bg-amber-500 mx-auto rounded-full"></div>
             </div>
 
             <div class="glass-panel p-8 rounded-2xl flex flex-col md:flex-row gap-8 items-start">
@@ -720,12 +720,12 @@
     </section>
 
     <!-- Archivo Sonoro Section -->
-    <section id="archivo-sonoro" class="py-12 relative bg-gray-950">
+    <section id="archivo-sonoro" class="py-8 relative bg-gray-950">
         <div class="max-w-7xl mx-auto px-6 lg:px-8">
-            <div class="text-center mb-8">
-                <h2 class="text-3xl md:text-5xl font-bold mb-4">Archivo Multimedia</h2>
-                <div class="h-1 w-20 bg-amber-500 mx-auto rounded-full"></div>
-                <p class="text-gray-400 mt-4 max-w-2xl mx-auto">Disfruta de nuestras interpretaciones y actuaciones multimedia.</p>
+            <div class="text-center mb-6">
+                <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-white mb-2">Archivo Multimedia</h2>
+                <div class="h-0.5 w-12 bg-amber-500 mx-auto rounded-full"></div>
+                <p class="text-gray-400 mt-2 max-w-xl mx-auto text-sm">Disfruta de nuestras interpretaciones y actuaciones multimedia.</p>
             </div>
             
             @if(isset($mediaArchives) && $mediaArchives->count() > 0)
