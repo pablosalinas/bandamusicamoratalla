@@ -395,17 +395,17 @@
     </section>
     @endif
 
-    <!-- Hero Section -->
-    <section id="inicio" class="relative min-h-[40vh] flex items-center justify-center overflow-hidden py-8">
+    <!-- Hero Section (Franja estrecha) -->
+    <section id="inicio" class="relative flex items-center justify-center overflow-hidden py-4 border-b border-gray-900/60">
         <!-- Background Image & Gradient overlay -->
-        <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1511192336575-5a79af67a629?q=80&w=2000&auto=format&fit=crop')] bg-cover bg-center opacity-30 transform scale-105 animate-[pulse_10s_ease-in-out_infinite_alternate]"></div>
-        <div class="absolute inset-0 bg-gradient-to-b from-gray-950/40 via-gray-950/80 to-gray-950"></div>
-        <div class="absolute inset-0 bg-gradient-to-r from-amber-900/20 to-transparent mix-blend-overlay"></div>
+        <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1511192336575-5a79af67a629?q=80&w=2000&auto=format&fit=crop')] bg-cover bg-center opacity-25"></div>
+        <div class="absolute inset-0 bg-gradient-to-b from-gray-950/70 via-gray-950/90 to-gray-950"></div>
+        <div class="absolute inset-0 bg-gradient-to-r from-amber-900/10 to-transparent mix-blend-overlay"></div>
 
-        <div class="relative z-10 text-center max-w-3xl px-4 mt-2">
-            <div class="inline-flex items-center justify-center px-3.5 py-1 mb-3 rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-400 text-xs font-semibold tracking-wider uppercase shadow-sm gap-2">
+        <div class="relative z-10 text-center max-w-3xl px-4 my-1">
+            <div class="inline-flex items-center justify-center px-3 py-0.5 mb-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-400 text-[11px] font-semibold tracking-wider uppercase shadow-sm gap-1.5">
                 <span>Desde 1854</span>
-                <span class="text-amber-500/50">•</span>
+                <span class="text-amber-500/40">•</span>
                 <span>{{ date('Y') - 1854 + 1 }} años de historia</span>
             </div>
             
@@ -421,22 +421,21 @@
                 $lowestOrderLogoSrc = str_starts_with($lowestOrderLogo, 'images/') ? asset($lowestOrderLogo) : asset('storage/' . $lowestOrderLogo);
             @endphp
             
-            <div class="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-2">
-                <img src="{{ $lowestOrderLogoSrc }}" alt="Logo Banda de Música de Moratalla" class="w-12 h-12 sm:w-14 sm:h-14 object-contain rounded-full shadow-[0_0_15px_rgba(245,158,11,0.25)] border border-amber-500/30 shrink-0">
-                <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-center sm:text-left mb-0">
+            <div class="flex flex-row items-center justify-center gap-3 mb-1">
+                <img src="{{ $lowestOrderLogoSrc }}" alt="Logo Banda de Música de Moratalla" class="w-10 h-10 sm:w-11 sm:h-11 object-contain rounded-full shadow-[0_0_10px_rgba(245,158,11,0.2)] border border-amber-500/30 shrink-0">
+                <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight text-white mb-0">
                     El Alma Sonora de <span class="text-gold">Moratalla</span>
                 </h1>
             </div>
             
-            <p class="text-xs sm:text-sm text-gray-400 mb-2 leading-relaxed font-light max-w-xl mx-auto">
+            <p class="text-xs text-gray-400 leading-relaxed font-light max-w-xl mx-auto">
                 Acompañamos cada momento especial de nuestro pueblo con pasión, dedicación y excelencia musical.
             </p>
         </div>
     </section>
 
-
     <!-- Noticias Section -->
-    <section id="noticias" class="py-8 relative bg-gray-950/50">
+    <section id="noticias" class="pt-6 pb-8 relative bg-gray-950/50">
         <div class="max-w-7xl mx-auto px-6 lg:px-8">
             <div class="text-center mb-6">
                 <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-white mb-2">Noticias y Eventos</h2>
