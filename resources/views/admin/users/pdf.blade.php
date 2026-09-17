@@ -196,6 +196,8 @@
         <tbody>
             @forelse($users as $index => $u)
                 @php
+                    $isMinor = $u->birth_date && \Carbon\Carbon::parse($u->birth_date)->age < 18;
+
                     // Concatenar teléfonos familiares de forma muy compacta
                     $familyPhones = [];
                     if ($u->father_phone) $familyPhones[] = 'P:' . $u->father_phone;
@@ -222,12 +224,24 @@
                     ];
                     $rolTitle = $rolesFull[$u->role] ?? ucfirst($u->role);
                 @endphp
-                <tr>
+                <tr class="{{ $isMinor ? 'bg-amber-50/50' : '' }}">
                     <td>
-                        <strong class="text-gray-900">{{ $displayName }}</strong>
+                        <div class="flex items-center gap-1.5">
+                            <strong class="text-gray-900">{{ $displayName }}</strong>
+                            @if($isMinor)
+                                <span class="inline-flex items-center px-1 py-0.2 rounded text-[7.5px] font-bold bg-amber-500 text-gray-950 border border-amber-600/30 whitespace-nowrap" title="Menor de 18 años">
+                                    MENOR
+                                </span>
+                            @endif
+                        </div>
                     </td>
                     <td style="text-align: center; font-family: monospace; letter-spacing: -0.02em;">{{ $u->nif ?: '-' }}</td>
-                    <td style="text-align: center;">{{ $u->birth_date ? $u->birth_date->format('d/m/y') : '-' }}</td>
+                    <td style="text-align: center;">
+                        {{ $u->birth_date ? $u->birth_date->format('d/m/y') : '-' }}
+                        @if($isMinor)
+                            <div style="font-size: 7px; font-weight: 700; color: #B45309; line-height: 1;">&lt;18a</div>
+                        @endif
+                    </td>
                     <td style="word-break: break-all; color: #1F2937;">{{ $u->email }}</td>
                     <td style="font-weight: 500; font-family: monospace; letter-spacing: -0.02em;">{{ $u->phone ?: '-' }}</td>
                     <td style="color: #4B5563; font-size: 8px; font-family: monospace; letter-spacing: -0.02em;">
@@ -299,25 +313,33 @@
         </tbody>
     </table>
 
-    <!-- Leyenda de iconos de roles -->
-    <div class="mt-3 flex flex-wrap items-center gap-4 text-[8px] text-gray-500 bg-gray-50 p-1.5 rounded border border-gray-200">
-        <span class="font-bold text-gray-600">Leyenda de Roles:</span>
-        <span class="inline-flex items-center gap-1">
-            <svg class="w-3 h-3 text-blue-600 inline" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
-            <strong>Músico</strong>
-        </span>
-        <span class="inline-flex items-center gap-1">
-            <svg class="w-3 h-3 text-amber-600 inline" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
-            <strong>Director</strong>
-        </span>
-        <span class="inline-flex items-center gap-1">
-            <svg class="w-3 h-3 text-emerald-600 inline" fill="currentColor" viewBox="0 0 20 20"><path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z"/><path fill-rule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clip-rule="evenodd"/></svg>
-            <strong>Tesorero</strong>
-        </span>
-        <span class="inline-flex items-center gap-1">
-            <svg class="w-3 h-3 text-purple-600 inline" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
-            <strong>Administrador</strong>
-        </span>
+    <!-- Leyenda de iconos de roles y marcas -->
+    <div class="mt-3 flex flex-wrap items-center justify-between gap-3 text-[8px] text-gray-500 bg-gray-50 p-1.5 rounded border border-gray-200">
+        <div class="flex flex-wrap items-center gap-4">
+            <span class="font-bold text-gray-600">Roles:</span>
+            <span class="inline-flex items-center gap-1">
+                <svg class="w-3 h-3 text-blue-600 inline" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+                <strong>Músico</strong>
+            </span>
+            <span class="inline-flex items-center gap-1">
+                <svg class="w-3 h-3 text-amber-600 inline" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                <strong>Director</strong>
+            </span>
+            <span class="inline-flex items-center gap-1">
+                <svg class="w-3 h-3 text-emerald-600 inline" fill="currentColor" viewBox="0 0 20 20"><path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z"/><path fill-rule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clip-rule="evenodd"/></svg>
+                <strong>Tesorero</strong>
+            </span>
+            <span class="inline-flex items-center gap-1">
+                <svg class="w-3 h-3 text-purple-600 inline" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                <strong>Administrador</strong>
+            </span>
+        </div>
+        <div class="flex items-center gap-2">
+            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[7.5px] font-bold bg-amber-500 text-gray-950 border border-amber-600/30">
+                MENOR
+            </span>
+            <span>Músico menor de 18 años (contacto tutores requerido)</span>
+        </div>
     </div>
 
     <div class="mt-4 pt-2 border-t border-gray-200 text-[8.5px] text-gray-500 flex justify-between items-center">

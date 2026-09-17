@@ -364,9 +364,9 @@ class UserController extends Controller
                 $nameHeader,
                 'NOMBRE',
                 'APELLIDOS',
+                'MENOR DE EDAD',
                 'NIF/NIE',
                 'FECHA NACIMIENTO',
-                'EDAD',
                 'EMAIL',
                 'TELÉFONO',
                 'TEL. PADRE',
@@ -392,7 +392,8 @@ class UserController extends Controller
             ];
 
             foreach ($users as $user) {
-                $age = $user->birth_date ? \Carbon\Carbon::parse($user->birth_date)->age : '';
+                $isMinor = $user->birth_date && \Carbon\Carbon::parse($user->birth_date)->age < 18;
+                $menorTexto = $user->birth_date ? ($isMinor ? 'SÍ (MENOR)' : 'NO') : '-';
                 $estado = $user->is_active ? 'Activo' : ($user->privacy_accepted_at ? 'Pendiente Validación' : 'Inactivo / Baja');
                 $rolNombre = $rolesEsp[$user->role] ?? ucfirst($user->role);
 
@@ -405,9 +406,9 @@ class UserController extends Controller
                     $composedName,
                     $user->name,
                     $user->last_name,
+                    $menorTexto,
                     $user->nif,
                     $user->birth_date ? $user->birth_date->format('d/m/Y') : '',
-                    $age,
                     $user->email,
                     $user->phone,
                     $user->father_phone,
