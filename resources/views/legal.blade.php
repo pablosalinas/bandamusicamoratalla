@@ -69,7 +69,7 @@
 
     <!-- Footer -->
     <footer class="border-t border-gray-800 bg-gray-950 py-8 text-center text-sm text-gray-500">
-        <p>&copy; {{ date('Y') }} Asociación Banda de Música de Moratalla. Todos los derechos reservados.</p>
+        <p>&copy; {{ date('Y') == '2026' ? '2026' : '2026 - ' . date('Y') }} Asociación Banda de Música de Moratalla. Todos los derechos reservados.</p>
     </footer>
 </body>
 </html>

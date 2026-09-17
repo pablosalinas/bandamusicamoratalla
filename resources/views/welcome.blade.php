@@ -889,7 +889,7 @@
             <p>
                 &copy; {{ date('Y') == '2026' ? '2026' : '2026 - ' . date('Y') }} Asociación Banda de Música de Moratalla. Todos los derechos reservados. 
                 <span class="block sm:inline mt-2 sm:mt-0 sm:ml-2">
-                    Diseñado por <a href="https://www.moratalla-murcia.com" target="_blank" class="text-amber-500 hover:text-amber-400 transition-colors">@ www.moratalla-murcia.com</a> - {{ date('Y') == '2025' ? '2025' : '2025 - ' . date('Y') }}
+                    Diseñado por <a href="https://www.moratalla-murcia.com" target="_blank" class="text-amber-500 hover:text-amber-400 transition-colors">@ www.moratalla-murcia.com</a> - {{ date('Y') == '2026' ? '2026' : '2026 - ' . date('Y') }}
                 </span>
             </p>
             <div class="mt-4 md:mt-0 space-x-4 flex items-center">
