@@ -106,10 +106,13 @@ Route::get('/', function () {
 
     $carouselMedia = \App\Models\CarouselMedia::orderBy('sort_order')->get();
     $carouselSpeed = (int) \App\Models\SiteSetting::getSetting('carousel_speed', 4);
+    $newsSpeed = (int) \App\Models\SiteSetting::getSetting('news_speed', 4);
+    $historySpeed = (int) \App\Models\SiteSetting::getSetting('history_speed', 4);
+    $waitVideosFinish = \App\Models\SiteSetting::getSetting('wait_videos_finish', '1') == '1';
     
     $mediaArchives = \App\Models\MediaArchive::where('is_active', true)->orderBy('sort_order')->get();
 
-    return view('welcome', compact('news', 'band_history', 'bandHistoryImages', 'visit_count', 'carouselMedia', 'carouselSpeed', 'mediaArchives'));
+    return view('welcome', compact('news', 'band_history', 'bandHistoryImages', 'visit_count', 'carouselMedia', 'carouselSpeed', 'newsSpeed', 'historySpeed', 'waitVideosFinish', 'mediaArchives'));
 });
 
 Route::view('/aviso-legal', 'legal')->name('legal');

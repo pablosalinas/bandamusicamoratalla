@@ -194,6 +194,8 @@
             windowWidth: window.innerWidth,
             globalMuted: true,
 
+            waitVideosFinish: {{ $waitVideosFinish ? 'true' : 'false' }},
+
             get visibleItems() {
                 if (this.windowWidth < 640) return 1;
                 if (this.windowWidth < 1024) return 2;
@@ -226,7 +228,16 @@
                 this.stopAutoplay();
                 this.$nextTick(() => {
                     let currentSlide = this.slides[this.currentIndex];
-                    if (!currentSlide || currentSlide.type !== 'video') {
+                    if (!currentSlide || currentSlide.type !== 'video' || !this.waitVideosFinish) {
+                        if (currentSlide && currentSlide.type === 'video') {
+                            let videoEl = document.getElementById('carousel-video-' + this.currentIndex);
+                            if (videoEl) {
+                                videoEl.muted = true;
+                                videoEl.currentTime = 0;
+                                let playPromise = videoEl.play();
+                                if (playPromise !== undefined) playPromise.catch(() => {});
+                            }
+                        }
                         this.scheduleNext();
                     } else {
                         let videoEl = document.getElementById('carousel-video-' + this.currentIndex);
@@ -461,7 +472,8 @@
                                   openNews: false, 
                                   activeNewsSlide: 0, 
                                   timer: null,
-                                  speed: 4000,
+                                  speed: {{ ($newsSpeed ?? 4) * 1000 }},
+                                  waitVideosFinish: {{ $waitVideosFinish ? 'true' : 'false' }},
                                   newsSlides: {{ json_encode($item->newsImages->map(function($i) { 
                                       $ext = strtolower(pathinfo($i->url, PATHINFO_EXTENSION));
                                       $isVideo = in_array($ext, ['mp4', 'mov', 'webm', 'avi']);
@@ -481,12 +493,12 @@
                                           
                                           // Si estamos dentro del modal de información detallada de la noticia:
                                           if (this.openNews) {
-                                              if (!currentSlide || currentSlide.type !== 'video') {
+                                              if (!currentSlide || currentSlide.type !== 'video' || !this.waitVideosFinish) {
                                                   this.timer = setTimeout(() => {
                                                       this.next();
                                                   }, this.speed);
                                               } else {
-                                                  // Es un vídeo dentro del modal: esperar a que termine de reproducirse
+                                                  // Es un vídeo dentro del modal y la opción esperar a que acabe el vídeo está activa
                                                   let container = this.$el.querySelector('.modal-news-carousel');
                                                   let videoEl = container ? container.querySelector('video') : null;
                                                   if (videoEl) {
@@ -504,7 +516,7 @@
                                                   }
                                               }
                                           } else {
-                                              // En la tarjeta de la portada (rotación general): avanzar SIEMPRE cada 4 segundos
+                                              // En la tarjeta de la portada (rotación general): avanzar según la velocidad configurada
                                               let container = this.$el.querySelector('.card-news-carousel');
                                               let videoEl = container ? container.querySelector('video') : null;
                                               if (videoEl) {
@@ -701,7 +713,8 @@
                         openLightbox: false,
                         activeSlide: 0,
                         timer: null,
-                        speed: 4000,
+                        speed: {{ ($historySpeed ?? 4) * 1000 }},
+                        waitVideosFinish: {{ $waitVideosFinish ? 'true' : 'false' }},
                         slides: {{ json_encode($bandHistoryImages->map(function($i) {
                             $ext = strtolower(pathinfo($i->url, PATHINFO_EXTENSION));
                             $isVideo = in_array($ext, ['mp4', 'mov', 'webm', 'avi']);
@@ -718,7 +731,16 @@
 
                             this.$nextTick(() => {
                                 let currentSlide = this.slides[this.activeSlide];
-                                if (!currentSlide || currentSlide.type !== 'video') {
+                                if (!currentSlide || currentSlide.type !== 'video' || !this.waitVideosFinish) {
+                                    if (currentSlide && currentSlide.type === 'video') {
+                                        let container = this.openLightbox ? document.querySelector('.lightbox-media-container') : this.$el.querySelector('.historia-card-carousel');
+                                        let videoEl = container ? container.querySelector('video') : null;
+                                        if (videoEl) {
+                                            videoEl.currentTime = 0;
+                                            let playPromise = videoEl.play();
+                                            if (playPromise !== undefined) playPromise.catch(() => {});
+                                        }
+                                    }
                                     this.timer = setTimeout(() => {
                                         this.next();
                                     }, this.speed);

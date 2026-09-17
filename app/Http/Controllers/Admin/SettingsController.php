@@ -54,6 +54,9 @@ class SettingsController extends Controller
             'statutes' => \App\Models\SiteSetting::getSetting('statutes', ''),
             'band_history' => \App\Models\SiteSetting::getSetting('band_history', ''),
             'carousel_speed' => \App\Models\SiteSetting::getSetting('carousel_speed', 4),
+            'news_speed' => \App\Models\SiteSetting::getSetting('news_speed', 4),
+            'history_speed' => \App\Models\SiteSetting::getSetting('history_speed', 4),
+            'wait_videos_finish' => \App\Models\SiteSetting::getSetting('wait_videos_finish', '1'),
             'band_iban' => $bandIban,
             'site_logos' => $logos,
             'parental_consent_template' => \App\Models\SiteSetting::getSetting('parental_consent_template', ''),
@@ -99,6 +102,9 @@ class SettingsController extends Controller
             'statutes' => 'nullable|string',
             'band_history' => 'nullable|string',
             'carousel_speed' => 'required|integer|min:1',
+            'news_speed' => 'nullable|integer|min:1',
+            'history_speed' => 'nullable|integer|min:1',
+            'wait_videos_finish' => 'nullable|in:0,1',
             'parental_consent_template' => 'nullable|string',
             'parental_consent_pdf' => 'nullable|file|mimes:pdf|max:10240',
             'allow_musician_registration' => 'nullable|boolean',
@@ -161,7 +167,8 @@ class SettingsController extends Controller
             );
         }
 
-        return redirect()->route('admin.settings.index')->with('success', 'Configuración actualizada correctamente.');
+        $tab = $request->input('settings_section', $request->input('tab', 'general'));
+        return redirect()->route('admin.settings.index', ['tab' => $tab])->with('success', 'Configuración actualizada correctamente.');
     }
 
     public function storeCarouselMedia(Request $request)

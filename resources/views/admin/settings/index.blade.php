@@ -266,21 +266,80 @@
             <div x-show="tab === 'apariencia'" x-cloak>
                 <h3 class="text-2xl font-semibold text-white mb-6">Apariencia y Multimedia</h3>
                 
-                <!-- Velocidad del carrusel -->
+                <!-- Configuración de Tiempos de Rotación Multimedia -->
                 <form action="{{ route('admin.settings.update') }}" method="POST" class="bg-gray-900 shadow-sm ring-1 ring-gray-800 sm:rounded-xl mb-8">
                     @csrf
+                    <input type="hidden" name="settings_section" value="apariencia">
                     <input type="hidden" name="band_name" value="{{ $settings['band_name'] }}">
                     <input type="hidden" name="session_timeout" value="{{ $settings['session_timeout'] }}">
                     
-                    <div class="px-4 py-4 sm:px-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div class="px-4 py-6 sm:p-8 space-y-6">
                         <div>
-                            <label for="carousel_speed" class="block text-sm font-medium leading-6 text-white">Velocidad del Carrusel (Segundos)</label>
-                            <p class="text-sm text-gray-400">Tiempo que tarda en pasar de una foto a otra en la página principal.</p>
+                            <h4 class="text-xl font-bold text-white mb-1">Tiempos de Transición y Rotación Multimedia</h4>
+                            <p class="text-sm text-gray-400">Configura los segundos de transición entre imágenes para cada sección y el comportamiento de los vídeos.</p>
                         </div>
-                        <div class="flex items-center gap-2">
-                            <input type="number" name="carousel_speed" id="carousel_speed" value="{{ old('carousel_speed', $settings['carousel_speed'] ?? 4) }}" required min="1" class="block w-24 rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm text-center">
-                            <button type="submit" class="rounded-md bg-amber-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-amber-500">Guardar</button>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
+                            <!-- Carrusel Principal -->
+                            <div class="bg-gray-800/60 p-4 rounded-xl border border-gray-700/60">
+                                <label for="carousel_speed" class="block text-sm font-semibold text-white mb-1">Carrusel Superior</label>
+                                <p class="text-xs text-gray-400 mb-3">Segundos por diapositiva en la cabecera principal.</p>
+                                <div class="flex items-center gap-2">
+                                    <input type="number" name="carousel_speed" id="carousel_speed" value="{{ old('carousel_speed', $settings['carousel_speed'] ?? 4) }}" required min="1" class="block w-full rounded-md border-0 bg-gray-900 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm text-center font-bold">
+                                    <span class="text-xs text-gray-400 font-medium">seg.</span>
+                                </div>
+                            </div>
+
+                            <!-- Noticias -->
+                            <div class="bg-gray-800/60 p-4 rounded-xl border border-gray-700/60">
+                                <label for="news_speed" class="block text-sm font-semibold text-white mb-1">Noticias y Eventos</label>
+                                <p class="text-xs text-gray-400 mb-3">Segundos de rotación de fotos en tarjetas y modal.</p>
+                                <div class="flex items-center gap-2">
+                                    <input type="number" name="news_speed" id="news_speed" value="{{ old('news_speed', $settings['news_speed'] ?? 4) }}" required min="1" class="block w-full rounded-md border-0 bg-gray-900 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm text-center font-bold">
+                                    <span class="text-xs text-gray-400 font-medium">seg.</span>
+                                </div>
+                            </div>
+
+                            <!-- Historia -->
+                            <div class="bg-gray-800/60 p-4 rounded-xl border border-gray-700/60">
+                                <label for="history_speed" class="block text-sm font-semibold text-white mb-1">Historia de la Banda</label>
+                                <p class="text-xs text-gray-400 mb-3">Segundos por fotografía en la sección de Historia.</p>
+                                <div class="flex items-center gap-2">
+                                    <input type="number" name="history_speed" id="history_speed" value="{{ old('history_speed', $settings['history_speed'] ?? 4) }}" required min="1" class="block w-full rounded-md border-0 bg-gray-900 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm text-center font-bold">
+                                    <span class="text-xs text-gray-400 font-medium">seg.</span>
+                                </div>
+                            </div>
                         </div>
+
+                        <!-- Comportamiento de Vídeos -->
+                        <div class="pt-4 border-t border-gray-800">
+                            <label class="block text-sm font-semibold text-white mb-2">Comportamiento de los Vídeos en la Rotación</label>
+                            <p class="text-xs text-gray-400 mb-4">Indica si los vídeos deben respetar el tiempo de rotación estándar o deben finalizar completamente antes de avanzar.</p>
+                            
+                            <div class="space-y-3">
+                                <label class="flex items-start gap-3 p-3.5 rounded-xl border border-gray-700/60 bg-gray-800/40 hover:bg-gray-800 cursor-pointer transition-colors">
+                                    <input type="radio" name="wait_videos_finish" value="1" {{ old('wait_videos_finish', $settings['wait_videos_finish'] ?? '1') == '1' ? 'checked' : '' }} class="mt-1 h-4 w-4 border-gray-700 text-amber-600 focus:ring-amber-500 bg-gray-900">
+                                    <div class="text-sm">
+                                        <span class="font-medium text-white block">Esperar a que acabe el vídeo antes de rotar (Recomendado)</span>
+                                        <span class="text-gray-400 text-xs">Las fotos rotarán al tiempo indicado, pero si aparece un vídeo se reproducirá entero hasta su fin para pasar a la siguiente diapositiva.</span>
+                                    </div>
+                                </label>
+
+                                <label class="flex items-start gap-3 p-3.5 rounded-xl border border-gray-700/60 bg-gray-800/40 hover:bg-gray-800 cursor-pointer transition-colors">
+                                    <input type="radio" name="wait_videos_finish" value="0" {{ old('wait_videos_finish', $settings['wait_videos_finish'] ?? '1') == '0' ? 'checked' : '' }} class="mt-1 h-4 w-4 border-gray-700 text-amber-600 focus:ring-amber-500 bg-gray-900">
+                                    <div class="text-sm">
+                                        <span class="font-medium text-white block">Sujetos siempre al tiempo fijo de rotación</span>
+                                        <span class="text-gray-400 text-xs">Tanto fotos como vídeos avanzarán estrictamente según los segundos programados, sin esperar a que el vídeo termine.</span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-end px-4 py-4 sm:px-8 border-t border-gray-800">
+                        <button type="submit" class="rounded-md bg-amber-600 px-6 py-2 text-sm font-semibold text-white shadow-sm hover:bg-amber-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber-600">
+                            Guardar Tiempos y Ajustes Multimedia
+                        </button>
                     </div>
                 </form>
 
