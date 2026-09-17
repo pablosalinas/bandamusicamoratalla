@@ -668,7 +668,7 @@
                                                             <template x-if="slide.type === 'video'">
                                                                 <video :src="slide.url" class="max-w-full max-h-full object-contain" controls></video>
                                                             </template>
-                                                            <p x-show="slide.desc" class="absolute top-4 text-white text-sm md:text-base bg-black/70 px-4 py-1.5 rounded-full backdrop-blur-sm z-[110]" x-text="slide.desc"></p>
+                                                            <p x-show="slide.desc" class="absolute top-4 text-white text-xs sm:text-sm md:text-base bg-black/75 px-4 py-1.5 rounded-full backdrop-blur-sm z-[110] shadow-lg border border-white/10" x-text="slide.desc"></p>
                                                         </div>
                                                     </template>
                                                     
@@ -680,7 +680,7 @@
                                                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
                                                     </button>
                                                     
-                                                    <div x-show="newsSlides.length > 1" class="absolute bottom-2 flex space-x-2 z-20">
+                                                    <div x-show="newsSlides.length > 1" class="absolute bottom-2.5 flex space-x-2 z-20 bg-black/50 px-2.5 py-1 rounded-full backdrop-blur-sm">
                                                         <template x-for="(_, index) in newsSlides" :key="index">
                                                             <button @click.stop="activeNewsSlide = index; stopAutoplay(); startAutoplay()" class="w-2 h-2 rounded-full transition-colors" :class="activeNewsSlide === index ? 'bg-amber-500' : 'bg-white/40'"></button>
                                                         </template>
@@ -834,43 +834,43 @@
                                         <img :src="slide.url" :alt="slide.desc || 'Historia de la Banda'" class="w-full h-full object-cover">
                                     </template>
                                     
-                                    <!-- Degradado inferior para descripcion -->
-                                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
-                                    
-                                    <!-- Descripción del pie si existe -->
-                                    <div x-show="slide.desc" class="absolute bottom-3 left-4 right-4 text-xs sm:text-sm text-gray-200 font-medium line-clamp-2 drop-shadow" x-text="slide.desc"></div>
-                                </div>
-                            </template>
+                                     <!-- Degradado inferior para descripcion -->
+                                     <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none"></div>
+                                     
+                                     <!-- Descripción del pie si existe (con espacio inferior suficiente para los puntos) -->
+                                     <div x-show="slide.desc" class="absolute bottom-6 left-4 right-4 text-xs sm:text-sm text-gray-200 font-medium line-clamp-2 drop-shadow text-center" x-text="slide.desc"></div>
+                                 </div>
+                             </template>
 
-                            <!-- Badge contador / indicador superior -->
-                            <div class="absolute top-3 left-3 bg-black/60 backdrop-blur-md text-amber-400 text-xs font-semibold px-2.5 py-1 rounded-full border border-amber-500/30 flex items-center gap-1.5 shadow-lg pointer-events-none z-10">
-                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                <span><span x-text="activeSlide + 1"></span> / <span x-text="slides.length"></span></span>
-                            </div>
+                             <!-- Badge contador / indicador superior -->
+                             <div class="absolute top-3 left-3 bg-black/60 backdrop-blur-md text-amber-400 text-xs font-semibold px-2.5 py-1 rounded-full border border-amber-500/30 flex items-center gap-1.5 shadow-lg pointer-events-none z-10">
+                                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                 <span><span x-text="activeSlide + 1"></span> / <span x-text="slides.length"></span></span>
+                             </div>
 
-                            <!-- Botón ampliar (Abrir Lightbox) -->
-                            <button type="button" @click="openLightbox = true" class="absolute top-3 right-3 bg-black/60 hover:bg-amber-600 backdrop-blur-md text-white p-2 rounded-full border border-white/20 transition-all opacity-0 group-hover:opacity-100 z-10 shadow-lg" title="Ampliar imagen">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"/></svg>
-                            </button>
+                             <!-- Botón ampliar (Abrir Lightbox) -->
+                             <button type="button" @click="openLightbox = true" class="absolute top-3 right-3 bg-black/60 hover:bg-amber-600 backdrop-blur-md text-white p-2 rounded-full border border-white/20 transition-all opacity-0 group-hover:opacity-100 z-10 shadow-lg" title="Ampliar imagen">
+                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"/></svg>
+                             </button>
 
-                            <!-- Flecha Anterior -->
-                            <button type="button" x-show="slides.length > 1" @click.stop="prev()" class="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-amber-600 text-white p-2 rounded-full backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 z-10 shadow-md">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-                            </button>
+                             <!-- Flecha Anterior -->
+                             <button type="button" x-show="slides.length > 1" @click.stop="prev()" class="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-amber-600 text-white p-2 rounded-full backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 z-10 shadow-md">
+                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                             </button>
 
-                            <!-- Flecha Siguiente -->
-                            <button type="button" x-show="slides.length > 1" @click.stop="next()" class="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-amber-600 text-white p-2 rounded-full backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 z-10 shadow-md">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                            </button>
+                             <!-- Flecha Siguiente -->
+                             <button type="button" x-show="slides.length > 1" @click.stop="next()" class="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-amber-600 text-white p-2 rounded-full backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 z-10 shadow-md">
+                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                             </button>
 
-                            <!-- Puntos indicadores inferiores -->
-                            <div x-show="slides.length > 1" class="absolute bottom-2 left-1/2 -translate-x-1/2 flex space-x-1.5 bg-black/50 backdrop-blur-sm px-2.5 py-1 rounded-full z-10">
-                                <template x-for="(_, index) in slides" :key="index">
-                                    <button @click.stop="activeSlide = index; startAutoplay()" 
-                                            class="h-1.5 rounded-full transition-all duration-300"
-                                            :class="activeSlide === index ? 'w-5 bg-amber-500' : 'w-1.5 bg-white/40 hover:bg-white/70'"></button>
-                                </template>
-                            </div>
+                             <!-- Puntos indicadores inferiores -->
+                             <div x-show="slides.length > 1" class="absolute bottom-1.5 left-1/2 -translate-x-1/2 flex space-x-1.5 bg-black/60 backdrop-blur-sm px-2.5 py-1 rounded-full z-10">
+                                 <template x-for="(_, index) in slides" :key="index">
+                                     <button @click.stop="activeSlide = index; startAutoplay()" 
+                                             class="h-1.5 rounded-full transition-all duration-300"
+                                             :class="activeSlide === index ? 'w-5 bg-amber-500' : 'w-1.5 bg-white/40 hover:bg-white/70'"></button>
+                                 </template>
+                             </div>
                         </div>
                         
                         <!-- Modal Lightbox en pantalla completa -->
@@ -908,7 +908,7 @@
                                             <template x-if="slide.type !== 'video'">
                                                 <img :src="slide.url" class="max-h-[80vh] max-w-full object-contain rounded-lg shadow-2xl">
                                             </template>
-                                            <p x-show="slide.desc" class="absolute bottom-6 text-white text-sm sm:text-base font-medium text-center bg-black/75 px-6 py-2 rounded-full backdrop-blur-sm z-[110] max-w-2xl" x-text="slide.desc"></p>
+                                            <p x-show="slide.desc" class="absolute bottom-16 text-white text-sm sm:text-base font-medium text-center bg-black/75 px-6 py-2 rounded-full backdrop-blur-sm z-[110] max-w-2xl shadow-xl border border-white/10" x-text="slide.desc"></p>
                                         </div>
                                     </template>
                                 </div>
