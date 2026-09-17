@@ -268,13 +268,12 @@
                             </div>
                         </div>
 
-                        <form action="{{ route('admin.users.edit', $user) }}" method="GET" class="mb-4 flex flex-col sm:flex-row items-center gap-2">
-                            <input type="hidden" name="attendance_filter" value="{{ $filter }}">
-                            <input type="date" name="start_date" value="{{ request('start_date', now()->subYear()->toDateString()) }}" class="block w-full sm:w-auto rounded-md border-0 bg-gray-900 py-1.5 text-white shadow-sm ring-1 ring-inset ring-gray-700 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6" style="color-scheme: dark;">
+                        <div class="mb-4 flex flex-col sm:flex-row items-center gap-2">
+                            <input type="date" id="filter_start_date" value="{{ request('start_date', now()->subYear()->toDateString()) }}" class="block w-full sm:w-auto rounded-md border-0 bg-gray-900 py-1.5 text-white shadow-sm ring-1 ring-inset ring-gray-700 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6" style="color-scheme: dark;">
                             <span class="text-gray-500">-</span>
-                            <input type="date" name="end_date" value="{{ request('end_date', now()->toDateString()) }}" class="block w-full sm:w-auto rounded-md border-0 bg-gray-900 py-1.5 text-white shadow-sm ring-1 ring-inset ring-gray-700 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6" style="color-scheme: dark;">
-                            <button type="submit" class="inline-flex w-full sm:w-auto justify-center items-center rounded-md bg-gray-700 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-600">Filtrar Fechas</button>
-                        </form>
+                            <input type="date" id="filter_end_date" value="{{ request('end_date', now()->toDateString()) }}" class="block w-full sm:w-auto rounded-md border-0 bg-gray-900 py-1.5 text-white shadow-sm ring-1 ring-inset ring-gray-700 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6" style="color-scheme: dark;">
+                            <button type="button" onclick="window.location.href='{{ route('admin.users.edit', $user) }}?attendance_filter={{ $filter }}&start_date=' + document.getElementById('filter_start_date').value + '&end_date=' + document.getElementById('filter_end_date').value" class="inline-flex w-full sm:w-auto justify-center items-center rounded-md bg-gray-700 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-600">Filtrar Fechas</button>
+                        </div>
                         
                         @if($attendances->count() > 0)
                             <div class="overflow-hidden shadow ring-1 ring-white/10 sm:rounded-lg">
