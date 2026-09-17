@@ -488,72 +488,88 @@
                                       this.stopAutoplay();
                                       if (this.newsSlides.length <= 1) return;
                                       
-                                      this.$nextTick(() => {
-                                          let currentSlide = this.newsSlides[this.activeNewsSlide];
-                                          
-                                          // Si estamos dentro del modal de información detallada de la noticia:
-                                          if (this.openNews) {
-                                              if (!currentSlide || currentSlide.type !== 'video' || !this.waitVideosFinish) {
-                                                  this.timer = setTimeout(() => {
-                                                      this.next();
-                                                  }, this.speed);
-                                              } else {
-                                                  // Es un vídeo dentro del modal y la opción esperar a que acabe el vídeo está activa
-                                                  let container = this.$el.querySelector('.modal-news-carousel');
-                                                  let videoEl = container ? container.querySelector('video') : null;
-                                                  if (videoEl) {
-                                                      videoEl.currentTime = 0;
-                                                      let playPromise = videoEl.play();
-                                                      if (playPromise !== undefined) playPromise.catch(() => {});
-                                                      videoEl.onended = () => {
-                                                          videoEl.onended = null;
-                                                          this.next();
-                                                      };
-                                                  } else {
-                                                      this.timer = setTimeout(() => {
-                                                          this.next();
-                                                      }, this.speed);
-                                                  }
-                                              }
-                                          } else {
-                                              // En la tarjeta de la portada (rotación general): avanzar según la velocidad configurada
-                                              let container = this.$el.querySelector('.card-news-carousel');
-                                              let videoEl = container ? container.querySelector('video') : null;
-                                              if (videoEl) {
-                                                  videoEl.currentTime = 0;
-                                                  let playPromise = videoEl.play();
-                                                  if (playPromise !== undefined) playPromise.catch(() => {});
-                                              }
-                                              this.timer = setTimeout(() => {
-                                                  this.next();
-                                              }, this.speed);
-                                          }
-                                      });
-                                  },
-                                  stopAutoplay() {
-                                      if (this.timer) {
-                                          clearTimeout(this.timer);
-                                          this.timer = null;
-                                      }
-                                      this.$el.querySelectorAll('video').forEach(v => {
-                                          v.onended = null;
-                                      });
-                                  },
-                                  next() {
-                                      this.stopAutoplay();
-                                      this.activeNewsSlide = (this.activeNewsSlide + 1) % this.newsSlides.length;
-                                      this.startAutoplay();
-                                  },
-                                  prev() {
-                                      this.stopAutoplay();
-                                      this.activeNewsSlide = (this.activeNewsSlide - 1 + this.newsSlides.length) % this.newsSlides.length;
-                                      this.startAutoplay();
-                                  }
-                              }" 
-                               class="glass-panel rounded-2xl overflow-hidden hover:shadow-[0_0_30px_rgba(245,158,11,0.1)] transition-all duration-500 transform hover:-translate-y-2 flex flex-col cursor-pointer group" 
-                               @click="openNews = true"
-                               @mouseenter="stopAutoplay()" 
-                               @mouseleave="if(newsSlides.length > 1 && !openNews) startAutoplay()">
+                                       this.$nextTick(() => {
+                                           let currentSlide = this.newsSlides[this.activeNewsSlide];
+                                           
+                                           // Si estamos dentro del modal de información detallada de la noticia:
+                                           if (this.openNews) {
+                                               let modalContainer = document.getElementById('modal-news-carousel-{{ $item->id }}');
+                                               if (!currentSlide || currentSlide.type !== 'video' || !this.waitVideosFinish) {
+                                                   if (currentSlide && currentSlide.type === 'video' && modalContainer) {
+                                                       let videoEl = modalContainer.querySelector('video');
+                                                       if (videoEl) {
+                                                           videoEl.currentTime = 0;
+                                                           let playPromise = videoEl.play();
+                                                           if (playPromise !== undefined) playPromise.catch(() => {});
+                                                       }
+                                                   }
+                                                   this.timer = setTimeout(() => {
+                                                       this.next();
+                                                   }, this.speed);
+                                               } else {
+                                                   // Es un vídeo dentro del modal y la opción esperar a que acabe el vídeo está activa
+                                                   let videoEl = modalContainer ? modalContainer.querySelector('video') : null;
+                                                   if (videoEl) {
+                                                       videoEl.currentTime = 0;
+                                                       let playPromise = videoEl.play();
+                                                       if (playPromise !== undefined) playPromise.catch(() => {});
+                                                       videoEl.onended = () => {
+                                                           videoEl.onended = null;
+                                                           this.next();
+                                                       };
+                                                   } else {
+                                                       this.timer = setTimeout(() => {
+                                                           this.next();
+                                                       }, this.speed);
+                                                   }
+                                               }
+                                           } else {
+                                               // En la tarjeta de la portada (rotación general): avanzar según la velocidad configurada
+                                               let container = this.$el.querySelector('.card-news-carousel');
+                                               let videoEl = container ? container.querySelector('video') : null;
+                                               if (videoEl) {
+                                                   videoEl.currentTime = 0;
+                                                   let playPromise = videoEl.play();
+                                                   if (playPromise !== undefined) playPromise.catch(() => {});
+                                               }
+                                               this.timer = setTimeout(() => {
+                                                   this.next();
+                                               }, this.speed);
+                                           }
+                                       });
+                                   },
+                                   stopAutoplay() {
+                                       if (this.timer) {
+                                           clearTimeout(this.timer);
+                                           this.timer = null;
+                                       }
+                                       if (this.$el) {
+                                           this.$el.querySelectorAll('video').forEach(v => {
+                                               v.onended = null;
+                                           });
+                                       }
+                                       let modalContainer = document.getElementById('modal-news-carousel-{{ $item->id }}');
+                                       if (modalContainer) {
+                                           modalContainer.querySelectorAll('video').forEach(v => {
+                                               v.onended = null;
+                                           });
+                                       }
+                                   },
+                                   next() {
+                                       this.stopAutoplay();
+                                       this.activeNewsSlide = (this.activeNewsSlide + 1) % this.newsSlides.length;
+                                       this.startAutoplay();
+                                   },
+                                   prev() {
+                                       this.stopAutoplay();
+                                       this.activeNewsSlide = (this.activeNewsSlide - 1 + this.newsSlides.length) % this.newsSlides.length;
+                                       this.startAutoplay();
+                                   }
+                               }" 
+                                class="glass-panel rounded-2xl overflow-hidden hover:shadow-[0_0_30px_rgba(245,158,11,0.1)] transition-all duration-500 transform hover:-translate-y-2 flex flex-col cursor-pointer group" 
+                                @click="openNews = true"
+                                @mouseenter="if(!openNews) stopAutoplay()" 
+                                @mouseleave="if(newsSlides.length > 1 && !openNews) startAutoplay()">
                             
                             @if($item->newsImages->count() > 0)
                                 <div class="h-48 w-full overflow-hidden relative bg-gray-900 card-news-carousel">
@@ -634,10 +650,9 @@
                                         <div class="p-6 overflow-y-auto">
                                             @if($item->newsImages->count() > 0)
                                                 <!-- Carrusel dentro de modal -->
-                                                <div class="relative rounded-xl overflow-hidden bg-black mb-8 aspect-video flex items-center justify-center group/carousel modal-news-carousel" 
-                                                     x-init="$watch('activeNewsSlide', () => $el.querySelectorAll('video').forEach(v => v.pause()))"
-                                                     @mouseenter="stopAutoplay()" 
-                                                     @mouseleave="if(newsSlides.length > 1 && openNews) startAutoplay()">
+                                                <div id="modal-news-carousel-{{ $item->id }}" 
+                                                     class="relative rounded-xl overflow-hidden bg-black mb-8 aspect-video flex items-center justify-center group/carousel modal-news-carousel" 
+                                                     x-init="$watch('activeNewsSlide', () => $el.querySelectorAll('video').forEach(v => v.pause()))">
                                                     <template x-for="(slide, index) in newsSlides" :key="index">
                                                         <div x-show="activeNewsSlide === index" 
                                                              x-transition:enter="transition ease-out duration-500"
@@ -877,9 +892,7 @@
                                     <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
                                 </button>
 
-                                <div class="w-full h-full flex flex-col items-center justify-center p-4 md:p-12 lightbox-media-container"
-                                     @mouseenter="stopAutoplay()"
-                                     @mouseleave="if(slides.length > 1 && openLightbox) startAutoplay()">
+                                <div class="w-full h-full flex flex-col items-center justify-center p-4 md:p-12 lightbox-media-container">
                                     <template x-for="(slide, index) in slides" :key="index">
                                         <div x-show="activeSlide === index" 
                                              x-transition:enter="transition ease-out duration-500"
