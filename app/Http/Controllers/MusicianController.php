@@ -116,6 +116,10 @@ class MusicianController extends Controller
         $instrumentCatalogs = \App\Models\InstrumentCatalog::orderBy('name')->get();
         $instrumentBrands = \App\Models\InstrumentBrand::orderBy('name')->get();
 
+        $captchaNum1 = rand(1, 9);
+        $captchaNum2 = rand(1, 9);
+        session(['musician_instrument_captcha_result' => $captchaNum1 + $captchaNum2]);
+
         return view('dashboard', compact(
             'user', 
             'availableParts', 
@@ -123,7 +127,9 @@ class MusicianController extends Controller
             'currentFiscalYear',
             'allowMusicianInstruments',
             'instrumentCatalogs',
-            'instrumentBrands'
+            'instrumentBrands',
+            'captchaNum1',
+            'captchaNum2'
         ));
     }
 
@@ -146,6 +152,14 @@ class MusicianController extends Controller
             'purchase_year' => 'nullable|integer|min:1900|max:' . (date('Y') + 1),
             'invoice' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
             'notes' => 'nullable|string|max:1000',
+            'captcha' => ['required', 'numeric', function ($attribute, $value, $fail) {
+                if ($value != session('musician_instrument_captcha_result')) {
+                    $fail('El código de seguridad (Captcha) es incorrecto. Vuelve a intentarlo.');
+                }
+            }],
+        ], [
+            'captcha.required' => 'Debes resolver la suma de verificación de seguridad para registrar el instrumento.',
+            'captcha.numeric' => 'El código de seguridad debe ser numérico.',
         ]);
 
         if ($request->hasFile('invoice')) {

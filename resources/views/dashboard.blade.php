@@ -266,8 +266,18 @@
                                                 <input type="text" name="model" placeholder="Ej: YAS-280, Custom..." class="w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-amber-500 text-sm">
                                             </div>
                                             <div>
-                                                <label class="block text-xs font-medium text-gray-300 mb-1">Nº de Serie</label>
-                                                <input type="text" name="serial_number" placeholder="Ej: 123456" class="w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-amber-500 text-sm">
+                                                <label class="block text-xs font-medium text-gray-300 mb-1">Nº de Serie (Recomendado)</label>
+                                                <input type="text" name="serial_number" placeholder="Ej: 123456" class="w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-amber-500 text-sm font-mono uppercase">
+                                            </div>
+                                        </div>
+
+                                        <!-- Recomendación visible para el número de serie -->
+                                        <div class="p-3 bg-amber-950/40 border border-amber-500/40 rounded-lg flex items-start gap-2.5 text-xs text-amber-200/90 leading-relaxed">
+                                            <svg class="w-5 h-5 text-amber-400 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                            </svg>
+                                            <div>
+                                                <strong class="text-amber-300 font-semibold">Recomendación importante:</strong> Aunque el número de serie no es estrictamente obligatorio, <strong>te aconsejamos encarecidamente localizarlo e introducirlo</strong>. Disponer del número de serie registrado permite una identificación inequívoca de tu instrumento para un mayor control y facilitará su localización o reclamación en caso de extravío o robo.
                                             </div>
                                         </div>
 
@@ -300,6 +310,17 @@
                                         <div>
                                             <label class="block text-xs font-medium text-gray-300 mb-1">Observaciones</label>
                                             <textarea name="notes" rows="2" placeholder="Cualquier detalle relevante..." class="w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-amber-500 text-sm"></textarea>
+                                        </div>
+
+                                        <!-- Captcha Antirrobot / Confirmación de Seguridad -->
+                                        <div class="p-3.5 bg-gray-950 rounded-lg border border-gray-800">
+                                            <label for="modal_instrument_captcha" class="block text-xs font-semibold text-amber-400 mb-1.5">
+                                                Control de seguridad: ¿Cuánto es {{ $captchaNum1 ?? rand(1,9) }} + {{ $captchaNum2 ?? rand(1,9) }}? *
+                                            </label>
+                                            <div class="flex items-center gap-3">
+                                                <input type="number" id="modal_instrument_captcha" name="captcha" required placeholder="Introduce el resultado" class="w-48 rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-amber-500 text-sm">
+                                                <span class="text-[11px] text-gray-400">Introduce la suma para confirmar el alta y evitar registros por error.</span>
+                                            </div>
                                         </div>
 
                                         <div class="p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg text-xs text-amber-200/90 leading-relaxed">
