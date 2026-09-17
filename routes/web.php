@@ -188,6 +188,8 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
 
     // Rutas RESTRINGIDAS (solo admin y treasurer)
     Route::middleware(['admin_or_treasurer'])->group(function () {
+        Route::get('users/export/pdf', [\App\Http\Controllers\Admin\UserController::class, 'exportPdf'])->name('users.export.pdf');
+        Route::get('users/export/csv', [\App\Http\Controllers\Admin\UserController::class, 'exportCsv'])->name('users.export.csv');
         Route::post('users/{user}/validate', [\App\Http\Controllers\Admin\UserController::class, 'validateMusician'])->name('users.validate');
         Route::post('users/{user}/toggle-active', [\App\Http\Controllers\Admin\UserController::class, 'toggleActive'])->name('users.toggle-active');
         Route::resource('users', \App\Http\Controllers\Admin\UserController::class);

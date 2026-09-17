@@ -275,4 +275,127 @@ class UserController extends Controller
 
         return view('shared.parental_consent_pdf', compact('template', 'userName'));
     }
+
+    protected function buildFilteredQuery(Request $request)
+    {
+        $status = $request->query('status', 'all');
+        $search = $request->query('search', '');
+
+        $query = User::orderBy('name')->orderBy('last_name');
+
+        if ($status === 'pending') {
+            $query->where('is_active', false)->where('role', 'musician');
+        } elseif ($status === 'active') {
+            $query->where('is_active', true);
+        } elseif ($status === 'inactive') {
+            $query->where('is_active', false);
+        }
+
+        if (!empty($search)) {
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('last_name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('nif', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%")
+                  ->orWhere('city', 'like', "%{$search}%");
+            });
+        }
+
+        return $query;
+    }
+
+    public function exportPdf(Request $request)
+    {
+        $status = $request->query('status', 'all');
+        $search = $request->query('search', '');
+        $users = $this->buildFilteredQuery($request)->get();
+
+        return view('admin.users.pdf', compact('users', 'status', 'search'));
+    }
+
+    public function exportCsv(Request $request)
+    {
+        $status = $request->query('status', 'all');
+        $users = $this->buildFilteredQuery($request)->get();
+
+        $statusLabels = [
+            'all' => 'todos',
+            'active' => 'activos',
+            'inactive' => 'bajas_inactivos',
+            'pending' => 'pendientes_validacion'
+        ];
+        $label = $statusLabels[$status] ?? 'listado';
+        $filename = 'musicos_' . $label . '_' . date('Y-m-d_His') . '.csv';
+
+        $headers = [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+            'Pragma' => 'no-cache',
+            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires' => '0',
+        ];
+
+        $callback = function () use ($users) {
+            $handle = fopen('php://output', 'w');
+            // BOM UTF-8 para Excel
+            fprintf($handle, chr(0xEF).chr(0xBB).chr(0xBF));
+
+            // Encabezados (SIN IBAN, SIN INSTRUMENTOS, SIN ASISTENCIA, SIN PARTITURAS)
+            fputcsv($handle, [
+                'ID',
+                'NOMBRE',
+                'APELLIDOS',
+                'NIF/NIE',
+                'FECHA NACIMIENTO',
+                'EDAD',
+                'EMAIL',
+                'TELÉFONO',
+                'TEL. PADRE',
+                'TEL. MADRE',
+                'TEL. TUTOR',
+                'DIRECCIÓN',
+                'CÓDIGO POSTAL',
+                'LOCALIDAD',
+                'PROVINCIA',
+                'AÑO INGRESO',
+                'ROL',
+                'ESTADO',
+                'MOTIVO BAJA',
+                'FECHA ALTA SISTEMA'
+            ], ';');
+
+            foreach ($users as $user) {
+                $age = $user->birth_date ? \Carbon\Carbon::parse($user->birth_date)->age : '';
+                $estado = $user->is_active ? 'Activo' : ($user->privacy_accepted_at ? 'Pendiente Validación' : 'Inactivo / Baja');
+
+                fputcsv($handle, [
+                    $user->id,
+                    $user->name,
+                    $user->last_name,
+                    $user->nif,
+                    $user->birth_date ? $user->birth_date->format('d/m/Y') : '',
+                    $age,
+                    $user->email,
+                    $user->phone,
+                    $user->father_phone,
+                    $user->mother_phone,
+                    $user->guardian_phone,
+                    $user->address,
+                    $user->postal_code,
+                    $user->city,
+                    $user->province,
+                    $user->joining_year,
+                    $user->role,
+                    $estado,
+                    $user->leave_reason,
+                    $user->created_at ? $user->created_at->format('d/m/Y H:i') : '',
+                ], ';');
+            }
+
+            fclose($handle);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
 }
