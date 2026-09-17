@@ -450,10 +450,11 @@
                     @foreach($news as $item)
                           <div x-init="$watch('openNews', val => { 
                                   if(!val) {
-                                      $el.querySelectorAll('video').forEach(v => v.pause());
+                                      $el.querySelectorAll('video').forEach(v => { v.pause(); v.currentTime = 0; });
                                       if(newsSlides.length > 1) startAutoplay();
                                   } else {
                                       stopAutoplay();
+                                      if(newsSlides.length > 1) startAutoplay();
                                   }
                               })" 
                                x-data="{ 
@@ -473,21 +474,52 @@
                                   },
                                   startAutoplay() {
                                       this.stopAutoplay();
-                                      this.timer = setInterval(() => {
-                                          this.next();
-                                      }, this.speed);
+                                      if (this.newsSlides.length <= 1) return;
+                                      
+                                      this.$nextTick(() => {
+                                          let currentSlide = this.newsSlides[this.activeNewsSlide];
+                                          if (!currentSlide || currentSlide.type !== 'video') {
+                                              this.timer = setTimeout(() => {
+                                                  this.next();
+                                              }, this.speed);
+                                          } else {
+                                              // Buscar el elemento video activo según el contexto (modal abierto o tarjeta)
+                                              let container = this.openNews ? this.$el.querySelector('.modal-news-carousel') : this.$el.querySelector('.card-news-carousel');
+                                              let videoEl = container ? container.querySelector('video') : null;
+                                              if (videoEl) {
+                                                  videoEl.currentTime = 0;
+                                                  let playPromise = videoEl.play();
+                                                  if (playPromise !== undefined) playPromise.catch(() => {});
+                                                  videoEl.onended = () => {
+                                                      videoEl.onended = null;
+                                                      this.next();
+                                                  };
+                                              } else {
+                                                  this.timer = setTimeout(() => {
+                                                      this.next();
+                                                  }, this.speed);
+                                              }
+                                          }
+                                      });
                                   },
                                   stopAutoplay() {
                                       if (this.timer) {
-                                          clearInterval(this.timer);
+                                          clearTimeout(this.timer);
                                           this.timer = null;
                                       }
+                                      this.$el.querySelectorAll('video').forEach(v => {
+                                          v.onended = null;
+                                      });
                                   },
                                   next() {
+                                      this.stopAutoplay();
                                       this.activeNewsSlide = (this.activeNewsSlide + 1) % this.newsSlides.length;
+                                      this.startAutoplay();
                                   },
                                   prev() {
+                                      this.stopAutoplay();
                                       this.activeNewsSlide = (this.activeNewsSlide - 1 + this.newsSlides.length) % this.newsSlides.length;
+                                      this.startAutoplay();
                                   }
                               }" 
                                class="glass-panel rounded-2xl overflow-hidden hover:shadow-[0_0_30px_rgba(245,158,11,0.1)] transition-all duration-500 transform hover:-translate-y-2 flex flex-col cursor-pointer group" 
@@ -496,7 +528,7 @@
                                @mouseleave="if(newsSlides.length > 1 && !openNews) startAutoplay()">
                             
                             @if($item->newsImages->count() > 0)
-                                <div class="h-48 w-full overflow-hidden relative bg-gray-900">
+                                <div class="h-48 w-full overflow-hidden relative bg-gray-900 card-news-carousel">
                                     <template x-for="(slide, index) in newsSlides" :key="index">
                                         <div x-show="activeNewsSlide === index"
                                              x-transition:enter="transition ease-out duration-700"
@@ -507,7 +539,7 @@
                                              x-transition:leave-end="opacity-0 scale-105"
                                              class="absolute inset-0 w-full h-full">
                                             <template x-if="slide.type === 'video'">
-                                                <video :src="slide.url" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" muted loop autoplay playsinline></video>
+                                                <video :src="slide.url" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" muted playsinline></video>
                                             </template>
                                             <template x-if="slide.type !== 'video'">
                                                 <img :src="slide.url" :alt="slide.desc || '{{ addslashes($item->title) }}'" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
@@ -574,7 +606,7 @@
                                         <div class="p-6 overflow-y-auto">
                                             @if($item->newsImages->count() > 0)
                                                 <!-- Carrusel dentro de modal -->
-                                                <div class="relative rounded-xl overflow-hidden bg-black mb-8 aspect-video flex items-center justify-center group/carousel" 
+                                                <div class="relative rounded-xl overflow-hidden bg-black mb-8 aspect-video flex items-center justify-center group/carousel modal-news-carousel" 
                                                      x-init="$watch('activeNewsSlide', () => $el.querySelectorAll('video').forEach(v => v.pause()))"
                                                      @mouseenter="stopAutoplay()" 
                                                      @mouseleave="if(newsSlides.length > 1 && openNews) startAutoplay()">
@@ -666,25 +698,57 @@
                         },
                         startAutoplay() {
                             this.stopAutoplay();
-                            this.timer = setInterval(() => {
-                                this.next();
-                            }, this.speed);
+                            if (this.slides.length <= 1) return;
+
+                            this.$nextTick(() => {
+                                let currentSlide = this.slides[this.activeSlide];
+                                if (!currentSlide || currentSlide.type !== 'video') {
+                                    this.timer = setTimeout(() => {
+                                        this.next();
+                                    }, this.speed);
+                                } else {
+                                    let container = this.openLightbox ? document.querySelector('.lightbox-media-container') : this.$el.querySelector('.historia-card-carousel');
+                                    let videoEl = container ? container.querySelector('video') : null;
+                                    if (videoEl) {
+                                        videoEl.currentTime = 0;
+                                        let playPromise = videoEl.play();
+                                        if (playPromise !== undefined) playPromise.catch(() => {});
+                                        videoEl.onended = () => {
+                                            videoEl.onended = null;
+                                            this.next();
+                                        };
+                                    } else {
+                                        this.timer = setTimeout(() => {
+                                            this.next();
+                                        }, this.speed);
+                                    }
+                                }
+                            });
                         },
                         stopAutoplay() {
                             if (this.timer) {
-                                clearInterval(this.timer);
+                                clearTimeout(this.timer);
                                 this.timer = null;
+                            }
+                            if (this.$el) {
+                                this.$el.querySelectorAll('video').forEach(v => {
+                                    v.onended = null;
+                                });
                             }
                         },
                         next() {
+                            this.stopAutoplay();
                             this.activeSlide = (this.activeSlide + 1) % this.slides.length;
+                            this.startAutoplay();
                         },
                         prev() {
+                            this.stopAutoplay();
                             this.activeSlide = (this.activeSlide - 1 + this.slides.length) % this.slides.length;
+                            this.startAutoplay();
                         }
                     }">
                         <!-- Carrusel de una sola imagen rotando cada 4 segundos -->
-                        <div class="relative rounded-2xl overflow-hidden shadow-2xl border border-gray-800 bg-gray-900 group aspect-[4/3]"
+                        <div class="relative rounded-2xl overflow-hidden shadow-2xl border border-gray-800 bg-gray-900 group aspect-[4/3] historia-card-carousel"
                              @mouseenter="stopAutoplay()" 
                              @mouseleave="if(slides.length > 1 && !openLightbox) startAutoplay()">
                             
@@ -701,7 +765,7 @@
                                      @click="openLightbox = true">
                                     
                                     <template x-if="slide.type === 'video'">
-                                        <video :src="slide.url" class="w-full h-full object-cover" muted loop playsinline></video>
+                                        <video :src="slide.url" class="w-full h-full object-cover" muted playsinline></video>
                                     </template>
                                     <template x-if="slide.type !== 'video'">
                                         <img :src="slide.url" :alt="slide.desc || 'Historia de la Banda'" class="w-full h-full object-cover">
@@ -761,7 +825,7 @@
                                     <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
                                 </button>
 
-                                <div class="w-full h-full flex flex-col items-center justify-center p-4 md:p-12">
+                                <div class="w-full h-full flex flex-col items-center justify-center p-4 md:p-12 lightbox-media-container">
                                     <template x-for="(slide, index) in slides" :key="index">
                                         <div x-show="activeSlide === index" x-transition.opacity.duration.300ms class="absolute inset-0 flex flex-col items-center justify-center p-4 md:p-12 z-[105]">
                                             <template x-if="slide.type === 'video'">
