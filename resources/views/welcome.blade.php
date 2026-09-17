@@ -478,27 +478,43 @@
                                       
                                       this.$nextTick(() => {
                                           let currentSlide = this.newsSlides[this.activeNewsSlide];
-                                          if (!currentSlide || currentSlide.type !== 'video') {
-                                              this.timer = setTimeout(() => {
-                                                  this.next();
-                                              }, this.speed);
+                                          
+                                          // Si estamos dentro del modal de información detallada de la noticia:
+                                          if (this.openNews) {
+                                              if (!currentSlide || currentSlide.type !== 'video') {
+                                                  this.timer = setTimeout(() => {
+                                                      this.next();
+                                                  }, this.speed);
+                                              } else {
+                                                  // Es un vídeo dentro del modal: esperar a que termine de reproducirse
+                                                  let container = this.$el.querySelector('.modal-news-carousel');
+                                                  let videoEl = container ? container.querySelector('video') : null;
+                                                  if (videoEl) {
+                                                      videoEl.currentTime = 0;
+                                                      let playPromise = videoEl.play();
+                                                      if (playPromise !== undefined) playPromise.catch(() => {});
+                                                      videoEl.onended = () => {
+                                                          videoEl.onended = null;
+                                                          this.next();
+                                                      };
+                                                  } else {
+                                                      this.timer = setTimeout(() => {
+                                                          this.next();
+                                                      }, this.speed);
+                                                  }
+                                              }
                                           } else {
-                                              // Buscar el elemento video activo según el contexto (modal abierto o tarjeta)
-                                              let container = this.openNews ? this.$el.querySelector('.modal-news-carousel') : this.$el.querySelector('.card-news-carousel');
+                                              // En la tarjeta de la portada (rotación general): avanzar SIEMPRE cada 4 segundos
+                                              let container = this.$el.querySelector('.card-news-carousel');
                                               let videoEl = container ? container.querySelector('video') : null;
                                               if (videoEl) {
                                                   videoEl.currentTime = 0;
                                                   let playPromise = videoEl.play();
                                                   if (playPromise !== undefined) playPromise.catch(() => {});
-                                                  videoEl.onended = () => {
-                                                      videoEl.onended = null;
-                                                      this.next();
-                                                  };
-                                              } else {
-                                                  this.timer = setTimeout(() => {
-                                                      this.next();
-                                                  }, this.speed);
                                               }
+                                              this.timer = setTimeout(() => {
+                                                  this.next();
+                                              }, this.speed);
                                           }
                                       });
                                   },
@@ -539,7 +555,7 @@
                                              x-transition:leave-end="opacity-0 scale-105"
                                              class="absolute inset-0 w-full h-full">
                                             <template x-if="slide.type === 'video'">
-                                                <video :src="slide.url" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" muted playsinline></video>
+                                                <video :src="slide.url" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" muted loop autoplay playsinline></video>
                                             </template>
                                             <template x-if="slide.type !== 'video'">
                                                 <img :src="slide.url" :alt="slide.desc || '{{ addslashes($item->title) }}'" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
