@@ -448,23 +448,92 @@
             @if($news->count() > 0)
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                     @foreach($news as $item)
-                          <div x-init="$watch('openNews', val => { if(!val) $el.querySelectorAll('video').forEach(v => v.pause()) })" x-data="{ openNews: false, activeNewsSlide: 0, newsSlides: {{ json_encode($item->newsImages->map(function($i) { 
-                              $ext = strtolower(pathinfo($i->url, PATHINFO_EXTENSION));
-                              $isVideo = in_array($ext, ['mp4', 'mov', 'webm', 'avi']);
-                              return ['url' => $i->url, 'desc' => $i->description, 'type' => $isVideo ? 'video' : 'image']; 
-                          })) }} }" class="glass-panel rounded-2xl overflow-hidden hover:shadow-[0_0_30px_rgba(245,158,11,0.1)] transition-all duration-500 transform hover:-translate-y-2 flex flex-col cursor-pointer group" @click="openNews = true">
-                            @if($item->mainImage)
+                          <div x-init="$watch('openNews', val => { 
+                                  if(!val) {
+                                      $el.querySelectorAll('video').forEach(v => v.pause());
+                                      if(newsSlides.length > 1) startAutoplay();
+                                  } else {
+                                      stopAutoplay();
+                                  }
+                              })" 
+                               x-data="{ 
+                                  openNews: false, 
+                                  activeNewsSlide: 0, 
+                                  timer: null,
+                                  speed: 4000,
+                                  newsSlides: {{ json_encode($item->newsImages->map(function($i) { 
+                                      $ext = strtolower(pathinfo($i->url, PATHINFO_EXTENSION));
+                                      $isVideo = in_array($ext, ['mp4', 'mov', 'webm', 'avi']);
+                                      return ['url' => $i->url, 'desc' => $i->description, 'type' => $isVideo ? 'video' : 'image']; 
+                                  })) }},
+                                  init() {
+                                      if (this.newsSlides.length > 1) {
+                                          this.startAutoplay();
+                                      }
+                                  },
+                                  startAutoplay() {
+                                      this.stopAutoplay();
+                                      this.timer = setInterval(() => {
+                                          this.next();
+                                      }, this.speed);
+                                  },
+                                  stopAutoplay() {
+                                      if (this.timer) {
+                                          clearInterval(this.timer);
+                                          this.timer = null;
+                                      }
+                                  },
+                                  next() {
+                                      this.activeNewsSlide = (this.activeNewsSlide + 1) % this.newsSlides.length;
+                                  },
+                                  prev() {
+                                      this.activeNewsSlide = (this.activeNewsSlide - 1 + this.newsSlides.length) % this.newsSlides.length;
+                                  }
+                              }" 
+                               class="glass-panel rounded-2xl overflow-hidden hover:shadow-[0_0_30px_rgba(245,158,11,0.1)] transition-all duration-500 transform hover:-translate-y-2 flex flex-col cursor-pointer group" 
+                               @click="openNews = true"
+                               @mouseenter="stopAutoplay()" 
+                               @mouseleave="if(newsSlides.length > 1 && !openNews) startAutoplay()">
+                            
+                            @if($item->newsImages->count() > 0)
+                                <div class="h-48 w-full overflow-hidden relative bg-gray-900">
+                                    <template x-for="(slide, index) in newsSlides" :key="index">
+                                        <div x-show="activeNewsSlide === index"
+                                             x-transition:enter="transition ease-out duration-700"
+                                             x-transition:enter-start="opacity-0 scale-95"
+                                             x-transition:enter-end="opacity-100 scale-100"
+                                             x-transition:leave="transition ease-in duration-500 absolute inset-0"
+                                             x-transition:leave-start="opacity-100 scale-100"
+                                             x-transition:leave-end="opacity-0 scale-105"
+                                             class="absolute inset-0 w-full h-full">
+                                            <template x-if="slide.type === 'video'">
+                                                <video :src="slide.url" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" muted loop autoplay playsinline></video>
+                                            </template>
+                                            <template x-if="slide.type !== 'video'">
+                                                <img :src="slide.url" :alt="slide.desc || '{{ addslashes($item->title) }}'" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                                            </template>
+                                        </div>
+                                    </template>
+                                    <div class="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-colors pointer-events-none"></div>
+
+                                    <!-- Badge indicador si hay más de 1 imagen -->
+                                    <div x-show="newsSlides.length > 1" class="absolute top-2.5 left-2.5 bg-black/60 backdrop-blur-md text-amber-400 text-xs font-semibold px-2 py-0.5 rounded-full border border-amber-500/30 flex items-center gap-1 shadow-lg pointer-events-none z-10">
+                                        <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                        <span><span x-text="activeNewsSlide + 1"></span>/<span x-text="newsSlides.length"></span></span>
+                                    </div>
+                                </div>
+                            @elseif($item->mainImage)
                                 @php
                                     $mainExt = strtolower(pathinfo($item->mainImage->url, PATHINFO_EXTENSION));
                                     $mainIsVideo = in_array($mainExt, ['mp4', 'mov', 'webm', 'avi']);
                                 @endphp
-                                <div class="h-48 w-full overflow-hidden relative">
+                                <div class="h-48 w-full overflow-hidden relative bg-gray-900">
                                     @if($mainIsVideo)
                                         <video src="{{ $item->mainImage->url }}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" muted loop autoplay playsinline></video>
                                     @else
                                         <img src="{{ $item->mainImage->url }}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
                                     @endif
-                                    <div class="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-colors"></div>
+                                    <div class="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-colors pointer-events-none"></div>
                                 </div>
                             @endif
                             <div class="p-6 md:p-8 flex-1 flex flex-col">
@@ -505,9 +574,19 @@
                                         <div class="p-6 overflow-y-auto">
                                             @if($item->newsImages->count() > 0)
                                                 <!-- Carrusel dentro de modal -->
-                                                <div class="relative rounded-xl overflow-hidden bg-black mb-8 aspect-video flex items-center justify-center group/carousel" x-init="$watch('activeNewsSlide', () => $el.querySelectorAll('video').forEach(v => v.pause()))">
+                                                <div class="relative rounded-xl overflow-hidden bg-black mb-8 aspect-video flex items-center justify-center group/carousel" 
+                                                     x-init="$watch('activeNewsSlide', () => $el.querySelectorAll('video').forEach(v => v.pause()))"
+                                                     @mouseenter="stopAutoplay()" 
+                                                     @mouseleave="if(newsSlides.length > 1 && openNews) startAutoplay()">
                                                     <template x-for="(slide, index) in newsSlides" :key="index">
-                                                        <div x-show="activeNewsSlide === index" x-transition.opacity class="absolute inset-0 flex flex-col items-center justify-center">
+                                                        <div x-show="activeNewsSlide === index" 
+                                                             x-transition:enter="transition ease-out duration-500"
+                                                             x-transition:enter-start="opacity-0 scale-95"
+                                                             x-transition:enter-end="opacity-100 scale-100"
+                                                             x-transition:leave="transition ease-in duration-300 absolute inset-0"
+                                                             x-transition:leave-start="opacity-100 scale-100"
+                                                             x-transition:leave-end="opacity-0 scale-105"
+                                                             class="absolute inset-0 flex flex-col items-center justify-center">
                                                             <template x-if="slide.type === 'image'">
                                                                 <img :src="slide.url" class="max-w-full max-h-full object-contain">
                                                             </template>
@@ -518,17 +597,17 @@
                                                         </div>
                                                     </template>
                                                     
-                                                    <button x-show="newsSlides.length > 1" @click.stop="activeNewsSlide = (activeNewsSlide - 1 + newsSlides.length) % newsSlides.length" class="absolute left-2 text-white/70 hover:text-white bg-black/50 hover:bg-amber-600 rounded-full p-2 transition-colors opacity-0 group-hover/carousel:opacity-100">
+                                                    <button x-show="newsSlides.length > 1" @click.stop="prev(); stopAutoplay(); startAutoplay()" class="absolute left-2 text-white/70 hover:text-white bg-black/50 hover:bg-amber-600 rounded-full p-2 transition-colors opacity-0 group-hover/carousel:opacity-100 z-20">
                                                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
                                                     </button>
                                                     
-                                                    <button x-show="newsSlides.length > 1" @click.stop="activeNewsSlide = (activeNewsSlide + 1) % newsSlides.length" class="absolute right-2 text-white/70 hover:text-white bg-black/50 hover:bg-amber-600 rounded-full p-2 transition-colors opacity-0 group-hover/carousel:opacity-100">
+                                                    <button x-show="newsSlides.length > 1" @click.stop="next(); stopAutoplay(); startAutoplay()" class="absolute right-2 text-white/70 hover:text-white bg-black/50 hover:bg-amber-600 rounded-full p-2 transition-colors opacity-0 group-hover/carousel:opacity-100 z-20">
                                                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
                                                     </button>
                                                     
-                                                    <div x-show="newsSlides.length > 1" class="absolute bottom-2 flex space-x-2">
+                                                    <div x-show="newsSlides.length > 1" class="absolute bottom-2 flex space-x-2 z-20">
                                                         <template x-for="(_, index) in newsSlides" :key="index">
-                                                            <button @click.stop="activeNewsSlide = index" class="w-2 h-2 rounded-full transition-colors" :class="activeNewsSlide === index ? 'bg-amber-500' : 'bg-white/40'"></button>
+                                                            <button @click.stop="activeNewsSlide = index; stopAutoplay(); startAutoplay()" class="w-2 h-2 rounded-full transition-colors" :class="activeNewsSlide === index ? 'bg-amber-500' : 'bg-white/40'"></button>
                                                         </template>
                                                     </div>
                                                 </div>
