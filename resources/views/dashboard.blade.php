@@ -292,7 +292,14 @@
 
                                             <div>
                                                 <label class="block text-xs font-medium text-gray-300 mb-1">Tipo de Partitura habitual</label>
-                                                <input type="text" name="tipo_partitura" placeholder="Ej: 1º, 2º, 3º, Principal..." class="w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-amber-500 text-sm">
+                                                <select name="tipo_partitura" class="w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-amber-500 text-sm">
+                                                    <option value="">-- Dejar en blanco --</option>
+                                                    <option value="TODOS">TODOS</option>
+                                                    <option value="1º">1º</option>
+                                                    <option value="2º">2º</option>
+                                                    <option value="3º">3º</option>
+                                                    <option value="4º">4º</option>
+                                                </select>
                                             </div>
                                         </div>
 

@@ -235,12 +235,12 @@
                                         <div>
                                             <label class="block text-xs font-medium text-gray-400">Tipo de Partitura</label>
                                             <select :name="'tipo_partitura[' + inst.id + ']'" x-model="inst.tipo" class="mt-1 block w-full rounded-md border-0 bg-gray-800 py-1 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-xs">
-                                                <option value="">Selecciona...</option>
+                                                <option value="">-- Dejar en blanco --</option>
+                                                <option value="TODOS">TODOS</option>
                                                 <option value="1º">1º</option>
                                                 <option value="2º">2º</option>
                                                 <option value="3º">3º</option>
-                                                <option value="PRINCIPAL">PRINCIPAL</option>
-                                                <option value="TODOS">TODOS</option>
+                                                <option value="4º">4º</option>
                                             </select>
                                         </div>
 

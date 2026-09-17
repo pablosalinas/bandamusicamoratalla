@@ -76,7 +76,14 @@
 
                     <div>
                         <label class="block text-sm font-medium leading-6 text-white">Tipo Partitura</label>
-                        <input type="text" name="tipo_partitura" value="{{ old('tipo_partitura') }}" class="mt-2 block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm">
+                        <select name="tipo_partitura" class="mt-2 block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm">
+                            <option value="">-- Dejar en blanco --</option>
+                            <option value="TODOS" {{ old('tipo_partitura') == 'TODOS' ? 'selected' : '' }}>TODOS</option>
+                            <option value="1º" {{ old('tipo_partitura') == '1º' ? 'selected' : '' }}>1º</option>
+                            <option value="2º" {{ old('tipo_partitura') == '2º' ? 'selected' : '' }}>2º</option>
+                            <option value="3º" {{ old('tipo_partitura') == '3º' ? 'selected' : '' }}>3º</option>
+                            <option value="4º" {{ old('tipo_partitura') == '4º' ? 'selected' : '' }}>4º</option>
+                        </select>
                         @error('tipo_partitura') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
                     </div>
 
