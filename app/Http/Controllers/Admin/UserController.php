@@ -341,9 +341,8 @@ class UserController extends Controller
             // BOM UTF-8 para Excel
             fprintf($handle, chr(0xEF).chr(0xBB).chr(0xBF));
 
-            // Encabezados (SIN IBAN, SIN INSTRUMENTOS, SIN ASISTENCIA, SIN PARTITURAS)
+            // Encabezados (SIN ID, SIN IBAN, SIN INSTRUMENTOS, SIN ASISTENCIA, SIN PARTITURAS)
             fputcsv($handle, [
-                'ID',
                 'NOMBRE',
                 'APELLIDOS',
                 'NIF/NIE',
@@ -365,12 +364,20 @@ class UserController extends Controller
                 'FECHA ALTA SISTEMA'
             ], ';');
 
+            $rolesEsp = [
+                'admin' => 'Administrador',
+                'treasurer' => 'Tesorero',
+                'director' => 'Director',
+                'musician' => 'Músico',
+                'external' => 'Externo',
+            ];
+
             foreach ($users as $user) {
                 $age = $user->birth_date ? \Carbon\Carbon::parse($user->birth_date)->age : '';
                 $estado = $user->is_active ? 'Activo' : ($user->privacy_accepted_at ? 'Pendiente Validación' : 'Inactivo / Baja');
+                $rolNombre = $rolesEsp[$user->role] ?? ucfirst($user->role);
 
                 fputcsv($handle, [
-                    $user->id,
                     $user->name,
                     $user->last_name,
                     $user->nif,
@@ -386,7 +393,7 @@ class UserController extends Controller
                     $user->city,
                     $user->province,
                     $user->joining_year,
-                    $user->role,
+                    $rolNombre,
                     $estado,
                     $user->leave_reason,
                     $user->created_at ? $user->created_at->format('d/m/Y H:i') : '',

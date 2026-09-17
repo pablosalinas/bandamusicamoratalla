@@ -166,7 +166,6 @@
     <table>
         <thead>
             <tr>
-                <th style="width: 25px; text-align: center;">#</th>
                 <th style="text-align: left;">Apellidos y Nombre</th>
                 <th style="width: 75px; text-align: center;">NIF / NIE</th>
                 <th style="width: 65px; text-align: center;">Nacimiento</th>
@@ -176,7 +175,7 @@
                 <th style="text-align: left;">Teléfonos Padres / Tutor</th>
                 <th style="text-align: left;">Dirección y Población</th>
                 <th style="width: 45px; text-align: center;">Ingreso</th>
-                <th style="width: 60px; text-align: center;">Rol</th>
+                <th style="width: 75px; text-align: center;">Rol</th>
                 <th style="width: 70px; text-align: center;">Estado</th>
             </tr>
         </thead>
@@ -195,9 +194,18 @@
                     // Dirección compacta
                     $dirParts = array_filter([$u->address, $u->postal_code, $u->city, $u->province]);
                     $fullAddress = implode(', ', $dirParts);
+
+                    // Roles en español
+                    $rolesEsp = [
+                        'admin' => 'Administrador',
+                        'treasurer' => 'Tesorero',
+                        'director' => 'Director',
+                        'musician' => 'Músico',
+                        'external' => 'Externo',
+                    ];
+                    $rolNombre = $rolesEsp[$u->role] ?? ucfirst($u->role);
                 @endphp
                 <tr>
-                    <td style="text-align: center; color: #6B7280;">{{ $index + 1 }}</td>
                     <td>
                         <strong class="text-gray-900">{{ $u->last_name }}, {{ $u->name }}</strong>
                     </td>
@@ -219,7 +227,7 @@
                         {{ $fullAddress ?: '-' }}
                     </td>
                     <td style="text-align: center;">{{ $u->joining_year ?: '-' }}</td>
-                    <td style="text-align: center; text-transform: capitalize;">{{ $u->role }}</td>
+                    <td style="text-align: center;">{{ $rolNombre }}</td>
                     <td style="text-align: center;">
                         @if($u->is_active)
                             <span style="color: #047857; font-weight: 600;">Activo</span>
@@ -235,7 +243,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="12" style="text-align: center; padding: 15px; color: #6B7280;">
+                    <td colspan="11" style="text-align: center; padding: 15px; color: #6B7280;">
                         No se encontraron miembros para el criterio seleccionado.
                     </td>
                 </tr>
