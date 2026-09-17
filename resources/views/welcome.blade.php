@@ -709,7 +709,14 @@
 
             <div class="glass-panel p-8 rounded-2xl flex flex-col md:flex-row gap-8 items-start">
                 @if(isset($bandHistoryImages) && $bandHistoryImages->count() > 0)
-                    <div class="w-full md:w-5/12 lg:w-4/12 flex-shrink-0" x-data="{
+                    <div class="w-full md:w-5/12 lg:w-4/12 flex-shrink-0" 
+                         x-init="$watch('openLightbox', val => {
+                             if (!val) {
+                                 $el.querySelectorAll('video').forEach(v => { v.pause(); v.currentTime = 0; });
+                             }
+                             if (slides.length > 1) startAutoplay();
+                         })"
+                         x-data="{
                         openLightbox: false,
                         activeSlide: 0,
                         timer: null,
@@ -773,6 +780,9 @@
                                     v.onended = null;
                                 });
                             }
+                            document.querySelectorAll('.lightbox-media-container video').forEach(v => {
+                                v.onended = null;
+                            });
                         },
                         next() {
                             this.stopAutoplay();
@@ -785,7 +795,7 @@
                             this.startAutoplay();
                         }
                     }">
-                        <!-- Carrusel de una sola imagen rotando cada 4 segundos -->
+                        <!-- Carrusel de una sola imagen rotando cada X segundos -->
                         <div class="relative rounded-2xl overflow-hidden shadow-2xl border border-gray-800 bg-gray-900 group aspect-[4/3] historia-card-carousel"
                              @mouseenter="stopAutoplay()" 
                              @mouseleave="if(slides.length > 1 && !openLightbox) startAutoplay()">
@@ -829,19 +839,19 @@
                             </button>
 
                             <!-- Flecha Anterior -->
-                            <button type="button" x-show="slides.length > 1" @click.stop="prev(); stopAutoplay(); startAutoplay()" class="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-amber-600 text-white p-2 rounded-full backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 z-10 shadow-md">
+                            <button type="button" x-show="slides.length > 1" @click.stop="prev()" class="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-amber-600 text-white p-2 rounded-full backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 z-10 shadow-md">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
                             </button>
 
                             <!-- Flecha Siguiente -->
-                            <button type="button" x-show="slides.length > 1" @click.stop="next(); stopAutoplay(); startAutoplay()" class="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-amber-600 text-white p-2 rounded-full backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 z-10 shadow-md">
+                            <button type="button" x-show="slides.length > 1" @click.stop="next()" class="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-amber-600 text-white p-2 rounded-full backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 z-10 shadow-md">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                             </button>
 
                             <!-- Puntos indicadores inferiores -->
                             <div x-show="slides.length > 1" class="absolute bottom-2 left-1/2 -translate-x-1/2 flex space-x-1.5 bg-black/50 backdrop-blur-sm px-2.5 py-1 rounded-full z-10">
                                 <template x-for="(_, index) in slides" :key="index">
-                                    <button @click.stop="activeSlide = index; stopAutoplay(); startAutoplay()" 
+                                    <button @click.stop="activeSlide = index; startAutoplay()" 
                                             class="h-1.5 rounded-full transition-all duration-300"
                                             :class="activeSlide === index ? 'w-5 bg-amber-500' : 'w-1.5 bg-white/40 hover:bg-white/70'"></button>
                                 </template>
@@ -850,22 +860,35 @@
                         
                         <!-- Modal Lightbox en pantalla completa -->
                         <template x-teleport="body">
-                            <div x-show="openLightbox" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-md" style="display: none;" @keydown.escape.window="openLightbox = false; startAutoplay()" @keydown.right.window="next()" @keydown.left.window="prev()">
-                                <button @click="openLightbox = false; startAutoplay()" class="absolute top-6 right-6 text-white/70 hover:text-white bg-black/60 hover:bg-amber-600 rounded-full p-2.5 transition-colors z-[110]">
+                            <div x-show="openLightbox" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-md" style="display: none;" 
+                                 @keydown.escape.window="openLightbox = false" 
+                                 @keydown.right.window="next()" 
+                                 @keydown.left.window="prev()">
+                                
+                                <button @click="openLightbox = false" class="absolute top-6 right-6 text-white/70 hover:text-white bg-black/60 hover:bg-amber-600 rounded-full p-2.5 transition-colors z-[110]">
                                     <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                                 </button>
                                 
-                                <button x-show="slides.length > 1" @click="prev()" class="absolute left-6 top-1/2 -translate-y-1/2 text-white/70 hover:text-white bg-black/60 hover:bg-amber-600 rounded-full p-3 transition-colors z-[110]">
+                                <button x-show="slides.length > 1" @click.stop="prev()" class="absolute left-6 top-1/2 -translate-y-1/2 text-white/70 hover:text-white bg-black/60 hover:bg-amber-600 rounded-full p-3 transition-colors z-[110]">
                                     <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
                                 </button>
                                 
-                                <button x-show="slides.length > 1" @click="next()" class="absolute right-6 top-1/2 -translate-y-1/2 text-white/70 hover:text-white bg-black/60 hover:bg-amber-600 rounded-full p-3 transition-colors z-[110]">
+                                <button x-show="slides.length > 1" @click.stop="next()" class="absolute right-6 top-1/2 -translate-y-1/2 text-white/70 hover:text-white bg-black/60 hover:bg-amber-600 rounded-full p-3 transition-colors z-[110]">
                                     <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
                                 </button>
 
-                                <div class="w-full h-full flex flex-col items-center justify-center p-4 md:p-12 lightbox-media-container">
+                                <div class="w-full h-full flex flex-col items-center justify-center p-4 md:p-12 lightbox-media-container"
+                                     @mouseenter="stopAutoplay()"
+                                     @mouseleave="if(slides.length > 1 && openLightbox) startAutoplay()">
                                     <template x-for="(slide, index) in slides" :key="index">
-                                        <div x-show="activeSlide === index" x-transition.opacity.duration.300ms class="absolute inset-0 flex flex-col items-center justify-center p-4 md:p-12 z-[105]">
+                                        <div x-show="activeSlide === index" 
+                                             x-transition:enter="transition ease-out duration-500"
+                                             x-transition:enter-start="opacity-0 scale-95"
+                                             x-transition:enter-end="opacity-100 scale-100"
+                                             x-transition:leave="transition ease-in duration-300 absolute inset-0"
+                                             x-transition:leave-start="opacity-100 scale-100"
+                                             x-transition:leave-end="opacity-0 scale-105"
+                                             class="absolute inset-0 flex flex-col items-center justify-center p-4 md:p-12 z-[105]">
                                             <template x-if="slide.type === 'video'">
                                                 <video :src="slide.url" class="max-h-[80vh] max-w-full object-contain rounded-lg shadow-2xl" controls></video>
                                             </template>
@@ -879,7 +902,7 @@
                                 
                                 <div x-show="slides.length > 1" class="absolute bottom-6 left-1/2 -translate-x-1/2 flex space-x-2 bg-black/60 px-4 py-2 rounded-full backdrop-blur-sm z-[110]">
                                     <template x-for="(_, index) in slides" :key="index">
-                                        <button @click="activeSlide = index" class="w-3 h-3 rounded-full transition-colors" :class="activeSlide === index ? 'bg-amber-500' : 'bg-white/40 hover:bg-white/60'"></button>
+                                        <button @click.stop="activeSlide = index; startAutoplay()" class="w-3 h-3 rounded-full transition-colors" :class="activeSlide === index ? 'bg-amber-500' : 'bg-white/40 hover:bg-white/60'"></button>
                                     </template>
                                 </div>
                             </div>
