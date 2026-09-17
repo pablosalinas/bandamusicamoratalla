@@ -127,16 +127,29 @@
     <img src="{{ $logoSrc }}" class="watermark" alt="Marca de agua">
 
     <!-- Barra de acciones en pantalla -->
-    <div class="mb-4 flex justify-between items-center no-print bg-gray-100 p-2.5 rounded-lg border border-gray-300">
-        <div class="text-xs text-gray-700">
-            <strong>Filtro aplicado:</strong> {{ $reportTitle }} (Total: <strong>{{ $users->count() }}</strong> miembros)
-            @if(!empty($search))
-                | Búsqueda: <em>"{{ $search }}"</em>
-            @endif
+    <div class="mb-4 flex flex-wrap justify-between items-center gap-3 no-print bg-gray-100 p-2.5 rounded-lg border border-gray-300">
+        <div class="text-xs text-gray-700 flex flex-wrap items-center gap-3">
+            <div>
+                <strong>Filtro aplicado:</strong> {{ $reportTitle }} (Total: <strong>{{ $users->count() }}</strong> miembros)
+                @if(!empty($search))
+                    | Búsqueda: <em>"{{ $search }}"</em>
+                @endif
+            </div>
+
+            <!-- Selector de Ordenación en tiempo real -->
+            <div class="flex items-center gap-2 bg-white px-2 py-1 rounded border border-gray-300">
+                <span class="text-gray-600 font-semibold">Ordenar por:</span>
+                <a href="{{ route('admin.users.export.pdf', ['status' => $status, 'search' => $search, 'order_by' => 'last_name']) }}" class="px-2 py-0.5 rounded text-xs {{ ($orderBy ?? 'last_name') === 'last_name' ? 'bg-amber-600 text-white font-bold' : 'text-gray-700 hover:bg-gray-100' }}">
+                    Apellidos, Nombre
+                </a>
+                <a href="{{ route('admin.users.export.pdf', ['status' => $status, 'search' => $search, 'order_by' => 'name']) }}" class="px-2 py-0.5 rounded text-xs {{ ($orderBy ?? 'last_name') === 'name' ? 'bg-amber-600 text-white font-bold' : 'text-gray-700 hover:bg-gray-100' }}">
+                    Nombre y Apellidos
+                </a>
+            </div>
         </div>
         <div class="flex gap-2">
             <button onclick="window.close()" class="bg-gray-600 hover:bg-gray-700 text-white text-xs font-semibold px-3 py-1.5 rounded transition">Cerrar</button>
-            <a href="{{ route('admin.users.export.csv', ['status' => $status, 'search' => $search]) }}" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3 py-1.5 rounded transition flex items-center gap-1">
+            <a href="{{ route('admin.users.export.csv', ['status' => $status, 'search' => $search, 'order_by' => ($orderBy ?? 'last_name')]) }}" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3 py-1.5 rounded transition flex items-center gap-1">
                 Descargar Excel / CSV
             </a>
             <button onclick="window.print()" class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold px-3 py-1.5 rounded transition flex items-center gap-1">
@@ -157,7 +170,7 @@
         <div class="header-text">
             <h1>{{ $reportTitle }}</h1>
             <div class="text-[10px] text-gray-500">
-                Emitido el {{ now()->format('d/m/Y H:i') }} | Total: {{ $users->count() }} registros
+                Emitido el {{ now()->format('d/m/Y H:i') }} | Orden: <strong>{{ ($orderBy ?? 'last_name') === 'name' ? 'Por Nombre' : 'Por Apellidos' }}</strong> | Total: {{ $users->count() }} registros
             </div>
         </div>
     </div>
@@ -166,7 +179,9 @@
     <table>
         <thead>
             <tr>
-                <th style="text-align: left;">Apellidos y Nombre</th>
+                <th style="text-align: left;">
+                    {{ ($orderBy ?? 'last_name') === 'name' ? 'Nombre y Apellidos' : 'Apellidos y Nombre' }}
+                </th>
                 <th style="width: 75px; text-align: center;">NIF / NIE</th>
                 <th style="width: 65px; text-align: center;">Nacimiento</th>
                 <th style="width: 35px; text-align: center;">Edad</th>
@@ -195,6 +210,11 @@
                     $dirParts = array_filter([$u->address, $u->postal_code, $u->city, $u->province]);
                     $fullAddress = implode(', ', $dirParts);
 
+                    // Composición de nombre según orden seleccionado
+                    $displayName = ($orderBy ?? 'last_name') === 'name'
+                        ? $u->name . ' ' . $u->last_name
+                        : $u->last_name . ', ' . $u->name;
+
                     // Roles en español
                     $rolesEsp = [
                         'admin' => 'Administrador',
@@ -207,7 +227,7 @@
                 @endphp
                 <tr>
                     <td>
-                        <strong class="text-gray-900">{{ $u->last_name }}, {{ $u->name }}</strong>
+                        <strong class="text-gray-900">{{ $displayName }}</strong>
                     </td>
                     <td style="text-align: center; font-family: monospace;">{{ $u->nif ?: '-' }}</td>
                     <td style="text-align: center;">{{ $u->birth_date ? $u->birth_date->format('d/m/Y') : '-' }}</td>

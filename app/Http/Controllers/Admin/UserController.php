@@ -15,8 +15,15 @@ class UserController extends Controller
     {
         $status = $request->query('status', 'all');
         $search = $request->query('search', '');
+        $orderBy = $request->query('order_by', 'last_name');
 
-        $query = User::with('inventories.instrument')->orderBy('name');
+        $query = User::with('inventories.instrument');
+
+        if ($orderBy === 'name') {
+            $query->orderBy('name')->orderBy('last_name');
+        } else {
+            $query->orderBy('last_name')->orderBy('name');
+        }
 
         if ($status === 'pending') {
             $query->where('is_active', false)->where('role', 'musician');
@@ -39,7 +46,7 @@ class UserController extends Controller
         $pendingCount = User::pendingValidation()->count();
         $users = $query->paginate(15)->withQueryString();
 
-        return view('admin.users.index', compact('users', 'status', 'search', 'pendingCount'));
+        return view('admin.users.index', compact('users', 'status', 'search', 'orderBy', 'pendingCount'));
     }
 
     public function validateMusician(User $user)
@@ -280,8 +287,15 @@ class UserController extends Controller
     {
         $status = $request->query('status', 'all');
         $search = $request->query('search', '');
+        $orderBy = $request->query('order_by', 'last_name');
 
-        $query = User::orderBy('name')->orderBy('last_name');
+        $query = User::query();
+
+        if ($orderBy === 'name') {
+            $query->orderBy('name')->orderBy('last_name');
+        } else {
+            $query->orderBy('last_name')->orderBy('name');
+        }
 
         if ($status === 'pending') {
             $query->where('is_active', false)->where('role', 'musician');
@@ -309,14 +323,16 @@ class UserController extends Controller
     {
         $status = $request->query('status', 'all');
         $search = $request->query('search', '');
+        $orderBy = $request->query('order_by', 'last_name');
         $users = $this->buildFilteredQuery($request)->get();
 
-        return view('admin.users.pdf', compact('users', 'status', 'search'));
+        return view('admin.users.pdf', compact('users', 'status', 'search', 'orderBy'));
     }
 
     public function exportCsv(Request $request)
     {
         $status = $request->query('status', 'all');
+        $orderBy = $request->query('order_by', 'last_name');
         $users = $this->buildFilteredQuery($request)->get();
 
         $statusLabels = [
@@ -326,7 +342,7 @@ class UserController extends Controller
             'pending' => 'pendientes_validacion'
         ];
         $label = $statusLabels[$status] ?? 'listado';
-        $filename = 'musicos_' . $label . '_' . date('Y-m-d_His') . '.csv';
+        $filename = 'musicos_' . $label . '_orden_' . $orderBy . '_' . date('Y-m-d_His') . '.csv';
 
         $headers = [
             'Content-Type' => 'text/csv; charset=UTF-8',
@@ -336,13 +352,16 @@ class UserController extends Controller
             'Expires' => '0',
         ];
 
-        $callback = function () use ($users) {
+        $callback = function () use ($users, $orderBy) {
             $handle = fopen('php://output', 'w');
             // BOM UTF-8 para Excel
             fprintf($handle, chr(0xEF).chr(0xBB).chr(0xBF));
 
-            // Encabezados (SIN ID, SIN IBAN, SIN INSTRUMENTOS, SIN ASISTENCIA, SIN PARTITURAS)
+            // Encabezados dinámicos según el orden seleccionado
+            $nameHeader = ($orderBy === 'name') ? 'NOMBRE COMPLETO (NOMBRE Y APELLIDOS)' : 'NOMBRE COMPLETO (APELLIDOS, NOMBRE)';
+
             fputcsv($handle, [
+                $nameHeader,
                 'NOMBRE',
                 'APELLIDOS',
                 'NIF/NIE',
@@ -377,7 +396,13 @@ class UserController extends Controller
                 $estado = $user->is_active ? 'Activo' : ($user->privacy_accepted_at ? 'Pendiente Validación' : 'Inactivo / Baja');
                 $rolNombre = $rolesEsp[$user->role] ?? ucfirst($user->role);
 
+                // Composición del nombre según orden seleccionado
+                $composedName = ($orderBy === 'name')
+                    ? trim($user->name . ' ' . $user->last_name)
+                    : trim($user->last_name . ', ' . $user->name);
+
                 fputcsv($handle, [
+                    $composedName,
                     $user->name,
                     $user->last_name,
                     $user->nif,

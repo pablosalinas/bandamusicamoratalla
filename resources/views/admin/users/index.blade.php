@@ -7,7 +7,7 @@
             </div>
             <div class="mt-4 sm:ml-16 sm:mt-0 flex flex-wrap items-center gap-2">
                 <!-- Botón Excel / CSV -->
-                <a href="{{ route('admin.users.export.csv', ['status' => $status, 'search' => $search]) }}" class="inline-flex items-center gap-1.5 rounded-md bg-emerald-700 hover:bg-emerald-600 px-3 py-2 text-xs font-semibold text-white shadow-sm transition-colors" title="Descargar listado en formato Excel / CSV">
+                <a href="{{ route('admin.users.export.csv', ['status' => $status, 'search' => $search, 'order_by' => $orderBy]) }}" class="inline-flex items-center gap-1.5 rounded-md bg-emerald-700 hover:bg-emerald-600 px-3 py-2 text-xs font-semibold text-white shadow-sm transition-colors" title="Descargar listado en formato Excel / CSV">
                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
                     </svg>
@@ -15,7 +15,7 @@
                 </a>
 
                 <!-- Botón PDF / Imprimir Papel -->
-                <a href="{{ route('admin.users.export.pdf', ['status' => $status, 'search' => $search]) }}" target="_blank" class="inline-flex items-center gap-1.5 rounded-md bg-red-700 hover:bg-red-600 px-3 py-2 text-xs font-semibold text-white shadow-sm transition-colors" title="Ver listado compacto para PDF o impresión en papel">
+                <a href="{{ route('admin.users.export.pdf', ['status' => $status, 'search' => $search, 'order_by' => $orderBy]) }}" target="_blank" class="inline-flex items-center gap-1.5 rounded-md bg-red-700 hover:bg-red-600 px-3 py-2 text-xs font-semibold text-white shadow-sm transition-colors" title="Ver listado compacto para PDF o impresión en papel">
                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
                     </svg>
@@ -35,10 +35,10 @@
     <div class="mt-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <!-- Pestañas de estado -->
         <div class="flex flex-wrap items-center gap-2">
-            <a href="{{ route('admin.users.index', ['status' => 'all', 'search' => $search]) }}" class="px-3 py-1.5 rounded-md text-xs font-semibold transition-colors {{ $status === 'all' ? 'bg-amber-600 text-white' : 'bg-gray-800 text-gray-400 hover:text-white hover:bg-gray-700' }}">
+            <a href="{{ route('admin.users.index', ['status' => 'all', 'search' => $search, 'order_by' => $orderBy]) }}" class="px-3 py-1.5 rounded-md text-xs font-semibold transition-colors {{ $status === 'all' ? 'bg-amber-600 text-white' : 'bg-gray-800 text-gray-400 hover:text-white hover:bg-gray-700' }}">
                 Todos los Miembros
             </a>
-            <a href="{{ route('admin.users.index', ['status' => 'pending', 'search' => $search]) }}" class="px-3 py-1.5 rounded-md text-xs font-semibold transition-colors flex items-center gap-1.5 {{ $status === 'pending' ? 'bg-amber-500 text-gray-950 font-bold' : 'bg-gray-800 text-gray-400 hover:text-white hover:bg-gray-700' }}">
+            <a href="{{ route('admin.users.index', ['status' => 'pending', 'search' => $search, 'order_by' => $orderBy]) }}" class="px-3 py-1.5 rounded-md text-xs font-semibold transition-colors flex items-center gap-1.5 {{ $status === 'pending' ? 'bg-amber-500 text-gray-950 font-bold' : 'bg-gray-800 text-gray-400 hover:text-white hover:bg-gray-700' }}">
                 <span>Pendientes de Validación</span>
                 @if($pendingCount > 0)
                     <span class="inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-extrabold rounded-full {{ $status === 'pending' ? 'bg-gray-950 text-amber-400' : 'bg-amber-500 text-gray-950' }}">
@@ -46,22 +46,38 @@
                     </span>
                 @endif
             </a>
-            <a href="{{ route('admin.users.index', ['status' => 'active', 'search' => $search]) }}" class="px-3 py-1.5 rounded-md text-xs font-semibold transition-colors {{ $status === 'active' ? 'bg-green-600 text-white' : 'bg-gray-800 text-gray-400 hover:text-white hover:bg-gray-700' }}">
+            <a href="{{ route('admin.users.index', ['status' => 'active', 'search' => $search, 'order_by' => $orderBy]) }}" class="px-3 py-1.5 rounded-md text-xs font-semibold transition-colors {{ $status === 'active' ? 'bg-green-600 text-white' : 'bg-gray-800 text-gray-400 hover:text-white hover:bg-gray-700' }}">
                 Activos
             </a>
-            <a href="{{ route('admin.users.index', ['status' => 'inactive', 'search' => $search]) }}" class="px-3 py-1.5 rounded-md text-xs font-semibold transition-colors {{ $status === 'inactive' ? 'bg-red-600 text-white' : 'bg-gray-800 text-gray-400 hover:text-white hover:bg-gray-700' }}">
+            <a href="{{ route('admin.users.index', ['status' => 'inactive', 'search' => $search, 'order_by' => $orderBy]) }}" class="px-3 py-1.5 rounded-md text-xs font-semibold transition-colors {{ $status === 'inactive' ? 'bg-red-600 text-white' : 'bg-gray-800 text-gray-400 hover:text-white hover:bg-gray-700' }}">
                 Inactivos / Bajas
             </a>
         </div>
 
-        <!-- Buscador -->
-        <form method="GET" action="{{ route('admin.users.index') }}" class="flex items-center gap-2">
+        <!-- Buscador y Ordenación -->
+        <form method="GET" action="{{ route('admin.users.index') }}" class="flex flex-wrap items-center gap-3">
             <input type="hidden" name="status" value="{{ $status }}">
-            <input type="text" name="search" value="{{ $search }}" placeholder="Buscar por nombre, NIF, teléfono..." class="block w-full sm:w-64 rounded-md border-0 bg-gray-900 py-1.5 text-white shadow-sm ring-1 ring-inset ring-gray-700 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-xs leading-6">
-            <button type="submit" class="rounded-md bg-gray-800 hover:bg-gray-700 px-3 py-1.5 text-xs font-semibold text-white border border-gray-700">Buscar</button>
-            @if(!empty($search))
-                <a href="{{ route('admin.users.index', ['status' => $status]) }}" class="text-xs text-gray-400 hover:text-amber-400">Limpiar</a>
-            @endif
+            
+            <!-- Check / Radio de Ordenación -->
+            <div class="flex items-center gap-2 bg-gray-900 px-2.5 py-1 rounded-md border border-gray-800 text-xs text-gray-300">
+                <span class="text-gray-400 font-medium mr-1">Ordenar por:</span>
+                <label class="inline-flex items-center gap-1 cursor-pointer hover:text-amber-400">
+                    <input type="radio" name="order_by" value="last_name" {{ $orderBy === 'last_name' ? 'checked' : '' }} onchange="this.form.submit()" class="text-amber-600 focus:ring-amber-500 bg-gray-800 border-gray-700">
+                    <span>Apellidos</span>
+                </label>
+                <label class="inline-flex items-center gap-1 cursor-pointer hover:text-amber-400">
+                    <input type="radio" name="order_by" value="name" {{ $orderBy === 'name' ? 'checked' : '' }} onchange="this.form.submit()" class="text-amber-600 focus:ring-amber-500 bg-gray-800 border-gray-700">
+                    <span>Nombre</span>
+                </label>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <input type="text" name="search" value="{{ $search }}" placeholder="Buscar por nombre, NIF, teléfono..." class="block w-full sm:w-56 rounded-md border-0 bg-gray-900 py-1.5 text-white shadow-sm ring-1 ring-inset ring-gray-700 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-xs leading-6">
+                <button type="submit" class="rounded-md bg-gray-800 hover:bg-gray-700 px-3 py-1.5 text-xs font-semibold text-white border border-gray-700">Buscar</button>
+                @if(!empty($search))
+                    <a href="{{ route('admin.users.index', ['status' => $status, 'order_by' => $orderBy]) }}" class="text-xs text-gray-400 hover:text-amber-400">Limpiar</a>
+                @endif
+            </div>
         </form>
     </div>
 
