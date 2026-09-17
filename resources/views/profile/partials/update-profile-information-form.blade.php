@@ -34,16 +34,32 @@
             <x-input-error class="mt-2" :messages="$errors->get('photo')" />
         </div>
 
-        <div>
-            <x-input-label for="name" :value="__('Nombre')" />
-            <x-text-input id="name" name="name" type="text" class="mt-1 block w-full" :value="old('name', $user->name)" required autofocus autocomplete="name" />
-            <x-input-error class="mt-2" :messages="$errors->get('name')" />
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+                <x-input-label for="name" :value="__('Nombre')" />
+                <x-text-input id="name" name="name" type="text" class="mt-1 block w-full" :value="old('name', $user->name)" required autofocus autocomplete="name" />
+                <x-input-error class="mt-2" :messages="$errors->get('name')" />
+            </div>
+
+            <div>
+                <x-input-label for="last_name" :value="__('Apellidos')" />
+                <x-text-input id="last_name" name="last_name" type="text" class="mt-1 block w-full" :value="old('last_name', $user->last_name)" required autocomplete="family-name" />
+                <x-input-error class="mt-2" :messages="$errors->get('last_name')" />
+            </div>
         </div>
 
-        <div>
-            <x-input-label for="nif" :value="__('NIF / NIE (Opcional)')" />
-            <x-text-input id="nif" name="nif" type="text" class="mt-1 block w-full" :value="old('nif', $user->nif)" placeholder="12345678A" />
-            <x-input-error class="mt-2" :messages="$errors->get('nif')" />
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+                <x-input-label for="nif" :value="__('NIF / NIE')" />
+                <x-text-input id="nif" name="nif" type="text" class="mt-1 block w-full uppercase font-mono" :value="old('nif', $user->nif)" placeholder="12345678A" />
+                <x-input-error class="mt-2" :messages="$errors->get('nif')" />
+            </div>
+
+            <div>
+                <x-input-label for="phone" :value="__('Teléfono Móvil')" />
+                <x-text-input id="phone" name="phone" type="text" class="mt-1 block w-full" :value="old('phone', $user->phone)" placeholder="600 000 000" />
+                <x-input-error class="mt-2" :messages="$errors->get('phone')" />
+            </div>
         </div>
 
         <div>

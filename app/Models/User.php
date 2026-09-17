@@ -26,6 +26,13 @@ class User extends Authenticatable
         'city',
         'province',
         'phone',
+        'father_phone',
+        'mother_phone',
+        'guardian_phone',
+        'joining_year',
+        'privacy_accepted_at',
+        'registration_ip',
+        'registration_origin',
         'iban',
         'photo_path',
     ];
@@ -41,7 +48,14 @@ class User extends Authenticatable
         'birth_date' => 'date',
         'is_active' => 'boolean',
         'iban' => 'encrypted',
+        'joining_year' => 'integer',
+        'privacy_accepted_at' => 'datetime',
     ];
+
+    public function scopePendingValidation($query)
+    {
+        return $query->where('is_active', false)->where('role', 'musician');
+    }
 
     public function isSuperAdmin(): bool
     {

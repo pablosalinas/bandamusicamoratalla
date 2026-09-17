@@ -50,6 +50,11 @@
                                 <p class="text-sm text-gray-400 mb-2">Frase corta que aparecerá en la web principal debajo del nombre.</p>
                                 <input type="text" name="site_slogan" id="site_slogan" value="{{ old('site_slogan', $settings['site_slogan'] ?? '') }}" class="block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6">
                             </div>
+                            <div class="sm:col-span-6">
+                                <label for="band_email" class="block text-sm font-medium leading-6 text-amber-500">Email Oficial de la Banda</label>
+                                <p class="text-sm text-gray-400 mb-2">Correo de contacto oficial de la banda, utilizado para avisos y reclamaciones del ejercicio de derechos RGPD / Protección de Datos.</p>
+                                <input type="email" name="band_email" id="band_email" value="{{ old('band_email', $settings['band_email'] ?? '') }}" class="block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6" placeholder="bandamusicademoratalla@gmail.com">
+                            </div>
                             <div class="sm:col-span-3">
                                 <label for="session_timeout" class="block text-sm font-medium leading-6 text-white">Tiempo de sesión (Minutos)</label>
                                 <p class="text-sm text-gray-400 mb-2">Tiempo de inactividad antes de cerrar sesión automáticamente.</p>
@@ -69,7 +74,47 @@
                                 <input type="text" name="backup_password" id="backup_password" value="{{ old('backup_password', $backupPassword) }}" class="block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-amber-500/50 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6" placeholder="@Acemila2026">
                             </div>
                             @endif
-<input type="hidden" name="carousel_speed" value="{{ old('carousel_speed', $settings['carousel_speed'] ?? 4) }}">
+
+                            <!-- Alta Online de Músicos -->
+                            <div class="sm:col-span-6 mt-2 pt-6 border-t border-gray-800">
+                                <div class="flex items-center justify-between p-4 rounded-xl bg-gray-950/60 border border-gray-800 hover:border-amber-500/40 transition-colors">
+                                    <div class="pr-4">
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-base font-semibold text-white">Permitir Alta Online de Músicos</span>
+                                            <span class="inline-flex items-center rounded-md bg-amber-400/10 px-2 py-0.5 text-xs font-medium text-amber-400 ring-1 ring-inset ring-amber-400/30">Acceso Músicos</span>
+                                        </div>
+                                        <p class="text-sm text-gray-400 mt-1">
+                                            Cuando está activado, si un músico intenta acceder con un correo no registrado tras resolver el captcha, se le abrirá el formulario de solicitud de alta. Las solicitudes quedarán en estado <strong>inactivo (pendiente de validación)</strong> hasta que un administrador las apruebe.
+                                        </p>
+                                    </div>
+                                    <div class="relative inline-flex items-center shrink-0">
+                                        <input type="checkbox" name="allow_musician_registration" id="allow_musician_registration" value="1" {{ old('allow_musician_registration', $settings['allow_musician_registration'] ?? '0') == '1' ? 'checked' : '' }} class="sr-only peer">
+                                        <label for="allow_musician_registration" class="w-11 h-6 bg-gray-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600 border border-gray-700 cursor-pointer"></label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Alta de Instrumentos por Músicos -->
+                            <div class="sm:col-span-6 mt-2">
+                                <div class="flex items-center justify-between p-4 rounded-xl bg-gray-950/60 border border-gray-800 hover:border-amber-500/40 transition-colors">
+                                    <div class="pr-4">
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-base font-semibold text-white">Permitir Registro de Instrumentos por Músicos</span>
+                                            <span class="inline-flex items-center rounded-md bg-cyan-400/10 px-2 py-0.5 text-xs font-medium text-cyan-400 ring-1 ring-inset ring-cyan-400/30">Inventario</span>
+                                        </div>
+                                        <p class="text-sm text-gray-400 mt-1">
+                                            Permite a los músicos registrar directamente sus instrumentos (marca, modelo, nº serie, año de compra y factura opcional) desde su panel. Los instrumentos quedarán <strong>pendientes de validación</strong> por la administración para el control de inventario.
+                                        </p>
+                                    </div>
+                                    <div class="relative inline-flex items-center shrink-0">
+                                        <input type="checkbox" name="allow_musician_instruments" id="allow_musician_instruments" value="1" {{ old('allow_musician_instruments', $settings['allow_musician_instruments'] ?? '0') == '1' ? 'checked' : '' }} class="sr-only peer">
+                                        <label for="allow_musician_instruments" class="w-11 h-6 bg-gray-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600 border border-gray-700 cursor-pointer"></label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <input type="hidden" name="settings_section" value="general">
+                            <input type="hidden" name="carousel_speed" value="{{ old('carousel_speed', $settings['carousel_speed'] ?? 4) }}">
                         </div>
                     </div>
                     <div class="flex items-center justify-end px-4 py-4 sm:px-8 border-t border-gray-800">

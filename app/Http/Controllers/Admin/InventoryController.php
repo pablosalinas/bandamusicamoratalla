@@ -44,14 +44,24 @@ class InventoryController extends Controller
             }
         }
 
+        if ($request->filled('verification')) {
+            if ($request->verification === 'pending') {
+                $query->where('is_verified', false);
+            } elseif ($request->verification === 'verified') {
+                $query->where('is_verified', true);
+            }
+        }
+
         if (!$request->has('show_inactive')) {
             $query->where('is_active', true);
         }
 
+        $pendingCount = Inventory::where('is_verified', false)->count();
+
         $inventory = $query->orderBy('created_at', 'desc')->get();
         $musiciansList = User::orderBy('name')->get();
 
-        return view('admin.inventory.index', compact('inventory', 'musiciansList'));
+        return view('admin.inventory.index', compact('inventory', 'musiciansList', 'pendingCount'));
     }
 
     public function create()
@@ -74,12 +84,20 @@ class InventoryController extends Controller
             'status' => 'required|string',
             'user_id' => 'nullable|exists:users,id',
             'tipo_partitura' => 'nullable|string|max:255',
+            'purchase_year' => 'nullable|integer|min:1900|max:' . (date('Y') + 1),
+            'invoice' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
             'notes' => 'nullable|string'
         ]);
 
         $data['is_active'] = $request->has('is_active');
+        $data['is_verified'] = true; // Admin registrations are verified by default
         $userId = $request->user_id;
         unset($data['user_id']); // No longer in the schema
+
+        if ($request->hasFile('invoice')) {
+            $data['invoice_path'] = $request->file('invoice')->store('invoices', 'public');
+        }
+        unset($data['invoice']);
 
         $inventory = Inventory::create($data);
 
@@ -116,13 +134,34 @@ class InventoryController extends Controller
             'propiedad' => 'required|in:banda,musico',
             'status' => 'required|string',
             'tipo_partitura' => 'nullable|string|max:255',
+            'purchase_year' => 'nullable|integer|min:1900|max:' . (date('Y') + 1),
+            'invoice' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+            'is_verified' => 'nullable|boolean',
             'notes' => 'nullable|string'
         ]);
 
         $data['is_active'] = $request->has('is_active');
+        if ($request->has('is_verified')) {
+            $data['is_verified'] = (bool) $request->is_verified;
+        }
+
+        if ($request->hasFile('invoice')) {
+            if ($inventory->invoice_path && \Storage::disk('public')->exists($inventory->invoice_path)) {
+                \Storage::disk('public')->delete($inventory->invoice_path);
+            }
+            $data['invoice_path'] = $request->file('invoice')->store('invoices', 'public');
+        }
+        unset($data['invoice']);
+
         $inventory->update($data);
 
         return redirect()->route('admin.inventory.index')->with('success', 'Instrumento actualizado correctamente.');
+    }
+
+    public function verify(Inventory $inventory)
+    {
+        $inventory->update(['is_verified' => true]);
+        return back()->with('success', 'Instrumento validado y aprobado para el inventario oficial correctamente.');
     }
 
     public function show(Inventory $inventory)

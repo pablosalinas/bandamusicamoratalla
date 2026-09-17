@@ -5,7 +5,7 @@
 
     <div class="mt-8 bg-gray-900 overflow-hidden shadow-sm ring-1 ring-gray-800 sm:rounded-xl">
         <div class="p-6">
-            <form action="{{ route('admin.inventory.update', $inventory) }}" method="POST">
+            <form action="{{ route('admin.inventory.update', $inventory) }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -42,6 +42,23 @@
                         <label class="block text-sm font-medium leading-6 text-white">Nº Serie</label>
                         <input type="text" name="serial_number" value="{{ old('serial_number', $inventory->serial_number) }}" class="mt-2 block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm">
                         @error('serial_number') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium leading-6 text-white">Año de Compra (Opcional)</label>
+                        <input type="number" name="purchase_year" min="1900" max="{{ date('Y') + 1 }}" value="{{ old('purchase_year', $inventory->purchase_year) }}" placeholder="{{ date('Y') }}" class="mt-2 block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm">
+                        @error('purchase_year') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium leading-6 text-white">Factura de Compra (PDF o Imagen)</label>
+                        <input type="file" name="invoice" accept=".pdf,image/*" class="mt-2 block w-full text-sm text-gray-400 file:mr-4 file:py-1.5 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-gray-800 file:text-amber-500 hover:file:bg-gray-700">
+                        @if($inventory->invoice_path)
+                            <p class="text-xs text-gray-400 mt-1">
+                                Factura actual: <a href="{{ asset('storage/' . $inventory->invoice_path) }}" target="_blank" class="text-amber-400 underline">Ver documento actual</a>
+                            </p>
+                        @endif
+                        @error('invoice') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
                     </div>
 
                     <div>

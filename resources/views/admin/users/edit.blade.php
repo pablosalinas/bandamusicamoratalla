@@ -69,6 +69,14 @@
                     </div>
 
                     <div class="sm:col-span-3">
+                        <label for="joining_year" class="block text-sm font-medium leading-6 text-white">Año de Incorporación a la Banda</label>
+                        <div class="mt-2">
+                            <input type="number" name="joining_year" id="joining_year" value="{{ old('joining_year', $user->joining_year) }}" placeholder="{{ date('Y') }}" min="1900" max="{{ date('Y') + 1 }}" class="block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6">
+                        </div>
+                        @error('joining_year') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div class="sm:col-span-3">
                         <label for="role" class="block text-sm font-medium leading-6 text-white">Rol del Usuario</label>
                         <div class="mt-2">
                             <select id="role" name="role" class="block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6">
@@ -104,6 +112,20 @@
                         @error('leave_reason') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
                     </div>
 
+                    @if($user->privacy_accepted_at || $user->registration_ip)
+                    <div class="sm:col-span-6 p-4 rounded-lg bg-gray-950/80 border border-gray-800 text-xs text-gray-400">
+                        <h4 class="font-semibold text-amber-400 mb-1 flex items-center gap-1.5">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                            Trazabilidad de Registro Online
+                        </h4>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-2">
+                            <div><strong>Aceptó RGPD:</strong> {{ $user->privacy_accepted_at ? $user->privacy_accepted_at->format('d/m/Y H:i:s') : 'Manual' }}</div>
+                            <div><strong>IP Registro:</strong> {{ $user->registration_ip ?: 'Desconocida' }}</div>
+                            <div class="truncate" title="{{ $user->registration_origin }}"><strong>Navegador / Origen:</strong> {{ $user->registration_origin ?: 'Desconocido' }}</div>
+                        </div>
+                    </div>
+                    @endif
+
                     <div class="sm:col-span-6 grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 border-t border-gray-800 pt-6">
                         @if($user->photo_path)
                         <div class="md:col-span-2 flex items-center gap-4 mb-4">
@@ -128,6 +150,12 @@
                         @endif
 
                         <div>
+                            <label for="phone" class="block text-sm font-medium leading-6 text-white">Teléfono Móvil Personal</label>
+                            <input type="text" name="phone" id="phone" value="{{ old('phone', $user->phone) }}" class="mt-2 block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6">
+                            @error('phone') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
+                        </div>
+
+                        <div>
                             <label for="address" class="block text-sm font-medium leading-6 text-white">Dirección Postal</label>
                             <input type="text" name="address" id="address" value="{{ old('address', $user->address) }}" class="mt-2 block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6">
                             @error('address') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
@@ -150,11 +178,24 @@
                             <input type="text" name="province" id="province" value="{{ old('province', $user->province) }}" class="mt-2 block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6">
                             @error('province') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
                         </div>
-                        
-                        <div>
-                            <label for="phone" class="block text-sm font-medium leading-6 text-white">Teléfono</label>
-                            <input type="text" name="phone" id="phone" value="{{ old('phone', $user->phone) }}" class="mt-2 block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6">
-                            @error('phone') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
+
+                        <!-- Teléfonos Tutores -->
+                        <div class="md:col-span-2 mt-2 p-4 rounded-lg bg-gray-950/70 border border-gray-800">
+                            <h4 class="text-xs font-semibold uppercase tracking-wider text-amber-400/90 mb-3">Teléfonos Familiares / Tutores (Especialmente para menores)</h4>
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div>
+                                    <label for="father_phone" class="block text-xs font-medium text-gray-300">Teléfono Padre</label>
+                                    <input type="text" name="father_phone" id="father_phone" value="{{ old('father_phone', $user->father_phone) }}" class="mt-1 block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-xs">
+                                </div>
+                                <div>
+                                    <label for="mother_phone" class="block text-xs font-medium text-gray-300">Teléfono Madre</label>
+                                    <input type="text" name="mother_phone" id="mother_phone" value="{{ old('mother_phone', $user->mother_phone) }}" class="mt-1 block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-xs">
+                                </div>
+                                <div>
+                                    <label for="guardian_phone" class="block text-xs font-medium text-gray-300">Teléfono Tutor/a</label>
+                                    <input type="text" name="guardian_phone" id="guardian_phone" value="{{ old('guardian_phone', $user->guardian_phone) }}" class="mt-1 block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-xs">
+                                </div>
+                            </div>
                         </div>
 
                         @if(auth()->user()->canViewIban())

@@ -23,15 +23,38 @@ Route::get('/estatutos/pdf', function () {
 })->name('estatutos.pdf');
 
 Route::get('/migrate-db-secret', function() {
+    return redirect('/ejecutar-migraciones-secretas');
+});
+
+Route::get('/ejecutar-migraciones-secretas', function() {
     try {
-        // Ejecutamos migraciones
-        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
-        $output = "Migraciones: " . \Illuminate\Support\Facades\Artisan::output() . "<br>";
-        
-        // Ejecutamos storage:link (si falla porque existe la carpeta public/storage que no es link, la borramos)
+        $output = '';
+
+        // 1. Migración de nuevos campos en users (alta de músicos, RGPD, etc.)
+        try {
+            \Illuminate\Support\Facades\Artisan::call('migrate', [
+                '--path' => 'database/migrations/2026_09_18_000001_add_musician_registration_fields_to_users_table.php',
+                '--force' => true
+            ]);
+            $output .= "<b>Migración Users:</b> " . nl2br(e(\Illuminate\Support\Facades\Artisan::output())) . "<br>";
+        } catch (\Exception $eUser) {
+            $output .= "<b>Aviso Users:</b> " . e($eUser->getMessage()) . "<br>";
+        }
+
+        // 2. Migración de campos en inventories (año compra, factura, validación)
+        try {
+            \Illuminate\Support\Facades\Artisan::call('migrate', [
+                '--path' => 'database/migrations/2026_09_18_000002_add_purchase_and_verification_to_inventories_table.php',
+                '--force' => true
+            ]);
+            $output .= "<b>Migración Inventarios:</b> " . nl2br(e(\Illuminate\Support\Facades\Artisan::output())) . "<br>";
+        } catch (\Exception $eInv) {
+            $output .= "<b>Aviso Inventarios:</b> " . e($eInv->getMessage()) . "<br>";
+        }
+
+        // 3. Ejecutar enlace de storage si no existe
         $publicStorage = public_path('storage');
         if (file_exists($publicStorage) && !is_link($publicStorage)) {
-            // Eliminar carpeta recursivamente
             $files = new \RecursiveIteratorIterator(
                 new \RecursiveDirectoryIterator($publicStorage, \RecursiveDirectoryIterator::SKIP_DOTS),
                 \RecursiveIteratorIterator::CHILD_FIRST
@@ -44,11 +67,16 @@ Route::get('/migrate-db-secret', function() {
         }
         
         \Illuminate\Support\Facades\Artisan::call('storage:link');
-        $output .= "Storage Link: " . \Illuminate\Support\Facades\Artisan::output();
-        
-        return 'Ejecutado con éxito en producción.<br><br>Resultados:<br>' . $output;
+        $output .= "<b>Storage Link:</b> " . nl2br(e(\Illuminate\Support\Facades\Artisan::output())) . "<br>";
+
+        return '<div style="font-family: monospace; background:#111; color:#eee; padding:20px; border-radius:8px;">' .
+               '<h2 style="color:#10b981;">✔ Migraciones ejecutadas con éxito</h2>' .
+               $output .
+               '</div>';
     } catch (\Exception $e) {
-        return 'Error: ' . $e->getMessage();
+        return '<div style="font-family: monospace; background:#111; color:#ef4444; padding:20px; border-radius:8px;">' .
+               '<h2>Error en ejecución:</h2>' . e($e->getMessage()) .
+               '</div>';
     }
 });
 
@@ -88,6 +116,7 @@ Route::view('/aviso-legal', 'legal')->name('legal');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\MusicianController::class, 'index'])->name('dashboard');
+    Route::post('/dashboard/instruments', [\App\Http\Controllers\MusicianController::class, 'storeInstrument'])->name('musician.instruments.store');
     Route::get('/dashboard/sheet-music/{sheetMusicInstrument}/download', [\App\Http\Controllers\MusicianController::class, 'download'])->name('musician.sheet-music.download');
     Route::get('/dashboard/sheet-music/{sheetMusicInstrument}/view', [\App\Http\Controllers\MusicianController::class, 'view'])->name('musician.sheet-music.view');
     Route::get('/planning', [\App\Http\Controllers\MusicianController::class, 'planning'])->name('musician.planning');
@@ -140,6 +169,7 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     // Inventory
     Route::get('inventory/pdf', [\App\Http\Controllers\Admin\InventoryController::class, 'pdf'])->name('inventory.pdf');
     Route::get('inventory/{inventory}/traceability-pdf', [\App\Http\Controllers\Admin\InventoryController::class, 'traceabilityPdf'])->name('inventory.traceability-pdf');
+    Route::post('inventory/{inventory}/verify', [\App\Http\Controllers\Admin\InventoryController::class, 'verify'])->name('inventory.verify');
     Route::resource('inventory', \App\Http\Controllers\Admin\InventoryController::class);
     Route::post('inventory/{inventory}/assign', [\App\Http\Controllers\Admin\InventoryController::class, 'assign'])->name('inventory.assign');
     Route::post('inventory/{inventory}/return', [\App\Http\Controllers\Admin\InventoryController::class, 'returnInstrument'])->name('inventory.return');
@@ -158,6 +188,8 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
 
     // Rutas RESTRINGIDAS (solo admin y treasurer)
     Route::middleware(['admin_or_treasurer'])->group(function () {
+        Route::post('users/{user}/validate', [\App\Http\Controllers\Admin\UserController::class, 'validateMusician'])->name('users.validate');
+        Route::post('users/{user}/toggle-active', [\App\Http\Controllers\Admin\UserController::class, 'toggleActive'])->name('users.toggle-active');
         Route::resource('users', \App\Http\Controllers\Admin\UserController::class);
         Route::get('users/{user}/parental-consent', [\App\Http\Controllers\Admin\UserController::class, 'generateParentalConsent'])->name('users.parental-consent');
         

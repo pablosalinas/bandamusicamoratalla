@@ -112,7 +112,76 @@ class MusicianController extends Controller
                 ->first();
         }
 
-        return view('dashboard', compact('user', 'availableParts', 'missedAttendances', 'currentFiscalYear'));
+        $allowMusicianInstruments = \App\Models\SiteSetting::getSetting('allow_musician_instruments', '0') == '1';
+        $instrumentCatalogs = \App\Models\InstrumentCatalog::orderBy('name')->get();
+        $instrumentBrands = \App\Models\InstrumentBrand::orderBy('name')->get();
+
+        return view('dashboard', compact(
+            'user', 
+            'availableParts', 
+            'missedAttendances', 
+            'currentFiscalYear',
+            'allowMusicianInstruments',
+            'instrumentCatalogs',
+            'instrumentBrands'
+        ));
+    }
+
+    public function storeInstrument(Request $request)
+    {
+        $allowMusicianInstruments = \App\Models\SiteSetting::getSetting('allow_musician_instruments', '0') == '1';
+        if (!$allowMusicianInstruments) {
+            return back()->with('error', 'El registro de instrumentos por parte de los músicos no está habilitado actualmente.');
+        }
+
+        $user = Auth::user();
+
+        $data = $request->validate([
+            'instrument_catalog_id' => 'required|exists:instrument_catalogs,id',
+            'instrument_brand_id' => 'nullable|exists:instrument_brands,id',
+            'model' => 'nullable|string|max:255',
+            'serial_number' => 'nullable|string|max:255',
+            'tipo_partitura' => 'nullable|string|max:255',
+            'propiedad' => 'required|in:musico,banda',
+            'purchase_year' => 'nullable|integer|min:1900|max:' . (date('Y') + 1),
+            'invoice' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+            'notes' => 'nullable|string|max:1000',
+        ]);
+
+        if ($request->hasFile('invoice')) {
+            $data['invoice_path'] = $request->file('invoice')->store('invoices', 'public');
+        }
+        unset($data['invoice']);
+
+        if (!empty($data['model'])) {
+            $data['model'] = mb_strtoupper(trim($data['model']), 'UTF-8');
+        }
+        if (!empty($data['serial_number'])) {
+            $data['serial_number'] = mb_strtoupper(trim($data['serial_number']), 'UTF-8');
+        }
+        if (!empty($data['tipo_partitura'])) {
+            $data['tipo_partitura'] = mb_strtoupper(trim($data['tipo_partitura']), 'UTF-8');
+        }
+
+        $data['status'] = 'good';
+        $data['is_active'] = true;
+        $data['is_verified'] = false; // Requiere validación por la administración
+
+        $inventory = \App\Models\Inventory::create($data);
+
+        // Asociar al músico
+        $inventory->users()->attach($user->id);
+
+        // Movimiento de inventario
+        \App\Models\InventoryMovement::create([
+            'inventory_id' => $inventory->id,
+            'from_user_id' => null,
+            'to_user_id' => $user->id,
+            'type' => 'assigned',
+            'notes' => 'Registrado por el propio músico desde el portal. Pendiente de validación.'
+        ]);
+
+        return back()->with('success', '¡Instrumento registrado correctamente! Ha quedado pendiente de validación por parte de la directiva/administración.');
     }
 
     public function view(\App\Models\SheetMusicInstrument $sheetMusicInstrument)

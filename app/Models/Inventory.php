@@ -11,8 +11,20 @@ class Inventory extends Model
 
     protected $fillable = [
         'instrument_catalog_id', 'serial_number', 'model', 'status', 'user_id', 'notes',
-        'instrument_brand_id', 'is_active', 'tipo_partitura', 'propiedad'
+        'instrument_brand_id', 'is_active', 'tipo_partitura', 'propiedad',
+        'purchase_year', 'invoice_path', 'is_verified'
     ];
+
+    protected $casts = [
+        'is_active' => 'boolean',
+        'is_verified' => 'boolean',
+        'purchase_year' => 'integer',
+    ];
+
+    public function getInvoiceUrlAttribute()
+    {
+        return $this->invoice_path ? asset('storage/' . $this->invoice_path) : null;
+    }
 
     public function instrument()
     {

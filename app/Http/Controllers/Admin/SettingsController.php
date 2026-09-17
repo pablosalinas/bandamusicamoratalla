@@ -49,6 +49,7 @@ class SettingsController extends Controller
         $settings = [
             'band_name' => \App\Models\SiteSetting::getSetting('band_name', 'Banda de Música de Moratalla'),
             'site_slogan' => \App\Models\SiteSetting::getSetting('site_slogan', 'Tu banda'),
+            'band_email' => \App\Models\SiteSetting::getSetting('band_email', 'bandamusicademoratalla@gmail.com'),
             'session_timeout' => \App\Models\SiteSetting::getSetting('session_timeout', 120),
             'statutes' => \App\Models\SiteSetting::getSetting('statutes', ''),
             'band_history' => \App\Models\SiteSetting::getSetting('band_history', ''),
@@ -57,6 +58,8 @@ class SettingsController extends Controller
             'site_logos' => $logos,
             'parental_consent_template' => \App\Models\SiteSetting::getSetting('parental_consent_template', ''),
             'parental_consent_pdf' => \App\Models\SiteSetting::getSetting('parental_consent_pdf', ''),
+            'allow_musician_registration' => \App\Models\SiteSetting::getSetting('allow_musician_registration', '0'),
+            'allow_musician_instruments' => \App\Models\SiteSetting::getSetting('allow_musician_instruments', '0'),
         ];
         
         $carouselMedia = \App\Models\CarouselMedia::orderBy('sort_order')->get();
@@ -91,12 +94,15 @@ class SettingsController extends Controller
         $rules = [
             'band_name' => 'required|string|max:255',
             'site_slogan' => 'nullable|string|max:255',
+            'band_email' => 'nullable|email|max:255',
             'session_timeout' => 'required|integer|min:1',
             'statutes' => 'nullable|string',
             'band_history' => 'nullable|string',
             'carousel_speed' => 'required|integer|min:1',
             'parental_consent_template' => 'nullable|string',
             'parental_consent_pdf' => 'nullable|file|mimes:pdf|max:10240',
+            'allow_musician_registration' => 'nullable|boolean',
+            'allow_musician_instruments' => 'nullable|boolean',
         ];
 
         if (auth()->user()->canViewIban()) {
@@ -111,7 +117,25 @@ class SettingsController extends Controller
 
         $validated = $request->validate($rules);
 
+        // Checkbox allow_musician_registration & allow_musician_instruments handling (default to 0 if not present in request)
+        if ($request->has('settings_section') && $request->input('settings_section') === 'general') {
+            $allowReg = $request->has('allow_musician_registration') ? '1' : '0';
+            \App\Models\SiteSetting::updateOrCreate(
+                ['key' => 'allow_musician_registration'],
+                ['value' => $allowReg, 'type' => 'boolean']
+            );
+
+            $allowInst = $request->has('allow_musician_instruments') ? '1' : '0';
+            \App\Models\SiteSetting::updateOrCreate(
+                ['key' => 'allow_musician_instruments'],
+                ['value' => $allowInst, 'type' => 'boolean']
+            );
+        }
+
         foreach ($validated as $key => $value) {
+            if ($key === 'allow_musician_registration' || $key === 'allow_musician_instruments') {
+                continue;
+            }
             if ($key === 'band_iban') {
                 
                 $value = $value ? \Illuminate\Support\Facades\Crypt::encryptString($value) : '';

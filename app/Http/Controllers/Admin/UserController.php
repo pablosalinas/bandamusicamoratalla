@@ -11,10 +11,57 @@ use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::with('inventories.instrument')->orderBy('name')->paginate(15);
-        return view('admin.users.index', compact('users'));
+        $status = $request->query('status', 'all');
+        $search = $request->query('search', '');
+
+        $query = User::with('inventories.instrument')->orderBy('name');
+
+        if ($status === 'pending') {
+            $query->where('is_active', false)->where('role', 'musician');
+        } elseif ($status === 'active') {
+            $query->where('is_active', true);
+        } elseif ($status === 'inactive') {
+            $query->where('is_active', false);
+        }
+
+        if (!empty($search)) {
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('last_name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('nif', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%");
+            });
+        }
+
+        $pendingCount = User::pendingValidation()->count();
+        $users = $query->paginate(15)->withQueryString();
+
+        return view('admin.users.index', compact('users', 'status', 'search', 'pendingCount'));
+    }
+
+    public function validateMusician(User $user)
+    {
+        $user->update([
+            'is_active' => true,
+            'leave_reason' => null
+        ]);
+
+        return redirect()->back()->with('success', "El músico {$user->name} {$user->last_name} ha sido validado y activado correctamente.");
+    }
+
+    public function toggleActive(User $user)
+    {
+        $newStatus = !$user->is_active;
+        $user->update([
+            'is_active' => $newStatus,
+            'leave_reason' => $newStatus ? null : $user->leave_reason,
+        ]);
+
+        $statusText = $newStatus ? 'activado' : 'desactivado';
+        return redirect()->back()->with('success', "El usuario {$user->name} {$user->last_name} ha sido {$statusText}.");
     }
 
     public function create()
@@ -26,11 +73,19 @@ class UserController extends Controller
 
     public function store(Request $request)
     {
+        $cleanNif = $request->filled('nif') ? strtoupper(trim(str_replace([' ', '-'], '', $request->input('nif')))) : null;
+        $cleanPhone = $request->filled('phone') ? trim(str_replace([' ', '-', '.'], '', $request->input('phone'))) : null;
+
+        $request->merge([
+            'nif' => $cleanNif,
+            'phone' => $cleanPhone,
+        ]);
+
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'last_name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:'.User::class],
-            'nif' => ['nullable', 'string', new \App\Rules\ValidNif],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:'.User::class.',email'],
+            'nif' => ['nullable', 'string', new \App\Rules\ValidNif, 'unique:'.User::class.',nif'],
             'password' => ['required', Rules\Password::defaults()],
             'role' => ['required', 'in:admin,treasurer,director,musician'],
             'instruments' => ['nullable', 'array'],
@@ -38,24 +93,35 @@ class UserController extends Controller
             'postal_code' => ['nullable', 'string', 'max:10'],
             'city' => ['nullable', 'string', 'max:100'],
             'province' => ['nullable', 'string', 'max:100'],
-            'phone' => ['nullable', 'string', 'max:50'],
+            'phone' => ['nullable', 'string', 'max:50', 'unique:'.User::class.',phone'],
+            'father_phone' => ['nullable', 'string', 'max:50'],
+            'mother_phone' => ['nullable', 'string', 'max:50'],
+            'guardian_phone' => ['nullable', 'string', 'max:50'],
+            'joining_year' => ['nullable', 'integer', 'min:1900', 'max:' . (date('Y') + 1)],
             'iban' => ['nullable', 'string', 'max:50', new \App\Rules\ValidIban],
+        ], [
+            'nif.unique' => 'Ya existe un usuario con este NIF / NIE.',
+            'phone.unique' => 'Ya existe un usuario con este número de teléfono.',
         ]);
 
         $user = User::create([
-            'name' => $request->name,
-            'last_name' => $request->last_name,
-            'nif' => $request->nif ? strtoupper(trim($request->nif)) : null,
-            'email' => $request->email,
+            'name' => mb_strtoupper(trim($request->name), 'UTF-8'),
+            'last_name' => mb_strtoupper(trim($request->last_name), 'UTF-8'),
+            'nif' => $cleanNif,
+            'email' => strtolower(trim($request->email)),
             'password' => Hash::make($request->password),
             'role' => $request->role,
             'is_active' => $request->has('is_active'),
             'birth_date' => $request->birth_date,
-            'address' => $request->address,
+            'address' => $request->filled('address') ? mb_strtoupper(trim($request->address), 'UTF-8') : null,
             'postal_code' => $request->postal_code,
-            'city' => $request->city,
-            'province' => $request->province,
-            'phone' => $request->phone,
+            'city' => $request->filled('city') ? mb_strtoupper(trim($request->city), 'UTF-8') : null,
+            'province' => $request->filled('province') ? mb_strtoupper(trim($request->province), 'UTF-8') : null,
+            'phone' => $cleanPhone,
+            'father_phone' => $request->father_phone,
+            'mother_phone' => $request->mother_phone,
+            'guardian_phone' => $request->guardian_phone,
+            'joining_year' => $request->joining_year,
             'iban' => auth()->user()->canViewIban() ? $request->iban : null,
         ]);
 
@@ -100,35 +166,54 @@ class UserController extends Controller
 
     public function update(Request $request, User $user)
     {
+        $cleanNif = $request->filled('nif') ? strtoupper(trim(str_replace([' ', '-'], '', $request->input('nif')))) : null;
+        $cleanPhone = $request->filled('phone') ? trim(str_replace([' ', '-', '.'], '', $request->input('phone'))) : null;
+
+        $request->merge([
+            'nif' => $cleanNif,
+            'phone' => $cleanPhone,
+        ]);
+
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'last_name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:'.User::class.',email,'.$user->id],
-            'nif' => ['nullable', 'string', new \App\Rules\ValidNif],
+            'nif' => ['nullable', 'string', new \App\Rules\ValidNif, 'unique:'.User::class.',nif,'.$user->id],
             'role' => ['required', 'in:admin,treasurer,director,musician'],
             'instruments' => ['nullable', 'array'],
             'address' => ['nullable', 'string', 'max:255'],
             'postal_code' => ['nullable', 'string', 'max:10'],
             'city' => ['nullable', 'string', 'max:100'],
             'province' => ['nullable', 'string', 'max:100'],
-            'phone' => ['nullable', 'string', 'max:50'],
+            'phone' => ['nullable', 'string', 'max:50', 'unique:'.User::class.',phone,'.$user->id],
+            'father_phone' => ['nullable', 'string', 'max:50'],
+            'mother_phone' => ['nullable', 'string', 'max:50'],
+            'guardian_phone' => ['nullable', 'string', 'max:50'],
+            'joining_year' => ['nullable', 'integer', 'min:1900', 'max:' . (date('Y') + 1)],
             'iban' => ['nullable', 'string', 'max:50', new \App\Rules\ValidIban],
+        ], [
+            'nif.unique' => 'Ya existe otro usuario con este NIF / NIE.',
+            'phone.unique' => 'Ya existe otro usuario con este número de teléfono.',
         ]);
 
         $data = [
-            'name' => $request->name,
-            'last_name' => $request->last_name,
-            'nif' => $request->nif ? strtoupper(trim($request->nif)) : null,
-            'email' => $request->email,
+            'name' => mb_strtoupper(trim($request->name), 'UTF-8'),
+            'last_name' => mb_strtoupper(trim($request->last_name), 'UTF-8'),
+            'nif' => $cleanNif,
+            'email' => strtolower(trim($request->email)),
             'role' => $request->role,
             'is_active' => $request->has('is_active'),
             'leave_reason' => $request->has('is_active') ? null : $request->leave_reason,
             'birth_date' => $request->birth_date,
-            'address' => $request->address,
+            'address' => $request->filled('address') ? mb_strtoupper(trim($request->address), 'UTF-8') : null,
             'postal_code' => $request->postal_code,
-            'city' => $request->city,
-            'province' => $request->province,
-            'phone' => $request->phone,
+            'city' => $request->filled('city') ? mb_strtoupper(trim($request->city), 'UTF-8') : null,
+            'province' => $request->filled('province') ? mb_strtoupper(trim($request->province), 'UTF-8') : null,
+            'phone' => $cleanPhone,
+            'father_phone' => $request->father_phone,
+            'mother_phone' => $request->mother_phone,
+            'guardian_phone' => $request->guardian_phone,
+            'joining_year' => $request->joining_year,
         ];
 
         if (auth()->user()->canViewIban()) {

@@ -36,6 +36,39 @@
                         <dd class="text-white col-span-2 capitalize">{{ $inventory->propiedad }}</dd>
                     </div>
                     <div class="py-3 grid grid-cols-3 gap-4">
+                        <dt class="text-gray-400">Año de Compra</dt>
+                        <dd class="text-white col-span-2">{{ $inventory->purchase_year ?: 'No especificado' }}</dd>
+                    </div>
+                    <div class="py-3 grid grid-cols-3 gap-4">
+                        <dt class="text-gray-400">Factura de Compra</dt>
+                        <dd class="text-white col-span-2">
+                            @if($inventory->invoice_path)
+                                <a href="{{ asset('storage/' . $inventory->invoice_path) }}" target="_blank" class="inline-flex items-center gap-1.5 text-amber-400 hover:text-amber-300 underline font-medium">
+                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                                    Ver documento de factura
+                                </a>
+                            @else
+                                <span class="text-gray-500 italic">Sin factura adjunta</span>
+                            @endif
+                        </dd>
+                    </div>
+                    <div class="py-3 grid grid-cols-3 gap-4">
+                        <dt class="text-gray-400">Validación</dt>
+                        <dd class="col-span-2 flex items-center gap-2">
+                            @if($inventory->is_verified)
+                                <span class="inline-flex items-center rounded-md bg-green-400/10 px-2 py-0.5 text-xs font-semibold text-green-400 ring-1 ring-inset ring-green-400/20">Validado en Inventario Oficial</span>
+                            @else
+                                <span class="inline-flex items-center rounded-md bg-yellow-400/10 px-2 py-0.5 text-xs font-semibold text-yellow-400 ring-1 ring-inset ring-yellow-400/20">Pendiente de Validación</span>
+                                <form action="{{ route('admin.inventory.verify', $inventory) }}" method="POST" class="inline-block">
+                                    @csrf
+                                    <button type="submit" class="rounded bg-emerald-600 hover:bg-emerald-500 px-2 py-0.5 text-xs font-semibold text-white shadow-sm transition-colors">
+                                        Validar ahora
+                                    </button>
+                                </form>
+                            @endif
+                        </dd>
+                    </div>
+                    <div class="py-3 grid grid-cols-3 gap-4">
                         <dt class="text-gray-400">Partitura</dt>
                         <dd class="text-white col-span-2">{{ $inventory->tipo_partitura ?: 'No especificado' }}</dd>
                     </div>

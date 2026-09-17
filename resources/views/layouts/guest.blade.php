@@ -57,7 +57,8 @@
                 </a>
             </div>
 
-            <div class="relative z-10 w-full sm:max-w-md mt-2 px-8 py-10 bg-gray-900 border border-gray-800 shadow-2xl overflow-hidden sm:rounded-xl">
+            @props(['maxWidth' => 'sm:max-w-md'])
+            <div class="relative z-10 w-full {{ $maxWidth }} mt-2 px-8 py-10 bg-gray-900 border border-gray-800 shadow-2xl overflow-hidden sm:rounded-xl">
                 {{ $slot }}
             </div>
         </div>

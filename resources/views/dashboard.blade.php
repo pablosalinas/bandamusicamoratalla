@@ -73,17 +73,48 @@
                         
                         <!-- Datos -->
                         <div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                            <div><span class="text-gray-500 block">Nombre Completo:</span> <span class="text-white">{{ $user->name }} {{ $user->last_name }}</span></div>
+                            <div><span class="text-gray-500 block">Nombre:</span> <span class="text-white">{{ $user->name }}</span></div>
+                            <div><span class="text-gray-500 block">Apellidos:</span> <span class="text-white">{{ $user->last_name }}</span></div>
+                            <div><span class="text-gray-500 block">DNI / NIF:</span> <span class="text-white font-mono text-amber-400">{{ $user->nif ?: '-' }}</span></div>
                             <div><span class="text-gray-500 block">Email:</span> <span class="text-white">{{ $user->email }}</span></div>
-                            <div><span class="text-gray-500 block">Teléfono:</span> <span class="text-white">{{ $user->phone ?: '-' }}</span></div>
-                            <div><span class="text-gray-500 block">DNI / NIF:</span> <span class="text-white">{{ $user->dni ?: '-' }}</span></div>
-                            <div><span class="text-gray-500 block">Dirección:</span> <span class="text-white">{{ $user->address ?: '-' }}, {{ $user->postal_code ?: '-' }} {{ $user->city ?: '-' }} ({{ $user->province ?: '-' }})</span></div>
+                            <div><span class="text-gray-500 block">Teléfono Móvil:</span> <span class="text-white">{{ $user->phone ?: '-' }}</span></div>
                             <div><span class="text-gray-500 block">Fecha de Nacimiento:</span> <span class="text-white">{{ $user->birth_date ? $user->birth_date->format('d/m/Y') : '-' }}</span></div>
+                            <div><span class="text-gray-500 block">Dirección:</span> <span class="text-white">{{ $user->address ?: '-' }}, {{ $user->postal_code ?: '-' }} {{ $user->city ?: '-' }} ({{ $user->province ?: '-' }})</span></div>
+                            <div>
+                                <span class="text-gray-500 block">Año de Incorporación:</span> 
+                                <span class="text-white">{{ $user->joining_year ? 'Año ' . $user->joining_year : '-' }}</span>
+                            </div>
+
+                            <div>
+                                <span class="text-gray-500 block">Protección de Datos (RGPD):</span>
+                                @if($user->privacy_accepted_at)
+                                    <span class="inline-flex items-center gap-1 text-emerald-400 text-xs font-semibold">
+                                        <svg class="w-4 h-4 text-emerald-400 inline" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+                                        Aceptada el {{ \Carbon\Carbon::parse($user->privacy_accepted_at)->format('d/m/Y H:i') }} (En vigor)
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center gap-1 text-amber-400 text-xs font-semibold">
+                                        <svg class="w-4 h-4 text-amber-400 inline" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                                        Aceptada por condición de socio / En vigor
+                                    </span>
+                                @endif
+                            </div>
+
+                            @if($user->father_phone || $user->mother_phone || $user->guardian_phone)
+                                <div class="md:col-span-2 p-3 bg-gray-900 rounded border border-gray-800 text-xs">
+                                    <span class="text-amber-500 block font-semibold mb-1">Teléfonos de Contacto Familiar / Tutores:</span>
+                                    <div class="flex flex-wrap gap-4 text-gray-300">
+                                        @if($user->father_phone) <span><strong>Padre:</strong> {{ $user->father_phone }}</span> @endif
+                                        @if($user->mother_phone) <span><strong>Madre:</strong> {{ $user->mother_phone }}</span> @endif
+                                        @if($user->guardian_phone) <span><strong>Tutor/a:</strong> {{ $user->guardian_phone }}</span> @endif
+                                    </div>
+                                </div>
+                            @endif
                             
                             @if($user->canViewIban())
                                 <div class="md:col-span-2 mt-2 pt-2 border-t border-gray-800">
                                     <span class="text-amber-500 block">Cuenta Bancaria (IBAN):</span> 
-                                    <span class="text-white">{{ $user->iban ?: 'No registrada' }}</span>
+                                    <span class="text-white font-mono">{{ $user->iban ?: 'No registrada' }}</span>
                                 </div>
                             @endif
                         </div>
@@ -110,21 +141,40 @@
                     @endif
                 </div>
                 
-                @if($user->inventories->count() > 0)
-                    <div class="mb-8 bg-gray-950 p-6 rounded-lg border border-gray-800">
-                        <h4 class="text-lg font-semibold mb-4 border-b border-gray-800 pb-2 text-white">Tus Instrumentos</h4>
+                <!-- BLOQUE: TUS INSTRUMENTOS -->
+                <div class="mb-8 bg-gray-950 p-6 rounded-lg border border-gray-800" x-data="{ openRegisterModal: false }">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4 border-b border-gray-800 pb-3 gap-3">
+                        <div>
+                            <h4 class="text-lg font-semibold text-white">Tus Instrumentos</h4>
+                            <p class="text-xs text-gray-400 mt-0.5">Instrumentos que tienes asignados en la banda o propios que utilizas.</p>
+                        </div>
+                        @if($allowMusicianInstruments ?? false)
+                            <button type="button" @click="openRegisterModal = true" class="inline-flex items-center gap-1.5 rounded-md bg-amber-600 hover:bg-amber-500 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-colors cursor-pointer self-start sm:self-auto">
+                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                                Añadir mi Instrumento
+                            </button>
+                        @endif
+                    </div>
+
+                    @if($user->inventories->count() > 0)
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             @foreach($user->inventories as $inventory)
-                                <div class="bg-gray-900 border border-gray-800 rounded-lg p-4 shadow-sm">
+                                <div class="bg-gray-900 border {{ !$inventory->is_verified ? 'border-yellow-600/40 bg-yellow-950/10' : 'border-gray-800' }} rounded-lg p-4 shadow-sm relative">
                                     <div class="flex justify-between items-start mb-2">
                                         <h5 class="font-bold text-amber-500">{{ $inventory->instrument->name ?? 'Desconocido' }}</h5>
-                                        @if($inventory->is_active)
-                                            <span class="inline-flex items-center rounded-md bg-green-400/10 px-2 py-1 text-xs font-medium text-green-400 ring-1 ring-inset ring-green-400/20">Activo</span>
-                                        @else
-                                            <span class="inline-flex items-center rounded-md bg-red-400/10 px-2 py-1 text-xs font-medium text-red-400 ring-1 ring-inset ring-red-400/20">Inactivo</span>
-                                        @endif
+                                        <div class="flex flex-col items-end gap-1">
+                                            @if(!$inventory->is_verified)
+                                                <span class="inline-flex items-center rounded-md bg-yellow-400/10 px-2 py-0.5 text-xs font-medium text-yellow-400 ring-1 ring-inset ring-yellow-400/30" title="Pendiente de aprobación por la directiva">
+                                                    Pendiente Validación
+                                                </span>
+                                            @elseif($inventory->is_active)
+                                                <span class="inline-flex items-center rounded-md bg-green-400/10 px-2 py-0.5 text-xs font-medium text-green-400 ring-1 ring-inset ring-green-400/20">Activo</span>
+                                            @else
+                                                <span class="inline-flex items-center rounded-md bg-red-400/10 px-2 py-0.5 text-xs font-medium text-red-400 ring-1 ring-inset ring-red-400/20">Inactivo</span>
+                                            @endif
+                                        </div>
                                     </div>
-                                    <ul class="text-xs text-gray-400 space-y-1">
+                                    <ul class="text-xs text-gray-400 space-y-1.5">
                                         @php
                                             $brand = $inventory->instrument_brand_id ? \App\Models\InstrumentBrand::find($inventory->instrument_brand_id) : null;
                                         @endphp
@@ -132,6 +182,17 @@
                                         <li><strong class="text-gray-300">Nº Serie:</strong> {{ $inventory->serial_number ?: '-' }}</li>
                                         <li><strong class="text-gray-300">Propiedad:</strong> <span class="capitalize">{{ $inventory->propiedad ?: '-' }}</span></li>
                                         <li><strong class="text-gray-300">Partitura:</strong> {{ $inventory->tipo_partitura ?: '-' }}</li>
+                                        @if($inventory->purchase_year)
+                                            <li><strong class="text-gray-300">Año de Compra:</strong> {{ $inventory->purchase_year }}</li>
+                                        @endif
+                                        @if($inventory->invoice_path)
+                                            <li class="pt-1">
+                                                <a href="{{ asset('storage/' . $inventory->invoice_path) }}" target="_blank" class="inline-flex items-center gap-1 text-indigo-400 hover:text-indigo-300 underline font-medium">
+                                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                                                    Factura de compra
+                                                </a>
+                                            </li>
+                                        @endif
                                     </ul>
                                     @php
                                         $instrumentPhotos = \App\Models\InstrumentPhoto::where('inventory_id', $inventory->id)->get();
@@ -148,7 +209,114 @@
                                 </div>
                             @endforeach
                         </div>
+                    @else
+                        <div class="rounded-md bg-gray-900/60 border border-gray-800 p-4 text-center">
+                            <p class="text-sm text-gray-400">No tienes ningún instrumento asignado actualmente.</p>
+                            @if($allowMusicianInstruments ?? false)
+                                <p class="text-xs text-gray-500 mt-1">Puedes registrar tu propio instrumento usando el botón superior "Añadir mi Instrumento".</p>
+                            @endif
+                        </div>
+                    @endif
+
+                    <!-- Modal Registro de Instrumento por el Músico -->
+                    @if($allowMusicianInstruments ?? false)
+                    <div x-show="openRegisterModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto" style="display: none;">
+                        <div class="flex min-h-screen items-center justify-center p-4 text-center">
+                            <div class="fixed inset-0 bg-gray-950/80 backdrop-blur-sm transition-opacity" @click="openRegisterModal = false"></div>
+
+                            <div class="relative w-full max-w-xl transform overflow-hidden rounded-2xl bg-gray-900 p-6 text-left shadow-2xl ring-1 ring-white/10 transition-all">
+                                <div class="flex items-center justify-between border-b border-gray-800 pb-3 mb-4">
+                                    <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                                        <svg class="h-5 w-5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
+                                        Registrar mi Instrumento
+                                    </h3>
+                                    <button type="button" @click="openRegisterModal = false" class="text-gray-400 hover:text-white">
+                                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                                    </button>
+                                </div>
+
+                                <form action="{{ route('musician.instruments.store') }}" method="POST" enctype="multipart/form-data">
+                                    @csrf
+                                    <div class="space-y-4 text-sm">
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <div>
+                                                <label class="block text-xs font-medium text-gray-300 mb-1">Tipo de Instrumento *</label>
+                                                <select name="instrument_catalog_id" required class="w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-amber-500 text-sm">
+                                                    <option value="">-- Seleccionar --</option>
+                                                    @foreach($instrumentCatalogs ?? [] as $cat)
+                                                        <option value="{{ $cat->id }}">{{ $cat->name }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+
+                                            <div>
+                                                <label class="block text-xs font-medium text-gray-300 mb-1">Marca</label>
+                                                <select name="instrument_brand_id" class="w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-amber-500 text-sm">
+                                                    <option value="">-- Seleccionar Marca --</option>
+                                                    @foreach($instrumentBrands ?? [] as $br)
+                                                        <option value="{{ $br->id }}">{{ $br->name }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <div>
+                                                <label class="block text-xs font-medium text-gray-300 mb-1">Modelo</label>
+                                                <input type="text" name="model" placeholder="Ej: YAS-280, Custom..." class="w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-amber-500 text-sm">
+                                            </div>
+                                            <div>
+                                                <label class="block text-xs font-medium text-gray-300 mb-1">Nº de Serie</label>
+                                                <input type="text" name="serial_number" placeholder="Ej: 123456" class="w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-amber-500 text-sm">
+                                            </div>
+                                        </div>
+
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <div>
+                                                <label class="block text-xs font-medium text-gray-300 mb-1">Propiedad *</label>
+                                                <select name="propiedad" required class="w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-amber-500 text-sm">
+                                                    <option value="musico" selected>Propio (mío)</option>
+                                                    <option value="banda">De la banda</option>
+                                                </select>
+                                            </div>
+
+                                            <div>
+                                                <label class="block text-xs font-medium text-gray-300 mb-1">Tipo de Partitura habitual</label>
+                                                <input type="text" name="tipo_partitura" placeholder="Ej: 1º, 2º, 3º, Principal..." class="w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-amber-500 text-sm">
+                                            </div>
+                                        </div>
+
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <div>
+                                                <label class="block text-xs font-medium text-gray-300 mb-1">Año de Compra (Opcional)</label>
+                                                <input type="number" name="purchase_year" min="1950" max="{{ date('Y') + 1 }}" placeholder="{{ date('Y') }}" class="w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-amber-500 text-sm">
+                                            </div>
+                                            <div>
+                                                <label class="block text-xs font-medium text-gray-300 mb-1">Factura de Compra (PDF o Imagen)</label>
+                                                <input type="file" name="invoice" accept=".pdf,image/*" class="w-full text-xs text-gray-400 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:bg-gray-800 file:text-amber-400">
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-300 mb-1">Observaciones</label>
+                                            <textarea name="notes" rows="2" placeholder="Cualquier detalle relevante..." class="w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-amber-500 text-sm"></textarea>
+                                        </div>
+
+                                        <div class="p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg text-xs text-amber-200/90 leading-relaxed">
+                                            Al guardar, el instrumento quedará registrado y <strong>pendiente de validación</strong> por parte de los administradores de la banda para el control de inventario.
+                                        </div>
+                                    </div>
+
+                                    <div class="mt-6 flex justify-end gap-3 border-t border-gray-800 pt-4">
+                                        <button type="button" @click="openRegisterModal = false" class="rounded-md bg-gray-800 px-4 py-2 text-xs font-semibold text-gray-300 hover:bg-gray-700">Cancelar</button>
+                                        <button type="submit" class="rounded-md bg-amber-600 px-4 py-2 text-xs font-semibold text-white hover:bg-amber-500 shadow-sm">Guardar Instrumento</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
                     </div>
+                    @endif
+                </div>
                     
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4 border-b border-gray-800 pb-2">
                         <h4 class="text-lg font-semibold text-white">Tus Partituras Disponibles</h4>
@@ -193,22 +361,6 @@
                     @else
                         <p class="text-gray-500 italic">No hay partituras asignadas a tus instrumentos en este momento.</p>
                     @endif
-                @else
-                    <div class="rounded-md bg-yellow-900/30 border border-yellow-600/30 p-4">
-                        <div class="flex">
-                            <div class="flex-shrink-0">
-                                <svg class="h-5 w-5 text-yellow-500" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-                                </svg>
-                            </div>
-                            <div class="ml-3">
-                                <p class="text-sm text-yellow-200">
-                                    No tienes ningún instrumento asignado. Contacta con un administrador para que asigne tu instrumento y puedas ver tus partituras.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                @endif
             </div>
         </div>
 

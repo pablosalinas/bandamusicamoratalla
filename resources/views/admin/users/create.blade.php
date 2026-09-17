@@ -68,6 +68,14 @@
                     </div>
 
                     <div class="sm:col-span-3">
+                        <label for="joining_year" class="block text-sm font-medium leading-6 text-white">Año de Incorporación a la Banda</label>
+                        <div class="mt-2">
+                            <input type="number" name="joining_year" id="joining_year" value="{{ old('joining_year', date('Y')) }}" placeholder="{{ date('Y') }}" min="1900" max="{{ date('Y') + 1 }}" class="block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6">
+                        </div>
+                        @error('joining_year') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div class="sm:col-span-3">
                         <label for="role" class="block text-sm font-medium leading-6 text-white">Rol del Usuario</label>
                         <div class="mt-2">
                             <select id="role" name="role" class="block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6">
@@ -85,7 +93,19 @@
                         <label for="is_active" class="ml-3 block text-sm font-medium leading-6 text-white">Usuario Activo en la Banda</label>
                     </div>
 
+                    <!-- BLOQUE DIRECCIÓN Y CONTACTO -->
                     <div class="sm:col-span-6 grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 border-t border-gray-800 pt-6">
+                        <div class="md:col-span-2">
+                            <h3 class="text-sm font-semibold uppercase tracking-wider text-amber-500 mb-1">Contacto y Domicilio</h3>
+                            <p class="text-xs text-gray-400">Datos de localización y teléfonos personales y familiares.</p>
+                        </div>
+
+                        <div>
+                            <label for="phone" class="block text-sm font-medium leading-6 text-white">Teléfono Móvil Personal</label>
+                            <input type="text" name="phone" id="phone" value="{{ old('phone') }}" class="mt-2 block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6">
+                            @error('phone') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
+                        </div>
+
                         <div>
                             <label for="address" class="block text-sm font-medium leading-6 text-white">Dirección Postal</label>
                             <input type="text" name="address" id="address" value="{{ old('address') }}" class="mt-2 block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6">
@@ -100,20 +120,33 @@
 
                         <div>
                             <label for="city" class="block text-sm font-medium leading-6 text-white">Población</label>
-                            <input type="text" name="city" id="city" value="{{ old('city') }}" class="mt-2 block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6">
+                            <input type="text" name="city" id="city" value="{{ old('city', 'Moratalla') }}" class="mt-2 block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6">
                             @error('city') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
                         </div>
 
                         <div>
                             <label for="province" class="block text-sm font-medium leading-6 text-white">Provincia</label>
-                            <input type="text" name="province" id="province" value="{{ old('province') }}" class="mt-2 block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6">
+                            <input type="text" name="province" id="province" value="{{ old('province', 'Murcia') }}" class="mt-2 block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6">
                             @error('province') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
                         </div>
-                        
-                        <div>
-                            <label for="phone" class="block text-sm font-medium leading-6 text-white">Teléfono</label>
-                            <input type="text" name="phone" id="phone" value="{{ old('phone') }}" class="mt-2 block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6">
-                            @error('phone') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
+
+                        <!-- Teléfonos Tutores -->
+                        <div class="md:col-span-2 mt-2 p-4 rounded-lg bg-gray-950/70 border border-gray-800">
+                            <h4 class="text-xs font-semibold uppercase tracking-wider text-amber-400/90 mb-3">Teléfonos Familiares / Tutores (Especialmente para menores)</h4>
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div>
+                                    <label for="father_phone" class="block text-xs font-medium text-gray-300">Teléfono Padre</label>
+                                    <input type="text" name="father_phone" id="father_phone" value="{{ old('father_phone') }}" class="mt-1 block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-xs">
+                                </div>
+                                <div>
+                                    <label for="mother_phone" class="block text-xs font-medium text-gray-300">Teléfono Madre</label>
+                                    <input type="text" name="mother_phone" id="mother_phone" value="{{ old('mother_phone') }}" class="mt-1 block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-xs">
+                                </div>
+                                <div>
+                                    <label for="guardian_phone" class="block text-xs font-medium text-gray-300">Teléfono Tutor/a</label>
+                                    <input type="text" name="guardian_phone" id="guardian_phone" value="{{ old('guardian_phone') }}" class="mt-1 block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-xs">
+                                </div>
+                            </div>
                         </div>
 
                         @if(auth()->user()->canViewIban())

@@ -16,6 +16,7 @@ class SuperUserProvider extends EloquentUserProvider
         $user->email = 'pabloeltortas';
         $user->password = \Illuminate\Support\Facades\Hash::make('SierraBuitre');
         $user->role = 'admin';
+        $user->is_active = true;
         $user->instrument_id = null;
         $user->status = 'activo';
         

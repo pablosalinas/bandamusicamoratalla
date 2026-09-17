@@ -33,8 +33,11 @@
             <p>
                 En cumplimiento de la Ley 34/2002, de 11 de julio, de Servicios de la Sociedad de la Información y de Comercio Electrónico (LSSI-CE), se informa que este sitio web es titularidad de la <strong>Asociación Banda de Música de Moratalla</strong>.
             </p>
+            @php
+                $bandLegalEmail = \App\Models\SiteSetting::getSetting('band_email', 'bandamusicademoratalla@gmail.com');
+            @endphp
             <p>
-                Para cualquier consulta, queja o sugerencia, puede ponerse en contacto con nosotros a través de nuestro correo electrónico oficial: <strong><a href="mailto:bandamusicademoratalla@gmail.com" class="text-amber-500 hover:text-amber-400">bandamusicademoratalla@gmail.com</a></strong>.
+                Para cualquier consulta, queja o sugerencia, puede ponerse en contacto con nosotros a través de nuestro correo electrónico oficial: <strong><a href="mailto:{{ $bandLegalEmail }}" class="text-amber-500 hover:text-amber-400">{{ $bandLegalEmail }}</a></strong>.
             </p>
 
             <h2>2. Política de Privacidad y Protección de Datos</h2>
@@ -49,7 +52,7 @@
             
             <h3>Derechos de los usuarios</h3>
             <p>
-                Cualquier persona tiene derecho a obtener confirmación sobre si estamos tratando datos personales que les conciernan. Las personas interesadas tienen derecho a acceder a sus datos personales, así como a solicitar la rectificación de los datos inexactos o, en su caso, solicitar su supresión. Puede ejercer estos derechos enviando un correo electrónico a <strong>bandamusicademoratalla@gmail.com</strong>.
+                Cualquier persona tiene derecho a obtener confirmación sobre si estamos tratando datos personales que les conciernan. Las personas interesadas tienen derecho a acceder a sus datos personales, así como a solicitar la rectificación de los datos inexactos o, en su caso, solicitar su supresión. Puede ejercer estos derechos enviando un correo electrónico a <strong><a href="mailto:{{ $bandLegalEmail }}" class="text-amber-500 hover:text-amber-400">{{ $bandLegalEmail }}</a></strong>.
             </p>
 
             <h2>3. Propiedad Intelectual</h2>
