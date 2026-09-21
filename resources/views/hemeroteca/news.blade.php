@@ -278,9 +278,27 @@
                         @endif
 
                         <div class="p-6 flex-1 flex flex-col">
-                            <div class="flex items-center justify-between text-xs text-amber-500 font-semibold tracking-wide uppercase mb-3">
-                                <span>{{ $item->event_date ? 'Evento: ' . $item->event_date->format('d/m/Y') : $item->created_at->format('d/m/Y') }}</span>
-                                <span class="text-gray-500 font-normal lowercase">{{ $item->created_at->locale('es')->diffForHumans() }}</span>
+                            @php
+                                $referenceDate = $item->event_date ?? $item->active_from;
+                                $referenceLabel = $item->event_date ? 'Evento' : ($item->active_from ? 'Vigente' : null);
+                            @endphp
+                            <div class="space-y-1 mb-3 text-xs">
+                                <div class="flex items-center justify-between text-gray-400">
+                                    <span class="flex items-center gap-1">
+                                        <svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                        Publicado: {{ $item->created_at->format('d/m/Y') }}
+                                    </span>
+                                    <span class="text-gray-500 lowercase">{{ $item->created_at->locale('es')->diffForHumans() }}</span>
+                                </div>
+                                @if($referenceDate)
+                                    <div class="flex items-center justify-between font-semibold text-amber-500">
+                                        <span class="flex items-center gap-1">
+                                            <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/></svg>
+                                            {{ $referenceLabel }}: {{ $referenceDate->format('d/m/Y') }}
+                                        </span>
+                                        <span class="text-amber-400/90 lowercase text-[11px]">{{ $referenceDate->locale('es')->diffForHumans() }}</span>
+                                    </div>
+                                @endif
                             </div>
                             <h3 class="text-xl font-bold text-white mb-3 line-clamp-2 group-hover:text-amber-400 transition-colors">{{ $item->title }}</h3>
                             <p class="text-gray-400 leading-relaxed line-clamp-3 mb-6 flex-1 text-sm">
@@ -359,12 +377,10 @@
                                         
                                         <!-- Texto Noticia -->
                                         <div class="prose prose-invert prose-amber max-w-none">
-                                            <div class="flex items-center gap-4 text-sm text-gray-400 mb-6 border-b border-gray-800 pb-4">
-                                                @if(!$item->event_date)
-                                                    <span>📅 Publicado: {{ $item->created_at->format('d/m/Y') }}</span>
-                                                @endif
-                                                @if($item->event_date)
-                                                    <span class="text-amber-500 font-medium">🎫 Evento: {{ $item->event_date->format('d/m/Y') }}</span>
+                                            <div class="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-gray-400 mb-6 border-b border-gray-800 pb-4">
+                                                <span>📅 Publicado: {{ $item->created_at->format('d/m/Y') }} <span class="text-xs text-gray-500 lowercase">({{ $item->created_at->locale('es')->diffForHumans() }})</span></span>
+                                                @if($referenceDate)
+                                                    <span class="text-amber-500 font-medium">🎫 {{ $referenceLabel }}: {{ $referenceDate->format('d/m/Y') }} <span class="text-xs text-amber-400/80 lowercase">({{ $referenceDate->locale('es')->diffForHumans() }})</span></span>
                                                 @endif
                                             </div>
                                             {!! $item->content !!}
