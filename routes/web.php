@@ -52,6 +52,17 @@ Route::get('/ejecutar-migraciones-secretas', function() {
             $output .= "<b>Aviso Inventarios:</b> " . e($eInv->getMessage()) . "<br>";
         }
 
+        // 3. Migración Hemeroteca (campo show_in_hemeroteca en noticias y multimedia)
+        try {
+            \Illuminate\Support\Facades\Artisan::call('migrate', [
+                '--path' => 'database/migrations/2026_09_21_000001_add_show_in_hemeroteca_to_news_and_media_archives.php',
+                '--force' => true
+            ]);
+            $output .= "<b>Migración Hemeroteca:</b> " . nl2br(e(\Illuminate\Support\Facades\Artisan::output())) . "<br>";
+        } catch (\Exception $eHem) {
+            $output .= "<b>Aviso Hemeroteca:</b> " . e($eHem->getMessage()) . "<br>";
+        }
+
         // 3. Ejecutar enlace de storage si no existe
         $publicStorage = public_path('storage');
         if (file_exists($publicStorage) && !is_link($publicStorage)) {
@@ -81,6 +92,9 @@ Route::get('/ejecutar-migraciones-secretas', function() {
 });
 
 Route::get('/', function () {
+    $homepageNewsCount = (int) \App\Models\SiteSetting::getSetting('homepage_news_count', 6);
+    if ($homepageNewsCount <= 0) $homepageNewsCount = 6;
+
     $news = \App\Models\NewsActivity::where('is_published', true)
         ->where(function ($query) {
             $query->whereNull('active_from')->orWhere('active_from', '<=', now()->toDateString());
@@ -89,8 +103,8 @@ Route::get('/', function () {
             $query->whereNull('active_to')->orWhere('active_to', '>=', now()->toDateString());
         })
         ->with(['mainImage', 'newsImages'])
-        ->orderBy('created_at', 'desc')
-        ->take(3)
+        ->orderByRaw('COALESCE(event_date, created_at) DESC')
+        ->take($homepageNewsCount)
         ->get();
         
     $band_history = \App\Models\SiteSetting::getSetting('band_history', '');
@@ -114,6 +128,10 @@ Route::get('/', function () {
 
     return view('welcome', compact('news', 'band_history', 'bandHistoryImages', 'visit_count', 'carouselMedia', 'carouselSpeed', 'newsSpeed', 'historySpeed', 'waitVideosFinish', 'mediaArchives'));
 });
+
+Route::get('/hemeroteca/noticias', [\App\Http\Controllers\HemerotecaController::class, 'news'])->name('hemeroteca.news');
+Route::get('/hemeroteca/multimedia', [\App\Http\Controllers\HemerotecaController::class, 'media'])->name('hemeroteca.media');
+Route::redirect('/hemeroteca', '/hemeroteca/noticias')->name('hemeroteca.index');
 
 Route::view('/aviso-legal', 'legal')->name('legal');
 

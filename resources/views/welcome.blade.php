@@ -106,11 +106,39 @@
                         <span class="text-xs sm:text-sm lg:text-lg font-medium italic tracking-widest mt-1 animate-slogan">{{ \App\Models\SiteSetting::getSetting('site_slogan', 'Tu banda') }}</span>
                     </div>
                 </div>
-                <div class="hidden md:flex items-center space-x-8">
+                <div class="hidden md:flex items-center space-x-7">
                     <a href="#inicio" class="text-gray-300 hover:text-white transition-colors font-medium">Inicio</a>
                     <a href="#historia" class="text-gray-300 hover:text-white transition-colors font-medium">Historia</a>
                     <a href="#noticias" class="text-gray-300 hover:text-white transition-colors font-medium">Noticias</a>
                     <a href="#archivo-sonoro" class="text-gray-300 hover:text-white transition-colors font-medium">Archivo Sonoro</a>
+                    
+                    <!-- Hemeroteca Dropdown -->
+                    <div class="relative" x-data="{ open: false }" @click.away="open = false">
+                        <button @click="open = !open" class="flex items-center gap-1 text-amber-400 hover:text-amber-300 transition-colors font-medium">
+                            <span>Hemeroteca</span>
+                            <svg class="w-4 h-4 transition-transform" :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </button>
+                        <div x-show="open" 
+                             x-transition:enter="transition ease-out duration-150"
+                             x-transition:enter-start="opacity-0 scale-95"
+                             x-transition:enter-end="opacity-100 scale-100"
+                             x-transition:leave="transition ease-in duration-100"
+                             x-transition:leave-start="opacity-100 scale-100"
+                             x-transition:leave-end="opacity-0 scale-95"
+                             class="absolute left-0 mt-2 w-52 rounded-xl bg-gray-900 border border-gray-800 shadow-2xl py-2 z-50" 
+                             style="display: none;">
+                            <a href="{{ route('hemeroteca.news') }}" class="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-300 hover:bg-gray-800 hover:text-amber-400 transition-colors">
+                                <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>
+                                <span>Noticias y Eventos</span>
+                            </a>
+                            <a href="{{ route('hemeroteca.media') }}" class="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-300 hover:bg-gray-800 hover:text-amber-400 transition-colors">
+                                <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/></svg>
+                                <span>Multimedia y Archivo</span>
+                            </a>
+                        </div>
+                    </div>
                     
                     <div class="flex items-center space-x-4 border-l border-gray-700 pl-6">
                         <a href="https://www.facebook.com/share/19TzkksMKa/" target="_blank" class="text-gray-400 hover:text-amber-500 transition-colors">
@@ -151,6 +179,11 @@
                 <a href="#historia" @click="mobileMenuOpen = false" class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-800">Historia</a>
                 <a href="#noticias" @click="mobileMenuOpen = false" class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-800">Noticias</a>
                 <a href="#archivo-sonoro" @click="mobileMenuOpen = false" class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-800">Archivo Sonoro</a>
+                <div class="pt-2 pb-1 border-t border-gray-800/80">
+                    <span class="px-3 text-xs uppercase tracking-wider text-amber-500 font-semibold">Hemeroteca</span>
+                    <a href="{{ route('hemeroteca.news') }}" class="block px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-amber-400 hover:bg-gray-800">Hemeroteca de Noticias</a>
+                    <a href="{{ route('hemeroteca.media') }}" class="block px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-amber-400 hover:bg-gray-800">Hemeroteca Multimedia</a>
+                </div>
                 
                 <div class="flex items-center space-x-4 px-3 py-2 border-t border-gray-800 mt-2 pt-4">
                     <a href="https://www.facebook.com/share/19TzkksMKa/" target="_blank" class="text-gray-400 hover:text-amber-500 transition-colors">
@@ -454,10 +487,16 @@
                 <p class="mt-2 text-gray-400 max-w-xl mx-auto text-sm">
                     Mantente informado sobre nuestros conciertos, eventos y novedades de la banda.
                 </p>
+                <div class="mt-3">
+                    <a href="{{ route('hemeroteca.news') }}" class="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-500 hover:text-amber-400 transition-colors uppercase tracking-wider">
+                        <span>Ir a la Hemeroteca de Noticias</span>
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                    </a>
+                </div>
             </div>
 
             @if($news->count() > 0)
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                     @foreach($news as $item)
                           <div x-init="$watch('openNews', val => { 
                                   if(!val) {
@@ -705,6 +744,14 @@
                             </template>
                         </div>
                     @endforeach
+                </div>
+                
+                <div class="mt-12 text-center">
+                    <a href="{{ route('hemeroteca.news') }}" class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 font-semibold border border-amber-500/30 transition-all hover:scale-105 shadow-lg shadow-amber-500/5">
+                        <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>
+                        <span>Explorar Hemeroteca Histórica de Noticias</span>
+                        <svg class="w-4 h-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                    </a>
                 </div>
             @else
                 <div class="text-center text-gray-500 py-12 glass-panel rounded-2xl">
@@ -1059,6 +1106,14 @@
                             @endif
                         </div>
                     @endforeach
+                </div>
+                
+                <div class="mt-10 text-center">
+                    <a href="{{ route('hemeroteca.media') }}" class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 font-semibold border border-amber-500/30 transition-all hover:scale-105 shadow-lg shadow-amber-500/5">
+                        <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/></svg>
+                        <span>Explorar Hemeroteca Multimedia (Búsqueda por Título, Compositor y Años)</span>
+                        <svg class="w-4 h-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                    </a>
                 </div>
             @else
                 <div class="text-center py-12">

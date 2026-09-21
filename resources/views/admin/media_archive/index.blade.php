@@ -90,10 +90,14 @@
                             @error('images.*') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
                         </div>
                         
-                        <div class="sm:col-span-2">
+                        <div class="sm:col-span-2 flex flex-col sm:flex-row gap-6">
                             <div class="flex items-center gap-x-3">
                                 <input id="is_active" name="is_active" type="checkbox" {{ old('is_active', true) ? 'checked' : '' }} class="h-4 w-4 rounded border-white/10 bg-gray-800 text-amber-600 focus:ring-amber-600 focus:ring-offset-gray-900">
                                 <label for="is_active" class="text-sm font-medium leading-6 text-white">Activo (Visible en la web)</label>
+                            </div>
+                            <div class="flex items-center gap-x-3">
+                                <input id="show_in_hemeroteca" name="show_in_hemeroteca" type="checkbox" {{ old('show_in_hemeroteca', true) ? 'checked' : '' }} class="h-4 w-4 rounded border-white/10 bg-gray-800 text-amber-600 focus:ring-amber-600 focus:ring-offset-gray-900">
+                                <label for="show_in_hemeroteca" class="text-sm font-medium leading-6 text-white">Mostrar en Hemeroteca Multimedia</label>
                             </div>
                         </div>
                     </div>
@@ -157,11 +161,17 @@
                                 <input type="file" name="images[]" multiple accept="image/*" class="block w-full text-xs text-gray-400 file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-gray-800 file:text-amber-500 hover:file:bg-gray-700">
                             </div>
                             
-                            <div class="flex items-center justify-between mt-2">
-                                <label class="flex items-center gap-2 cursor-pointer">
-                                    <input type="checkbox" name="is_active" value="1" {{ $media->is_active ? 'checked' : '' }} class="h-4 w-4 rounded border-white/10 bg-gray-800 text-amber-600 focus:ring-amber-600 focus:ring-offset-gray-900">
-                                    <span class="text-xs text-gray-300">Activo</span>
-                                </label>
+                            <div class="flex items-center justify-between mt-2 flex-wrap gap-2">
+                                <div class="flex items-center gap-3">
+                                    <label class="flex items-center gap-1.5 cursor-pointer">
+                                        <input type="checkbox" name="is_active" value="1" {{ $media->is_active ? 'checked' : '' }} class="h-4 w-4 rounded border-white/10 bg-gray-800 text-amber-600 focus:ring-amber-600 focus:ring-offset-gray-900">
+                                        <span class="text-xs text-gray-300">Activo</span>
+                                    </label>
+                                    <label class="flex items-center gap-1.5 cursor-pointer" title="Mostrar en la Hemeroteca Multimedia">
+                                        <input type="checkbox" name="show_in_hemeroteca" value="1" {{ $media->show_in_hemeroteca ? 'checked' : '' }} class="h-4 w-4 rounded border-white/10 bg-gray-800 text-amber-600 focus:ring-amber-600 focus:ring-offset-gray-900">
+                                        <span class="text-xs text-amber-400">Hemeroteca</span>
+                                    </label>
+                                </div>
                                 
                                 <button type="submit" class="text-xs font-semibold text-amber-500 hover:text-amber-400">
                                     Guardar Cambios

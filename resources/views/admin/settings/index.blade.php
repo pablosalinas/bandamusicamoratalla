@@ -60,6 +60,11 @@
                                 <p class="text-sm text-gray-400 mb-2">Tiempo de inactividad antes de cerrar sesión automáticamente.</p>
                                 <input type="number" name="session_timeout" id="session_timeout" value="{{ old('session_timeout', $settings['session_timeout']) }}" required min="1" class="block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6">
                             </div>
+                            <div class="sm:col-span-3">
+                                <label for="homepage_news_count" class="block text-sm font-medium leading-6 text-white">Noticias en Portada</label>
+                                <p class="text-sm text-gray-400 mb-2">Cantidad de noticias visibles en la portada (recomendado múltiplos de 3: 3, 6, 9...).</p>
+                                <input type="number" name="homepage_news_count" id="homepage_news_count" value="{{ old('homepage_news_count', $settings['homepage_news_count'] ?? 6) }}" required min="3" step="3" class="block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6">
+                            </div>
                             @if(auth()->user()->canViewIban())
                             <div class="sm:col-span-6">
                                 <label for="band_iban" class="block text-sm font-medium leading-6 text-amber-500">Cuenta Bancaria de la Banda (IBAN)</label>

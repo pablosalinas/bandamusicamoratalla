@@ -25,12 +25,14 @@ class NewsController extends Controller
             'content' => 'required|string',
             'event_date' => 'nullable|date',
             'is_published' => 'boolean',
+            'show_in_hemeroteca' => 'boolean',
             'active_from' => 'nullable|date',
             'active_to' => 'nullable|date|after_or_equal:active_from',
         ]);
 
         $validated['slug'] = \Illuminate\Support\Str::slug($validated['title']) . '-' . time();
         $validated['is_published'] = $request->has('is_published');
+        $validated['show_in_hemeroteca'] = $request->has('show_in_hemeroteca');
 
         $news = \App\Models\NewsActivity::create($validated);
 
@@ -49,12 +51,14 @@ class NewsController extends Controller
             'content' => 'required|string',
             'event_date' => 'nullable|date',
             'is_published' => 'boolean',
+            'show_in_hemeroteca' => 'boolean',
             'active_from' => 'nullable|date',
             'active_to' => 'nullable|date|after_or_equal:active_from',
         ]);
 
         $validated['slug'] = \Illuminate\Support\Str::slug($validated['title']) . '-' . time();
         $validated['is_published'] = $request->has('is_published');
+        $validated['show_in_hemeroteca'] = $request->has('show_in_hemeroteca');
 
         $news->update($validated);
 

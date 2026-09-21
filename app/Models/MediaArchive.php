@@ -18,12 +18,14 @@ class MediaArchive extends Model
         'music_type',
         'performance_date',
         'is_active',
+        'show_in_hemeroteca',
         'sort_order'
     ];
 
     protected $casts = [
         'performance_date' => 'date',
-        'is_active' => 'boolean'
+        'is_active' => 'boolean',
+        'show_in_hemeroteca' => 'boolean'
     ];
 
     public function images()

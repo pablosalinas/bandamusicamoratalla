@@ -72,6 +72,7 @@ class MediaArchiveController extends Controller
             'music_type' => $request->music_type,
             'performance_date' => $request->performance_date,
             'is_active' => $request->has('is_active'),
+            'show_in_hemeroteca' => $request->has('show_in_hemeroteca'),
             'sort_order' => $maxOrder + 1
         ]);
 
@@ -111,7 +112,8 @@ class MediaArchiveController extends Controller
             'composer' => $request->composer,
             'music_type' => $request->music_type,
             'performance_date' => $request->performance_date,
-            'is_active' => $request->has('is_active')
+            'is_active' => $request->has('is_active'),
+            'show_in_hemeroteca' => $request->has('show_in_hemeroteca')
         ]);
 
         if ($request->hasFile('images')) {

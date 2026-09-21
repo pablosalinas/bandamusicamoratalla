@@ -70,6 +70,16 @@
                         </div>
                     </div>
 
+                    <div class="relative flex items-start">
+                        <div class="flex h-6 items-center">
+                            <input id="show_in_hemeroteca" name="show_in_hemeroteca" type="checkbox" value="1" {{ old('show_in_hemeroteca', true) ? 'checked' : '' }} class="h-4 w-4 rounded border-white/10 bg-gray-800 text-amber-600 focus:ring-amber-600 focus:ring-offset-gray-900">
+                        </div>
+                        <div class="ml-3 text-sm leading-6">
+                            <label for="show_in_hemeroteca" class="font-medium text-white">Mostrar en la Hemeroteca</label>
+                            <p class="text-gray-400">Permite que esta noticia aparezca indexada y accesible en la Hemeroteca de Noticias.</p>
+                        </div>
+                    </div>
+
                 </div>
             </div>
             
