@@ -112,11 +112,14 @@
                     <a href="#noticias" class="text-gray-300 hover:text-white transition-colors font-medium">Noticias</a>
                     <a href="#archivo-sonoro" class="text-gray-300 hover:text-white transition-colors font-medium">Archivo Sonoro</a>
                     
-                    <!-- Hemeroteca Dropdown -->
+                    <!-- Hemeroteca Dropdown Destacado -->
                     <div class="relative" x-data="{ open: false }" @click.away="open = false">
-                        <button @click="open = !open" class="flex items-center gap-1 text-amber-400 hover:text-amber-300 transition-colors font-medium">
+                        <button @click="open = !open" class="flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider bg-gradient-to-r from-amber-500/20 to-amber-600/20 text-amber-400 border border-amber-500/40 hover:border-amber-400 hover:text-amber-300 hover:bg-amber-500/30 transition-all shadow-[0_0_15px_rgba(245,158,11,0.2)] hover:shadow-[0_0_20px_rgba(245,158,11,0.4)]">
+                            <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                            </svg>
                             <span>Hemeroteca</span>
-                            <svg class="w-4 h-4 transition-transform" :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-3.5 h-3.5 transition-transform" :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                             </svg>
                         </button>
@@ -127,14 +130,15 @@
                              x-transition:leave="transition ease-in duration-100"
                              x-transition:leave-start="opacity-100 scale-100"
                              x-transition:leave-end="opacity-0 scale-95"
-                             class="absolute left-0 mt-2 w-52 rounded-xl bg-gray-900 border border-gray-800 shadow-2xl py-2 z-50" 
+                             class="absolute left-0 mt-2 w-56 rounded-xl bg-gray-900/95 backdrop-blur-md border border-amber-500/30 shadow-[0_10px_30px_rgba(0,0,0,0.8)] py-2 z-50" 
                              style="display: none;">
-                            <a href="{{ route('hemeroteca.news') }}" class="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-300 hover:bg-gray-800 hover:text-amber-400 transition-colors">
-                                <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>
+                            <div class="px-3 py-1 text-[10px] font-bold text-amber-500/80 uppercase tracking-wider border-b border-gray-800 mb-1">Archivo Histórico</div>
+                            <a href="{{ route('hemeroteca.news') }}" class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-200 hover:bg-amber-500/10 hover:text-amber-400 transition-colors">
+                                <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>
                                 <span>Noticias y Eventos</span>
                             </a>
-                            <a href="{{ route('hemeroteca.media') }}" class="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-300 hover:bg-gray-800 hover:text-amber-400 transition-colors">
-                                <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/></svg>
+                            <a href="{{ route('hemeroteca.media') }}" class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-200 hover:bg-amber-500/10 hover:text-amber-400 transition-colors">
+                                <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/></svg>
                                 <span>Multimedia y Archivo</span>
                             </a>
                         </div>
@@ -179,10 +183,13 @@
                 <a href="#historia" @click="mobileMenuOpen = false" class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-800">Historia</a>
                 <a href="#noticias" @click="mobileMenuOpen = false" class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-800">Noticias</a>
                 <a href="#archivo-sonoro" @click="mobileMenuOpen = false" class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-800">Archivo Sonoro</a>
-                <div class="pt-2 pb-1 border-t border-gray-800/80">
-                    <span class="px-3 text-xs uppercase tracking-wider text-amber-500 font-semibold">Hemeroteca</span>
-                    <a href="{{ route('hemeroteca.news') }}" class="block px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-amber-400 hover:bg-gray-800">Hemeroteca de Noticias</a>
-                    <a href="{{ route('hemeroteca.media') }}" class="block px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-amber-400 hover:bg-gray-800">Hemeroteca Multimedia</a>
+                <div class="pt-2 pb-1 border-t border-gray-800/80 bg-amber-500/5 rounded-xl px-2 my-1">
+                    <span class="px-2 text-xs uppercase tracking-wider text-amber-400 font-bold flex items-center gap-1.5 py-1">
+                        <svg class="w-3.5 h-3.5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                        <span>Hemeroteca Histórica</span>
+                    </span>
+                    <a href="{{ route('hemeroteca.news') }}" class="block px-3 py-2 rounded-md text-sm font-semibold text-gray-200 hover:text-amber-400 hover:bg-gray-800">Noticias y Eventos</a>
+                    <a href="{{ route('hemeroteca.media') }}" class="block px-3 py-2 rounded-md text-sm font-semibold text-gray-200 hover:text-amber-400 hover:bg-gray-800">Multimedia y Archivo</a>
                 </div>
                 
                 <div class="flex items-center space-x-4 px-3 py-2 border-t border-gray-800 mt-2 pt-4">
