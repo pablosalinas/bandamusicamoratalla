@@ -94,16 +94,16 @@
     <!-- Navigation -->
     <nav :class="{'bg-gray-950/90 backdrop-blur-md shadow-lg border-b border-gray-800': scrolled, 'bg-transparent': !scrolled}" class="fixed w-full z-50 transition-all duration-300">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-20">
-                <div class="flex items-center gap-3 md:gap-4">
+            <div class="flex justify-between h-20 sm:h-24 items-center">
+                <div class="flex items-center gap-3 md:gap-4 pt-1.5 sm:pt-2.5">
                     <a href="{{ url('/') }}" class="cursor-pointer shrink-0">
                         <x-logo-rotator class="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 rounded-full shadow-[0_0_15px_rgba(245,158,11,0.4)] overflow-hidden" />
                     </a>
-                    <div class="flex flex-col">
-                        <div class="flex flex-col lg:flex-row lg:items-baseline leading-none">
-                            <span class="text-xl sm:text-2xl lg:text-4xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-600">{{ $globalBandName }}</span>
+                    <div class="flex flex-col justify-center">
+                        <div class="flex flex-col lg:flex-row lg:items-baseline">
+                            <span class="text-xl sm:text-2xl lg:text-4xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-600 inline-block py-1 sm:py-1.5 leading-normal">{{ $globalBandName }}</span>
                         </div>
-                        <span class="text-xs sm:text-sm lg:text-lg font-medium italic tracking-widest mt-1 animate-slogan">{{ \App\Models\SiteSetting::getSetting('site_slogan', 'Tu banda') }}</span>
+                        <span class="text-xs sm:text-sm lg:text-lg font-medium italic tracking-widest mt-0.5 animate-slogan">{{ \App\Models\SiteSetting::getSetting('site_slogan', 'Tu banda') }}</span>
                     </div>
                 </div>
                 <div class="hidden md:flex items-center space-x-7">

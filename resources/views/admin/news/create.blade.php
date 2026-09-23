@@ -80,6 +80,36 @@
                         </div>
                     </div>
 
+                    <!-- Vincular con Evento -->
+                    <div x-data="{ createEvent: {{ old('create_event') ? 'true' : 'false' }} }" class="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30">
+                        <div class="flex items-start">
+                            <div class="flex h-6 items-center">
+                                <input id="create_event" name="create_event" type="checkbox" value="1" x-model="createEvent" class="h-4 w-4 rounded border-amber-500/40 bg-gray-800 text-amber-500 focus:ring-amber-500 focus:ring-offset-gray-900">
+                            </div>
+                            <div class="ml-3 text-sm leading-6">
+                                <label for="create_event" class="font-bold text-amber-400 flex items-center gap-2">
+                                    <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                    Añadir también a los Eventos (Tipo: Propio)
+                                </label>
+                                <p class="text-gray-300 text-xs mt-1">Crea automáticamente este evento en el calendario de la banda con el <strong>título</strong> y <strong>contenido</strong> de esta noticia, evitando tener que introducirlo dos veces.</p>
+                            </div>
+                        </div>
+
+                        <div x-show="createEvent" x-transition class="mt-4 pt-3 border-t border-amber-500/20 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-300 mb-1">Tipo de Evento</label>
+                                <div class="px-3 py-1.5 rounded-md bg-gray-800 border border-gray-700 text-amber-400 text-sm font-medium flex items-center gap-2">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span>
+                                    <span>Propio (Propias)</span>
+                                </div>
+                            </div>
+                            <div>
+                                <label for="event_time" class="block text-xs font-semibold text-gray-300 mb-1">Hora del Evento</label>
+                                <input type="time" name="event_time" id="event_time" value="{{ old('event_time', '20:00') }}" class="block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm" style="color-scheme: dark;">
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
             

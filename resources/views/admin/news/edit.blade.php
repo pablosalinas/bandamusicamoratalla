@@ -81,6 +81,72 @@
                         </div>
                     </div>
 
+                    <!-- Panel de Integración con Eventos -->
+                    @php
+                        $linkedEvent = $news->linked_event;
+                    @endphp
+
+                    @if($linkedEvent)
+                        <div class="p-4 rounded-xl bg-green-500/10 border border-green-500/30">
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                <div class="flex items-center gap-2.5">
+                                    <span class="p-2 rounded-lg bg-green-500/20 text-green-400 shrink-0">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                    </span>
+                                    <div>
+                                        <h4 class="text-sm font-bold text-green-400">Noticia vinculada a un Evento</h4>
+                                        <p class="text-xs text-gray-300">
+                                            Evento: <span class="font-semibold text-white">{{ $linkedEvent->name }}</span> 
+                                            ({{ $linkedEvent->event_date->format('d/m/Y H:i') }}) - Tipo: <span class="capitalize text-amber-400 font-semibold">{{ $linkedEvent->type }}</span>
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-2 shrink-0">
+                                    <a href="{{ route('admin.events.edit', $linkedEvent) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-gray-800 text-xs font-semibold text-gray-200 hover:bg-gray-700 border border-gray-700">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                        Ver Evento
+                                    </a>
+                                </div>
+                            </div>
+
+                            <div class="mt-3 pt-3 border-t border-green-500/20 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                                <div class="relative flex items-start">
+                                    <div class="flex h-5 items-center">
+                                        <input id="sync_event" name="sync_event" type="checkbox" value="1" class="h-4 w-4 rounded border-green-500/40 bg-gray-800 text-green-500 focus:ring-green-500 focus:ring-offset-gray-900">
+                                    </div>
+                                    <div class="ml-2.5 text-xs text-gray-300">
+                                        <label for="sync_event" class="font-medium text-white cursor-pointer">Actualizar también el Evento vinculado al guardar cambios</label>
+                                    </div>
+                                </div>
+
+                                <button type="submit" formaction="{{ route('admin.news.sync-event', $news) }}" formmethod="POST" onclick="return confirm('¿Deseas actualizar el evento vinculado \'{{ addslashes($linkedEvent->name) }}\' con el título, fecha y contenido actuales de esta noticia?');" class="inline-flex items-center gap-1 text-xs text-green-400 hover:text-green-300 hover:underline font-semibold cursor-pointer">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                                    Actualizar Evento Ahora
+                                </button>
+                            </div>
+                        </div>
+                    @else
+                        <!-- No convertida a evento todavía -->
+                        <div class="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30">
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                <div class="flex items-center gap-2.5">
+                                    <span class="p-2 rounded-lg bg-amber-500/20 text-amber-400 shrink-0">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                    </span>
+                                    <div>
+                                        <h4 class="text-sm font-bold text-amber-400">¿Esta noticia también es un Evento?</h4>
+                                        <p class="text-xs text-gray-300">Aún no está en el calendario. Puedes convertirla en evento (Tipo: Propio) para no tener que introducirla dos veces.</p>
+                                    </div>
+                                </div>
+                                
+                                <button type="submit" formaction="{{ route('admin.news.create-event', $news) }}" formmethod="POST" onclick="return confirm('¿Crear un nuevo Evento (Tipo: Propio) con el título, fecha y contenido de esta noticia?');" class="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold shadow-sm transition-all whitespace-nowrap">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                                    Convertir en Evento
+                                </button>
+                            </div>
+                        </div>
+                    @endif
+
                 </div>
             </div>
             

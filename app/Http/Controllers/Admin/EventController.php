@@ -29,10 +29,24 @@ class EventController extends Controller
             $query->where('event_date', '<=', Carbon::parse($request->end_date)->endOfDay());
         }
 
+        // Filtro: Tipo de evento
+        if ($request->filled('type') && $request->type !== '') {
+            $query->where('type', $request->type);
+        }
+
+        $eventTypes = [
+            'ensayo' => 'Ensayo',
+            'propias' => 'Propias',
+            'contratada' => 'Contratada',
+            'convenio' => 'Convenio',
+            'salida' => 'Salida',
+            'otro' => 'Otro',
+        ];
+
         // Orden temporal ascendente
         $events = $query->orderBy('event_date', 'asc')->paginate(60)->withQueryString();
 
-        return view('admin.events.index', compact('events'));
+        return view('admin.events.index', compact('events', 'eventTypes'));
     }
 
     public function create()

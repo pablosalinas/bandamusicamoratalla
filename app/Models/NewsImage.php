@@ -23,6 +23,13 @@ class NewsImage extends Model
 
     public function getUrlAttribute()
     {
-        return request()->getSchemeAndHttpHost() . '/uploads/news/' . $this->file_path;
+        $path = ltrim($this->file_path, '/');
+        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+            return $path;
+        }
+        if (str_starts_with($path, 'uploads/news/')) {
+            return request()->getSchemeAndHttpHost() . '/' . $path;
+        }
+        return request()->getSchemeAndHttpHost() . '/uploads/news/' . $path;
     }
 }

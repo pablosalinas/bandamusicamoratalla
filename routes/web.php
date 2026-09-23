@@ -196,6 +196,8 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     Route::post('inventory/{inventory}/return', [\App\Http\Controllers\Admin\InventoryController::class, 'returnInstrument'])->name('inventory.return');
     Route::post('inventory/{inventory}/transfer', [\App\Http\Controllers\Admin\InventoryController::class, 'transfer'])->name('inventory.transfer');
     
+    Route::post('news/{news}/create-event', [\App\Http\Controllers\Admin\NewsController::class, 'createEvent'])->name('news.create-event');
+    Route::post('news/{news}/sync-event', [\App\Http\Controllers\Admin\NewsController::class, 'syncEvent'])->name('news.sync-event');
     Route::resource('news', \App\Http\Controllers\Admin\NewsController::class);
     Route::post('news/{news}/images', [\App\Http\Controllers\Admin\NewsImageController::class, 'store'])->name('news.images.store');
     Route::put('news-images/{image}', [\App\Http\Controllers\Admin\NewsImageController::class, 'update'])->name('news.images.update');

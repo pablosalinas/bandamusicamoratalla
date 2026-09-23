@@ -32,4 +32,9 @@ class Event extends Model
     {
         return $this->hasMany(Attendance::class);
     }
+
+    public function newsActivity()
+    {
+        return $this->hasOne(NewsActivity::class, 'event_id');
+    }
 }
