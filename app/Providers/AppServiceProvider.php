@@ -74,8 +74,8 @@ class AppServiceProvider extends ServiceProvider
             \Illuminate\Support\Facades\View::share('globalStatutes', '');
         }
 
-        // Compartir contador de validaciones pendientes (músicos e inventario) en el panel de administración
-        \Illuminate\Support\Facades\View::composer(['components.admin-layout', 'admin.*', 'dashboard', 'profile.*', 'musician.*'], function ($view) {
+        // Compartir contador de validaciones pendientes (músicos e inventario) en todas las vistas
+        \Illuminate\Support\Facades\View::composer('*', function ($view) {
             $pendingMusicians = 0;
             $pendingInstruments = 0;
 
@@ -84,7 +84,9 @@ class AppServiceProvider extends ServiceProvider
                     $pendingMusicians = \App\Models\User::where('users.is_active', false)->where('users.role', 'musician')->count();
                 }
                 if (\Illuminate\Support\Facades\Schema::hasTable('inventories')) {
-                    $pendingInstruments = \App\Models\Inventory::where('is_verified', false)->count();
+                    if (\Illuminate\Support\Facades\Schema::hasColumn('inventories', 'is_verified')) {
+                        $pendingInstruments = \App\Models\Inventory::where('is_verified', false)->count();
+                    }
                 }
             } catch (\Exception $e) {
                 // Silencioso si aún no se han ejecutado las migraciones

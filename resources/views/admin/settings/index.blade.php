@@ -582,6 +582,9 @@
                     <form action="{{ route('admin.settings.update') }}" method="POST" class="bg-gray-900 shadow-sm ring-1 ring-gray-800 sm:rounded-xl">
                         @csrf
                         <input type="hidden" name="settings_section" value="email">
+                        <input type="hidden" name="band_name" value="{{ $settings['band_name'] ?? 'Banda de Música de Moratalla' }}">
+                        <input type="hidden" name="session_timeout" value="{{ $settings['session_timeout'] ?? 120 }}">
+                        <input type="hidden" name="carousel_speed" value="{{ $settings['carousel_speed'] ?? 4 }}">
                         
                         <div class="px-4 py-6 sm:p-8 space-y-6">
                             

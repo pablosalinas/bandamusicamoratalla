@@ -113,39 +113,56 @@ class SettingsController extends Controller
 
     public function update(Request $request)
     {
-        $rules = [
-            'band_name' => 'required|string|max:255',
-            'site_slogan' => 'nullable|string|max:255',
-            'band_email' => 'nullable|email|max:255',
-            'session_timeout' => 'required|integer|min:1',
-            'statutes' => 'nullable|string',
-            'band_history' => 'nullable|string',
-            'carousel_speed' => 'required|integer|min:1',
-            'news_speed' => 'nullable|integer|min:1',
-            'history_speed' => 'nullable|integer|min:1',
-            'wait_videos_finish' => 'nullable|in:0,1',
-            'parental_consent_template' => 'nullable|string',
-            'parental_consent_pdf' => 'nullable|file|mimes:pdf|max:10240',
-            'allow_musician_registration' => 'nullable|boolean',
-            'allow_musician_instruments' => 'nullable|boolean',
-        ];
+        $section = $request->input('settings_section', 'all');
 
-        if (auth()->user()->canViewIban()) {
-            
-            $rules['band_iban'] = ['nullable', 'string', 'max:50', new \App\Rules\ValidIban];
-        
-        }
-        
-        if (auth()->user()->isSuperAdmin()) {
-            $rules['backup_password'] = ['nullable', 'string', 'max:255'];
-            $rules['mail_mailer'] = ['nullable', 'string', 'max:50'];
-            $rules['mail_host'] = ['nullable', 'string', 'max:255'];
-            $rules['mail_port'] = ['nullable', 'integer', 'min:1', 'max:65535'];
-            $rules['mail_encryption'] = ['nullable', 'string', 'max:20'];
-            $rules['mail_username'] = ['nullable', 'string', 'max:255'];
-            $rules['mail_password'] = ['nullable', 'string', 'max:255'];
-            $rules['mail_from_address'] = ['nullable', 'string', 'max:255'];
-            $rules['mail_from_name'] = ['nullable', 'string', 'max:255'];
+        if ($section === 'email') {
+            $rules = [
+                'mail_mailer' => 'nullable|string|max:50',
+                'mail_host' => 'required|string|max:255',
+                'mail_port' => 'required|integer|min:1|max:65535',
+                'mail_encryption' => 'nullable|string|max:20',
+                'mail_username' => 'required|string|max:255',
+                'mail_password' => 'nullable|string|max:255',
+                'mail_from_address' => 'nullable|string|max:255',
+                'mail_from_name' => 'nullable|string|max:255',
+            ];
+            if (!auth()->user()->isSuperAdmin()) {
+                abort(403, 'Solo el superusuario puede editar los parámetros SMTP.');
+            }
+        } elseif ($section === 'textos') {
+            $rules = [
+                'band_name' => 'nullable|string|max:255',
+                'statutes' => 'nullable|string',
+                'band_history' => 'nullable|string',
+                'parental_consent_template' => 'nullable|string',
+                'parental_consent_pdf' => 'nullable|file|mimes:pdf|max:10240',
+            ];
+        } elseif ($section === 'apariencia') {
+            $rules = [
+                'carousel_speed' => 'required|integer|min:1',
+                'news_speed' => 'nullable|integer|min:1',
+                'history_speed' => 'nullable|integer|min:1',
+                'wait_videos_finish' => 'nullable|in:0,1',
+            ];
+        } else {
+            // General o por defecto
+            $rules = [
+                'band_name' => 'required|string|max:255',
+                'site_slogan' => 'nullable|string|max:255',
+                'band_email' => 'nullable|email|max:255',
+                'session_timeout' => 'required|integer|min:1',
+                'homepage_news_count' => 'nullable|integer|min:1',
+                'allow_musician_registration' => 'nullable|boolean',
+                'allow_musician_instruments' => 'nullable|boolean',
+            ];
+
+            if (auth()->user()->canViewIban()) {
+                $rules['band_iban'] = ['nullable', 'string', 'max:50', new \App\Rules\ValidIban];
+            }
+
+            if (auth()->user()->isSuperAdmin()) {
+                $rules['backup_password'] = ['nullable', 'string', 'max:255'];
+            }
         }
 
         $validated = $request->validate($rules);
