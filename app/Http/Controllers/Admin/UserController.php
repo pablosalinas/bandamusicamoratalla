@@ -20,7 +20,7 @@ class UserController extends Controller
         $query = User::with(['inventories.instrument', 'section.parent']);
 
         if ($orderBy === 'name') {
-            $query->orderBy('name')->orderBy('last_name');
+            $query->orderBy('users.name')->orderBy('users.last_name');
         } elseif ($orderBy === 'section') {
             $query->leftJoin('instrument_sections', 'users.instrument_section_id', '=', 'instrument_sections.id')
                   ->select('users.*')
@@ -28,24 +28,24 @@ class UserController extends Controller
                   ->orderBy('users.last_name')
                   ->orderBy('users.name');
         } else {
-            $query->orderBy('last_name')->orderBy('name');
+            $query->orderBy('users.last_name')->orderBy('users.name');
         }
 
         if ($status === 'pending') {
-            $query->where('is_active', false)->where('role', 'musician');
+            $query->where('users.is_active', false)->where('users.role', 'musician');
         } elseif ($status === 'active') {
-            $query->where('is_active', true);
+            $query->where('users.is_active', true);
         } elseif ($status === 'inactive') {
-            $query->where('is_active', false);
+            $query->where('users.is_active', false);
         }
 
         if (!empty($search)) {
             $query->where(function($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('last_name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('nif', 'like', "%{$search}%")
-                  ->orWhere('phone', 'like', "%{$search}%");
+                $q->where('users.name', 'like', "%{$search}%")
+                  ->orWhere('users.last_name', 'like', "%{$search}%")
+                  ->orWhere('users.email', 'like', "%{$search}%")
+                  ->orWhere('users.nif', 'like', "%{$search}%")
+                  ->orWhere('users.phone', 'like', "%{$search}%");
             });
         }
 
@@ -304,7 +304,7 @@ class UserController extends Controller
         $query = User::with(['inventories.instrument', 'section.parent']);
 
         if ($orderBy === 'name') {
-            $query->orderBy('name')->orderBy('last_name');
+            $query->orderBy('users.name')->orderBy('users.last_name');
         } elseif ($orderBy === 'section') {
             $query->leftJoin('instrument_sections', 'users.instrument_section_id', '=', 'instrument_sections.id')
                   ->select('users.*')
@@ -312,25 +312,25 @@ class UserController extends Controller
                   ->orderBy('users.last_name')
                   ->orderBy('users.name');
         } else {
-            $query->orderBy('last_name')->orderBy('name');
+            $query->orderBy('users.last_name')->orderBy('users.name');
         }
 
         if ($status === 'pending') {
-            $query->where('is_active', false)->where('role', 'musician');
+            $query->where('users.is_active', false)->where('users.role', 'musician');
         } elseif ($status === 'active') {
-            $query->where('is_active', true);
+            $query->where('users.is_active', true);
         } elseif ($status === 'inactive') {
-            $query->where('is_active', false);
+            $query->where('users.is_active', false);
         }
 
         if (!empty($search)) {
             $query->where(function($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('last_name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('nif', 'like', "%{$search}%")
-                  ->orWhere('phone', 'like', "%{$search}%")
-                  ->orWhere('city', 'like', "%{$search}%");
+                $q->where('users.name', 'like', "%{$search}%")
+                  ->orWhere('users.last_name', 'like', "%{$search}%")
+                  ->orWhere('users.email', 'like', "%{$search}%")
+                  ->orWhere('users.nif', 'like', "%{$search}%")
+                  ->orWhere('users.phone', 'like', "%{$search}%")
+                  ->orWhere('users.city', 'like', "%{$search}%");
             });
         }
 

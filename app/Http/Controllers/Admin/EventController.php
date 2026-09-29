@@ -108,12 +108,12 @@ class EventController extends Controller
     {
         $orderBy = $request->query('order_by', 'section');
 
-        $query = User::where('is_active', true)->with(['section.parent', 'inventories.instrument']);
+        $query = User::where('users.is_active', true)->with(['section.parent', 'inventories.instrument']);
 
         if ($orderBy === 'name') {
-            $query->orderBy('name')->orderBy('last_name');
+            $query->orderBy('users.name')->orderBy('users.last_name');
         } elseif ($orderBy === 'last_name') {
-            $query->orderBy('last_name')->orderBy('name');
+            $query->orderBy('users.last_name')->orderBy('users.name');
         } else {
             // Ordenar por cuerdas y subcuerdas (default)
             $query->leftJoin('instrument_sections', 'users.instrument_section_id', '=', 'instrument_sections.id')
