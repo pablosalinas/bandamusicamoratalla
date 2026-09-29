@@ -466,8 +466,50 @@ class SettingsController extends Controller
         $testEmail = $request->input('test_email');
         $bandName = \App\Models\SiteSetting::getSetting('band_name', 'Banda de Música de Moratalla');
 
+        $mailHost = \App\Models\SiteSetting::getSetting('mail_host', 'smtp.ionos.es');
+        $mailPort = (int) \App\Models\SiteSetting::getSetting('mail_port', 587);
+        $mailEnc = \App\Models\SiteSetting::getSetting('mail_encryption', 'tls');
+        $mailUser = \App\Models\SiteSetting::getSetting('mail_username', '');
+        $mailFromAddress = \App\Models\SiteSetting::getSetting('mail_from_address', $mailUser);
+        $mailFromName = \App\Models\SiteSetting::getSetting('mail_from_name', $bandName);
+
+        $rawMailPass = \App\Models\SiteSetting::getSetting('mail_password', '');
+        $mailPass = '';
+        if ($rawMailPass) {
+            try {
+                $mailPass = \Illuminate\Support\Facades\Crypt::decryptString($rawMailPass);
+            } catch (\Exception $e) {
+                $mailPass = '';
+            }
+        }
+
+        if (empty($mailHost) || empty($mailUser)) {
+            return redirect()->route('admin.settings.index', ['tab' => 'email'])
+                ->with('error', 'Debes configurar y guardar los campos de Servidor SMTP y Usuario (correo electrónico) antes de enviar un correo de prueba.');
+        }
+
+        // Reconfigurar dinámicamente y purgar la instancia del transportador SMTP en tiempo de ejecución
+        config([
+            'mail.default' => 'smtp',
+            'mail.mailers.smtp.transport' => 'smtp',
+            'mail.mailers.smtp.host' => $mailHost,
+            'mail.mailers.smtp.port' => $mailPort,
+            'mail.mailers.smtp.encryption' => ($mailEnc === 'none' || empty($mailEnc)) ? null : $mailEnc,
+            'mail.mailers.smtp.username' => $mailUser,
+            'mail.mailers.smtp.password' => $mailPass,
+            'mail.from.address' => $mailFromAddress ?: $mailUser,
+            'mail.from.name' => $mailFromName ?: $bandName,
+        ]);
+
+        \Illuminate\Support\Facades\Mail::purge('smtp');
+
         try {
-            \Illuminate\Support\Facades\Mail::raw("¡Hola!\n\nEste es un correo de prueba enviado desde la aplicación de la {$bandName}.\n\nSi estás recibiendo este mensaje, significa que los parámetros SMTP (servidor, puerto, credenciales cifradas y seguridad TLS/SSL) están correctamente configurados y funcionando a la perfección.\n\nFecha y hora: " . now()->format('d/m/Y H:i:s'), function ($message) use ($testEmail, $bandName) {
+            \Illuminate\Support\Facades\Mail::mailer('smtp')->raw("¡Hola!\n\nEste es un correo de prueba enviado desde la aplicación de la {$bandName}.\n\nSi estás recibiendo este mensaje, significa que los parámetros SMTP (servidor, puerto, credenciales cifradas y seguridad TLS/SSL) están correctamente configurados y funcionando a la perfección.\n\nFecha y hora: " . now()->format('d/m/Y H:i:s'), function ($message) use ($testEmail, $bandName, $mailFromAddress, $mailUser, $mailFromName) {
+                $fromEmail = $mailFromAddress ?: $mailUser;
+                $fromName = $mailFromName ?: $bandName;
+                if ($fromEmail) {
+                    $message->from($fromEmail, $fromName);
+                }
                 $message->to($testEmail)
                         ->subject("Prueba de correo SMTP - {$bandName}");
             });
