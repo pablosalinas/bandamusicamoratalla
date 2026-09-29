@@ -27,6 +27,12 @@
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
                     Copia de Seguridad
                 </button>
+                @if(auth()->user()->isSuperAdmin())
+                <button @click="tab = 'email'" :class="{ 'bg-gray-800 text-white': tab === 'email', 'text-gray-400 hover:bg-gray-800 hover:text-white': tab !== 'email' }" class="px-4 py-3 rounded-md font-medium text-left transition-colors flex items-center gap-2">
+                    <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                    Correo y SMTP
+                </button>
+                @endif
             </nav>
         </div>
 
@@ -544,6 +550,143 @@
                     </div>
                 </div>
             </div>
+
+            <!-- EMAIL / SMTP SETTINGS (SOLO SUPERADMIN PABLOELTORTAS) -->
+            @if(auth()->user()->isSuperAdmin())
+            <div x-show="tab === 'email'" x-cloak>
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h3 class="text-2xl font-semibold text-white">Servidor de Correo Electrónico (SMTP)</h3>
+                        <p class="text-sm text-gray-400 mt-1">Configura la autenticación segura para enviar correos desde la aplicación (notificaciones, avisos, etc.).</p>
+                    </div>
+                    <span class="inline-flex items-center rounded-md bg-amber-500/10 px-2.5 py-1 text-xs font-semibold text-amber-400 ring-1 ring-inset ring-amber-500/30">
+                        🔒 Solo Superusuario (pabloeltortas)
+                    </span>
+                </div>
+
+                @if(session('error'))
+                    <div class="mb-6 rounded-md bg-red-900/50 p-4 border border-red-500/50">
+                        <div class="flex">
+                            <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd" />
+                            </svg>
+                            <div class="ml-3">
+                                <p class="text-sm font-medium text-red-300">{{ session('error') }}</p>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
+                <div class="space-y-8">
+                    <!-- Formulario de Configuración SMTP -->
+                    <form action="{{ route('admin.settings.update') }}" method="POST" class="bg-gray-900 shadow-sm ring-1 ring-gray-800 sm:rounded-xl">
+                        @csrf
+                        <input type="hidden" name="settings_section" value="email">
+                        
+                        <div class="px-4 py-6 sm:p-8 space-y-6">
+                            
+                            <div class="rounded-lg bg-blue-950/40 p-4 border border-blue-800/60">
+                                <div class="flex items-start gap-3">
+                                    <svg class="w-5 h-5 text-blue-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <div class="text-xs text-blue-200 leading-relaxed">
+                                        <p class="font-semibold text-white mb-1">Valores recomendados para hosting IONOS:</p>
+                                        <p>• <strong>Servidor SMTP:</strong> <code class="bg-gray-900 px-1 py-0.5 rounded text-amber-300">smtp.ionos.es</code></p>
+                                        <p>• <strong>Puerto y Cifrado:</strong> Puerto <code class="bg-gray-900 px-1 py-0.5 rounded text-amber-300">587</code> con cifrado <code class="bg-gray-900 px-1 py-0.5 rounded text-amber-300">TLS</code> (o puerto 465 con SSL).</p>
+                                        <p>• <strong>Usuario:</strong> Tu dirección de correo completa creada en Ionos (ej. <em>contacto@tudominio.es</em>).</p>
+                                        <p>• <strong>Contraseña:</strong> Se almacena de forma <strong>estrictamente cifrada</strong> en la base de datos.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-6">
+                                <div class="sm:col-span-3">
+                                    <label for="mail_mailer" class="block text-sm font-medium leading-6 text-white">Protocolo / Conductor</label>
+                                    <select name="mail_mailer" id="mail_mailer" class="mt-2 block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm">
+                                        <option value="smtp" {{ old('mail_mailer', $settings['mail_mailer'] ?? 'smtp') === 'smtp' ? 'selected' : '' }}>SMTP (Recomendado)</option>
+                                        <option value="sendmail" {{ old('mail_mailer', $settings['mail_mailer'] ?? '') === 'sendmail' ? 'selected' : '' }}>Sendmail</option>
+                                    </select>
+                                </div>
+
+                                <div class="sm:col-span-3">
+                                    <label for="mail_host" class="block text-sm font-medium leading-6 text-white">Servidor SMTP *</label>
+                                    <input type="text" name="mail_host" id="mail_host" value="{{ old('mail_host', $settings['mail_host'] ?? 'smtp.ionos.es') }}" placeholder="smtp.ionos.es" required class="mt-2 block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm">
+                                </div>
+
+                                <div class="sm:col-span-3">
+                                    <label for="mail_port" class="block text-sm font-medium leading-6 text-white">Puerto SMTP *</label>
+                                    <input type="number" name="mail_port" id="mail_port" value="{{ old('mail_port', $settings['mail_port'] ?? 587) }}" placeholder="587" required class="mt-2 block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm">
+                                </div>
+
+                                <div class="sm:col-span-3">
+                                    <label for="mail_encryption" class="block text-sm font-medium leading-6 text-white">Seguridad / Cifrado</label>
+                                    <select name="mail_encryption" id="mail_encryption" class="mt-2 block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm">
+                                        <option value="tls" {{ old('mail_encryption', $settings['mail_encryption'] ?? 'tls') === 'tls' ? 'selected' : '' }}>TLS (Puerto 587 - Estándar Ionos)</option>
+                                        <option value="ssl" {{ old('mail_encryption', $settings['mail_encryption'] ?? '') === 'ssl' ? 'selected' : '' }}>SSL (Puerto 465)</option>
+                                        <option value="none" {{ old('mail_encryption', $settings['mail_encryption'] ?? '') === 'none' ? 'selected' : '' }}>Sin cifrado</option>
+                                    </select>
+                                </div>
+
+                                <div class="sm:col-span-3">
+                                    <label for="mail_username" class="block text-sm font-medium leading-6 text-white">Usuario SMTP (Email) *</label>
+                                    <input type="text" name="mail_username" id="mail_username" value="{{ old('mail_username', $settings['mail_username'] ?? '') }}" placeholder="usuario@moratalla.es" class="mt-2 block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm">
+                                </div>
+
+                                <div class="sm:col-span-3">
+                                    <label for="mail_password" class="block text-sm font-medium leading-6 text-white">
+                                        Contraseña SMTP
+                                        @if(!empty($smtpPassword))
+                                            <span class="text-xs font-normal text-green-400 ml-1">(Configurada y cifrada)</span>
+                                        @endif
+                                    </label>
+                                    <input type="password" name="mail_password" id="mail_password" value="{{ old('mail_password', $smtpPassword) }}" placeholder="Introduce tu clave SMTP" class="mt-2 block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm">
+                                    <p class="text-[11px] text-gray-500 mt-1">Se encriptará con clave militar en la base de datos.</p>
+                                </div>
+
+                                <div class="sm:col-span-3">
+                                    <label for="mail_from_address" class="block text-sm font-medium leading-6 text-white">Email Remitente (From)</label>
+                                    <input type="email" name="mail_from_address" id="mail_from_address" value="{{ old('mail_from_address', $settings['mail_from_address'] ?? '') }}" placeholder="no-reply@moratalla.es (o dejar vacío para usar el usuario)" class="mt-2 block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm">
+                                </div>
+
+                                <div class="sm:col-span-3">
+                                    <label for="mail_from_name" class="block text-sm font-medium leading-6 text-white">Nombre Remitente (From Name)</label>
+                                    <input type="text" name="mail_from_name" id="mail_from_name" value="{{ old('mail_from_name', $settings['mail_from_name'] ?? '') }}" placeholder="Banda de Música de Moratalla" class="mt-2 block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-end gap-x-6 border-t border-gray-800 px-4 py-4 sm:px-8">
+                            <button type="submit" class="rounded-md bg-amber-600 px-5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-amber-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber-600">
+                                Guardar Parámetros SMTP
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Comprobación / Envío de Prueba -->
+                    <div class="bg-gray-900 shadow-sm ring-1 ring-gray-800 sm:rounded-xl p-6 sm:p-8">
+                        <div class="max-w-xl">
+                            <h4 class="text-base font-semibold leading-7 text-white flex items-center gap-2">
+                                <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+                                Probar Conexión y Envío de Correo
+                            </h4>
+                            <p class="mt-1 text-sm leading-6 text-gray-400">
+                                Guarda los parámetros primero y a continuación introduce un correo electrónico de destino para comprobar que el servidor SMTP de Ionos autentica y envía correctamente.
+                            </p>
+
+                            <form action="{{ route('admin.settings.test-email') }}" method="POST" class="mt-6 flex flex-col sm:flex-row gap-3">
+                                @csrf
+                                <div class="flex-1">
+                                    <input type="email" name="test_email" id="test_email" required placeholder="correo-donde-recibir-prueba@gmail.com" class="block w-full rounded-md border-0 bg-gray-800 py-2 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm">
+                                </div>
+                                <button type="submit" class="rounded-md bg-green-600 px-5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-green-600 inline-flex items-center justify-center gap-2 shrink-0">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                                    Enviar Correo de Prueba
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @endif
 
         </div>
     </div>

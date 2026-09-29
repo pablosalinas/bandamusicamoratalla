@@ -2,7 +2,8 @@
     openInstruments: {{ request()->routeIs('admin.instruments.*') || request()->routeIs('admin.instrument-sections.*') || request()->routeIs('admin.instrument-brands.*') || request()->routeIs('admin.inventory.*') ? 'true' : 'false' }},
     openBoardAccounting: {{ request()->routeIs('admin.boards.*') || request()->routeIs('admin.fiscal-years.*') || request()->routeIs('admin.budget-movements.*') ? 'true' : 'false' }},
     openNewsEvents: {{ request()->routeIs('admin.news.*') || request()->routeIs('admin.media-archive.*') || request()->routeIs('admin.events.*') ? 'true' : 'false' }},
-    openUsers: {{ request()->routeIs('admin.users.*') ? 'true' : 'false' }}
+    openUsers: {{ request()->routeIs('admin.users.*') ? 'true' : 'false' }},
+    openAnalytics: {{ request()->routeIs('admin.analytics.*') || request()->routeIs('admin.logs.*') ? 'true' : 'false' }}
 }">
     <!-- Enlace común para todos -->
     <li>
@@ -178,22 +179,30 @@
                 Configuración
             </a>
         </li>
+        <!-- 7. GRUPO: ESTADÍSTICAS Y REGISTROS -->
         <li>
-            <a href="{{ route('admin.analytics.index') }}" class="{{ request()->routeIs('admin.analytics.*') ? 'bg-gray-800 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-800' }} group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
-                <svg class="h-6 w-6 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6a7.5 7.5 0 107.5 7.5h-7.5V6z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5H21A7.5 7.5 0 0013.5 3v7.5z" />
-                </svg>
-                Estadísticas Web
-            </a>
-        </li>
-        <li>
-            <a href="{{ route('admin.logs.index') }}" class="{{ request()->routeIs('admin.logs.*') ? 'bg-gray-800 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-800' }} group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
-                <svg class="h-6 w-6 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m5.231 13.481L15 17.25m-4.5-15H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9zm3.75 11.625a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
-                </svg>
-                Registros
-            </a>
+            <div>
+                <button type="button" @click="openAnalytics = !openAnalytics" class="w-full flex items-center justify-between gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold {{ request()->routeIs('admin.analytics.*') || request()->routeIs('admin.logs.*') ? 'bg-gray-800 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-800' }} transition-colors">
+                    <div class="flex items-center gap-x-3">
+                        <svg class="h-6 w-6 shrink-0 {{ request()->routeIs('admin.analytics.*') || request()->routeIs('admin.logs.*') ? 'text-amber-500' : 'text-gray-400' }}" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6a7.5 7.5 0 107.5 7.5h-7.5V6z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5H21A7.5 7.5 0 0013.5 3v7.5z" />
+                        </svg>
+                        <span>Estadísticas</span>
+                    </div>
+                    <svg class="h-4 w-4 transition-transform duration-200" :class="{ 'rotate-180': openAnalytics }" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                    </svg>
+                </button>
+                <div x-show="openAnalytics" x-cloak class="mt-1 pl-11 space-y-1">
+                    <a href="{{ route('admin.analytics.index') }}" class="block rounded-md py-1.5 px-2 text-xs font-medium {{ request()->routeIs('admin.analytics.*') ? 'text-amber-400 font-bold' : 'text-gray-400 hover:text-white' }}">
+                        Estadísticas Web
+                    </a>
+                    <a href="{{ route('admin.logs.index') }}" class="block rounded-md py-1.5 px-2 text-xs font-medium {{ request()->routeIs('admin.logs.*') ? 'text-amber-400 font-bold' : 'text-gray-400 hover:text-white' }}">
+                        Registros del Sistema
+                    </a>
+                </div>
+            </div>
         </li>
         <li>
             <a href="{{ route('admin.manual') }}" class="{{ request()->routeIs('admin.manual') ? 'bg-gray-800 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-800' }} group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">

@@ -63,7 +63,26 @@ class SettingsController extends Controller
             'parental_consent_pdf' => \App\Models\SiteSetting::getSetting('parental_consent_pdf', ''),
             'allow_musician_registration' => \App\Models\SiteSetting::getSetting('allow_musician_registration', '0'),
             'allow_musician_instruments' => \App\Models\SiteSetting::getSetting('allow_musician_instruments', '0'),
+            'mail_mailer' => \App\Models\SiteSetting::getSetting('mail_mailer', 'smtp'),
+            'mail_host' => \App\Models\SiteSetting::getSetting('mail_host', 'smtp.ionos.es'),
+            'mail_port' => \App\Models\SiteSetting::getSetting('mail_port', 587),
+            'mail_encryption' => \App\Models\SiteSetting::getSetting('mail_encryption', 'tls'),
+            'mail_username' => \App\Models\SiteSetting::getSetting('mail_username', ''),
+            'mail_from_address' => \App\Models\SiteSetting::getSetting('mail_from_address', ''),
+            'mail_from_name' => \App\Models\SiteSetting::getSetting('mail_from_name', ''),
         ];
+
+        $smtpPassword = '';
+        if (auth()->user() && auth()->user()->isSuperAdmin()) {
+            $rawMailPass = \App\Models\SiteSetting::getSetting('mail_password', '');
+            if ($rawMailPass) {
+                try {
+                    $smtpPassword = \Illuminate\Support\Facades\Crypt::decryptString($rawMailPass);
+                } catch (\Exception $e) {
+                    $smtpPassword = '';
+                }
+            }
+        }
         
         $carouselMedia = \App\Models\CarouselMedia::orderBy('sort_order')->get();
         $bandHistoryImages = \App\Models\BandHistoryImage::orderBy('sort_order')->get();
@@ -73,7 +92,7 @@ class SettingsController extends Controller
             $card['enabled'] = \App\Models\SiteSetting::isDashboardCardEnabled($key);
         }
 
-        return view('admin.settings.index', compact('settings', 'carouselMedia', 'bandHistoryImages', 'backupPassword', 'dashboardCards'));
+        return view('admin.settings.index', compact('settings', 'carouselMedia', 'bandHistoryImages', 'backupPassword', 'smtpPassword', 'dashboardCards'));
     }
 
     public function updateDashboardCards(Request $request)
@@ -119,6 +138,14 @@ class SettingsController extends Controller
         
         if (auth()->user()->isSuperAdmin()) {
             $rules['backup_password'] = ['nullable', 'string', 'max:255'];
+            $rules['mail_mailer'] = ['nullable', 'string', 'max:50'];
+            $rules['mail_host'] = ['nullable', 'string', 'max:255'];
+            $rules['mail_port'] = ['nullable', 'integer', 'min:1', 'max:65535'];
+            $rules['mail_encryption'] = ['nullable', 'string', 'max:20'];
+            $rules['mail_username'] = ['nullable', 'string', 'max:255'];
+            $rules['mail_password'] = ['nullable', 'string', 'max:255'];
+            $rules['mail_from_address'] = ['nullable', 'string', 'max:255'];
+            $rules['mail_from_name'] = ['nullable', 'string', 'max:255'];
         }
 
         $validated = $request->validate($rules);
@@ -149,6 +176,16 @@ class SettingsController extends Controller
             }
             if ($key === 'backup_password' && auth()->user()->isSuperAdmin()) {
                 $value = $value ? \Illuminate\Support\Facades\Crypt::encryptString($value) : '';
+            }
+            if ($key === 'mail_password') {
+                if (!auth()->user()->isSuperAdmin()) {
+                    continue;
+                }
+                // Si viene vacío en el request, no sobreescribir la existente a menos que explícitamente se limpie
+                if ($value === null || $value === '') {
+                    continue;
+                }
+                $value = \Illuminate\Support\Facades\Crypt::encryptString($value);
             }
             if ($key === 'parental_consent_pdf') {
                 continue; // Handled below
@@ -414,5 +451,30 @@ class SettingsController extends Controller
         $response = response()->download($backupPath)->deleteFileAfterSend(true);
         $response->headers->setCookie(cookie('backup_downloaded', '1', 1, null, null, false, false));
         return $response;
+    }
+
+    public function testEmail(Request $request)
+    {
+        if (!auth()->user()->isSuperAdmin()) {
+            abort(403, 'Acceso restringido al superusuario.');
+        }
+
+        $request->validate([
+            'test_email' => 'required|email',
+        ]);
+
+        $testEmail = $request->input('test_email');
+        $bandName = \App\Models\SiteSetting::getSetting('band_name', 'Banda de Música de Moratalla');
+
+        try {
+            \Illuminate\Support\Facades\Mail::raw("¡Hola!\n\nEste es un correo de prueba enviado desde la aplicación de la {$bandName}.\n\nSi estás recibiendo este mensaje, significa que los parámetros SMTP (servidor, puerto, credenciales cifradas y seguridad TLS/SSL) están correctamente configurados y funcionando a la perfección.\n\nFecha y hora: " . now()->format('d/m/Y H:i:s'), function ($message) use ($testEmail, $bandName) {
+                $message->to($testEmail)
+                        ->subject("Prueba de correo SMTP - {$bandName}");
+            });
+
+            return redirect()->route('admin.settings.index', ['tab' => 'email'])->with('success', "Correo de prueba enviado con éxito a {$testEmail}. Revisa tu bandeja de entrada o spam.");
+        } catch (\Exception $e) {
+            return redirect()->route('admin.settings.index', ['tab' => 'email'])->with('error', "Error al enviar el correo de prueba: " . $e->getMessage());
+        }
     }
 }

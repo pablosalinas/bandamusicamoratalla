@@ -253,6 +253,7 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
         Route::delete('settings/carousel/{media}', [\App\Http\Controllers\Admin\SettingsController::class, 'destroyCarouselMedia'])->name('settings.carousel.destroy');
         Route::get('settings/parental-consent/download', [\App\Http\Controllers\Admin\SettingsController::class, 'downloadParentalConsent'])->name('settings.parental-consent.download');
         Route::post('settings/backup', [\App\Http\Controllers\Admin\SettingsController::class, 'generateBackup'])->name('settings.backup');
+        Route::post('settings/test-email', [\App\Http\Controllers\Admin\SettingsController::class, 'testEmail'])->name('settings.test-email');
         
         // Band History Images
         Route::post('settings/band-history-images', [\App\Http\Controllers\Admin\BandHistoryImageController::class, 'store'])->name('settings.band-history-images.store');

@@ -33,6 +33,41 @@ class AppServiceProvider extends ServiceProvider
                 
                 $globalStatutes = \App\Models\SiteSetting::getSetting('statutes', '');
                 \Illuminate\Support\Facades\View::share('globalStatutes', $globalStatutes);
+
+                // Configuración dinámica de Correo / SMTP
+                $mailDriver = \App\Models\SiteSetting::getSetting('mail_mailer', '');
+                if ($mailDriver === 'smtp') {
+                    $mailHost = \App\Models\SiteSetting::getSetting('mail_host', 'smtp.ionos.es');
+                    $mailPort = (int) \App\Models\SiteSetting::getSetting('mail_port', 587);
+                    $mailEnc = \App\Models\SiteSetting::getSetting('mail_encryption', 'tls');
+                    $mailUser = \App\Models\SiteSetting::getSetting('mail_username', '');
+                    $mailFromAddress = \App\Models\SiteSetting::getSetting('mail_from_address', $mailUser);
+                    $mailFromName = \App\Models\SiteSetting::getSetting('mail_from_name', $bandName);
+
+                    $rawMailPass = \App\Models\SiteSetting::getSetting('mail_password', '');
+                    $mailPass = '';
+                    if ($rawMailPass) {
+                        try {
+                            $mailPass = \Illuminate\Support\Facades\Crypt::decryptString($rawMailPass);
+                        } catch (\Exception $e) {
+                            $mailPass = '';
+                        }
+                    }
+
+                    if (!empty($mailHost) && !empty($mailUser)) {
+                        config([
+                            'mail.default' => 'smtp',
+                            'mail.mailers.smtp.transport' => 'smtp',
+                            'mail.mailers.smtp.host' => $mailHost,
+                            'mail.mailers.smtp.port' => $mailPort,
+                            'mail.mailers.smtp.encryption' => ($mailEnc === 'none' || empty($mailEnc)) ? null : $mailEnc,
+                            'mail.mailers.smtp.username' => $mailUser,
+                            'mail.mailers.smtp.password' => $mailPass,
+                            'mail.from.address' => $mailFromAddress ?: $mailUser,
+                            'mail.from.name' => $mailFromName ?: $bandName,
+                        ]);
+                    }
+                }
             }
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\View::share('globalBandName', 'Banda de Música de Moratalla');
