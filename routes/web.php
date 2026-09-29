@@ -422,3 +422,45 @@ Route::get('/debug-media', function() {
         'app_url' => config('app.url')
     ]);
 });
+
+Route::get('/debug-validations', function() {
+    $hasUsers = \Illuminate\Support\Facades\Schema::hasTable('users');
+    $hasInventories = \Illuminate\Support\Facades\Schema::hasTable('inventories');
+    $userHasIsVerified = $hasUsers && \Illuminate\Support\Facades\Schema::hasColumn('users', 'is_verified');
+    $invHasIsVerified = $hasInventories && \Illuminate\Support\Facades\Schema::hasColumn('inventories', 'is_verified');
+
+    $pendingMusicians = 0;
+    $pendingInstruments = 0;
+
+    if ($hasUsers) {
+        $pendingMusicians = \App\Models\User::where('users.role', 'musician')
+            ->where(function ($q) use ($userHasIsVerified) {
+                if ($userHasIsVerified) {
+                    $q->where('users.is_verified', false)
+                      ->orWhere('users.is_active', false);
+                } else {
+                    $q->where('users.is_active', false);
+                }
+            })->count();
+    }
+
+    if ($hasInventories && $invHasIsVerified) {
+        $pendingInstruments = \App\Models\Inventory::where('is_verified', false)->count();
+    }
+
+    return response()->json([
+        'has_users_table' => $hasUsers,
+        'user_has_is_verified_col' => $userHasIsVerified,
+        'has_inventories_table' => $hasInventories,
+        'inv_has_is_verified_col' => $invHasIsVerified,
+        'pending_musicians_count' => $pendingMusicians,
+        'pending_instruments_count' => $pendingInstruments,
+        'total_pending' => $pendingMusicians + $pendingInstruments,
+        'sample_unverified_musicians' => $hasUsers ? \App\Models\User::where('role', 'musician')->where(function($q) use ($userHasIsVerified) {
+            if ($userHasIsVerified) $q->where('is_verified', false)->orWhere('is_active', false);
+            else $q->where('is_active', false);
+        })->select('id', 'name', 'last_name', 'is_active', 'is_verified')->get() : [],
+        'sample_unverified_inventories' => ($hasInventories && $invHasIsVerified) ? \App\Models\Inventory::where('is_verified', false)->select('id', 'serial_number', 'model', 'is_active', 'is_verified')->get() : [],
+    ]);
+});
+

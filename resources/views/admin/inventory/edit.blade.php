@@ -99,9 +99,18 @@
                         @error('notes') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
                     </div>
 
-                    <div class="md:col-span-2 flex items-center">
-                        <input type="checkbox" name="is_active" id="is_active" value="1" {{ old('is_active', $inventory->is_active) ? 'checked' : '' }} class="h-4 w-4 rounded border-gray-700 bg-gray-900 text-amber-600 focus:ring-amber-600 focus:ring-offset-gray-900">
-                        <label for="is_active" class="ml-2 block text-sm font-medium text-gray-300">Instrumento de Alta</label>
+                    <div class="md:col-span-2 space-y-3">
+                        <div class="flex items-center">
+                            <input type="checkbox" name="is_active" id="is_active" value="1" {{ old('is_active', $inventory->is_active) ? 'checked' : '' }} class="h-4 w-4 rounded border-gray-700 bg-gray-900 text-amber-600 focus:ring-amber-600 focus:ring-offset-gray-900">
+                            <label for="is_active" class="ml-2 block text-sm font-medium text-gray-300">Instrumento de Alta</label>
+                        </div>
+                        <div class="flex items-center">
+                            <input type="checkbox" name="is_verified" id="is_verified" value="1" {{ old('is_verified', $inventory->is_verified ?? true) ? 'checked' : '' }} class="h-4 w-4 rounded border-gray-700 bg-gray-900 text-green-500 focus:ring-green-500 focus:ring-offset-gray-900">
+                            <label for="is_verified" class="ml-2 block text-sm font-medium text-gray-300">
+                                Instrumento Validado
+                                <span class="text-xs text-gray-500 block font-normal">(Si se desmarca, volverá a figurar como pendiente de validación en el inventario)</span>
+                            </label>
+                        </div>
                     </div>
 
                 </div>

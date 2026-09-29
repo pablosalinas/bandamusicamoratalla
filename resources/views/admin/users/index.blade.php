@@ -159,10 +159,22 @@
 
                                         @if(!$user->is_active)
                                             <span class="ml-1 inline-flex items-center rounded-md bg-red-400/10 px-2 py-1 text-xs font-medium text-red-400 ring-1 ring-inset ring-red-400/30">
-                                                {{ $user->privacy_accepted_at ? 'Pendiente' : 'Inactivo' }}
+                                                Inactivo
                                             </span>
                                         @else
-                                            <span class="ml-1 inline-flex items-center rounded-md bg-green-400/10 px-2 py-1 text-xs font-medium text-green-400 ring-1 ring-inset ring-green-400/30">Activo</span>
+                                            <span class="ml-1 inline-flex items-center rounded-md bg-green-400/10 px-2 py-1 text-xs font-medium text-green-400 ring-1 ring-inset ring-green-400/30">
+                                                Activo
+                                            </span>
+                                        @endif
+
+                                        @if(!$user->is_verified)
+                                            <span class="ml-1 inline-flex items-center rounded-md bg-yellow-400/10 px-2 py-1 text-xs font-semibold text-yellow-400 ring-1 ring-inset ring-yellow-400/30">
+                                                Pendiente Validación
+                                            </span>
+                                        @else
+                                            <span class="ml-1 inline-flex items-center rounded-md bg-emerald-400/10 px-2 py-1 text-xs font-medium text-emerald-400 ring-1 ring-inset ring-emerald-400/30">
+                                                Validado
+                                            </span>
                                         @endif
                                     </td>
                                     <td class="px-3 py-4 text-sm text-gray-300 max-w-xs">
@@ -187,13 +199,13 @@
                                     </td>
                                     @endif
                                     <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                                        <!-- Validación directa si está inactivo -->
-                                        @if(!$user->is_active)
+                                        <!-- Validación directa si no está validado o está inactivo -->
+                                        @if(!$user->is_verified || !$user->is_active)
                                             <form action="{{ route('admin.users.validate', $user) }}" method="POST" class="inline-block mr-3" onsubmit="return confirm('¿Confirmas la validación y activación del músico {{ $user->name }} {{ $user->last_name }}?');">
                                                 @csrf
                                                 <button type="submit" class="inline-flex items-center gap-1 rounded-md bg-green-600/20 px-2.5 py-1 text-xs font-semibold text-green-400 ring-1 ring-inset ring-green-500/30 hover:bg-green-600 hover:text-white transition-colors">
                                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                                                    Validar Alta
+                                                    Validar Músico
                                                 </button>
                                             </form>
                                         @endif

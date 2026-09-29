@@ -32,7 +32,11 @@ class UserController extends Controller
         }
 
         if ($status === 'pending') {
-            $query->where('users.is_active', false)->where('users.role', 'musician');
+            $query->where('users.role', 'musician')
+                  ->where(function($q) {
+                      $q->where('users.is_verified', false)
+                        ->orWhere('users.is_active', false);
+                  });
         } elseif ($status === 'active') {
             $query->where('users.is_active', true);
         } elseif ($status === 'inactive') {
@@ -59,6 +63,7 @@ class UserController extends Controller
     {
         $user->update([
             'is_active' => true,
+            'is_verified' => true,
             'leave_reason' => null
         ]);
 
@@ -128,6 +133,7 @@ class UserController extends Controller
             'role' => $request->role,
             'instrument_section_id' => $request->instrument_section_id,
             'is_active' => $request->has('is_active'),
+            'is_verified' => $request->has('is_verified') ? (bool)$request->is_verified : true,
             'birth_date' => $request->birth_date,
             'address' => $request->filled('address') ? mb_strtoupper(trim($request->address), 'UTF-8') : null,
             'postal_code' => $request->postal_code,
@@ -222,6 +228,7 @@ class UserController extends Controller
             'role' => $request->role,
             'instrument_section_id' => $request->instrument_section_id,
             'is_active' => $request->has('is_active'),
+            'is_verified' => $request->has('is_verified'),
             'leave_reason' => $request->has('is_active') ? null : $request->leave_reason,
             'birth_date' => $request->birth_date,
             'address' => $request->filled('address') ? mb_strtoupper(trim($request->address), 'UTF-8') : null,

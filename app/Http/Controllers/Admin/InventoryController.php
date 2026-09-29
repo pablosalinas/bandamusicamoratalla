@@ -141,9 +141,7 @@ class InventoryController extends Controller
         ]);
 
         $data['is_active'] = $request->has('is_active');
-        if ($request->has('is_verified')) {
-            $data['is_verified'] = (bool) $request->is_verified;
-        }
+        $data['is_verified'] = $request->has('is_verified');
 
         if ($request->hasFile('invoice')) {
             if ($inventory->invoice_path && \Storage::disk('public')->exists($inventory->invoice_path)) {

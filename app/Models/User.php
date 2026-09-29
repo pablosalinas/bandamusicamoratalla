@@ -21,6 +21,7 @@ class User extends Authenticatable
         'role',
         'instrument_section_id',
         'is_active',
+        'is_verified',
         'leave_reason',
         'address',
         'postal_code',
@@ -48,6 +49,7 @@ class User extends Authenticatable
         'password' => 'hashed',
         'birth_date' => 'date',
         'is_active' => 'boolean',
+        'is_verified' => 'boolean',
         'iban' => 'encrypted',
         'joining_year' => 'integer',
         'privacy_accepted_at' => 'datetime',
@@ -60,7 +62,10 @@ class User extends Authenticatable
 
     public function scopePendingValidation($query)
     {
-        return $query->where('is_active', false)->where('role', 'musician');
+        return $query->where('role', 'musician')->where(function($q) {
+            $q->where('is_verified', false)
+              ->orWhere('is_active', false);
+        });
     }
 
     public function isSuperAdmin(): bool

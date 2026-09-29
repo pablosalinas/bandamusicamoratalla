@@ -105,10 +105,17 @@
                         @error('instrument_section_id') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
                     </div>
 
-                    <div class="sm:col-span-3 flex flex-col justify-center mt-4">
+                    <div class="sm:col-span-3 flex flex-col justify-center mt-4 space-y-3">
                         <div class="flex items-center">
                             <input id="is_active" name="is_active" type="checkbox" value="1" {{ old('is_active', $user->is_active) ? 'checked' : '' }} class="h-4 w-4 rounded border-gray-700 bg-gray-900 text-amber-600 focus:ring-amber-600 focus:ring-offset-gray-900">
                             <label for="is_active" class="ml-3 block text-sm font-medium leading-6 text-white">Usuario Activo en la Banda</label>
+                        </div>
+                        <div class="flex items-center">
+                            <input id="is_verified" name="is_verified" type="checkbox" value="1" {{ old('is_verified', $user->is_verified ?? true) ? 'checked' : '' }} class="h-4 w-4 rounded border-gray-700 bg-gray-900 text-green-500 focus:ring-green-500 focus:ring-offset-gray-900">
+                            <label for="is_verified" class="ml-3 block text-sm font-medium leading-6 text-white">
+                                Ficha Validada por la Directiva
+                                <span class="text-xs text-gray-400 block font-normal">(Si se desmarca, volverá a figurar como pendiente de validación)</span>
+                            </label>
                         </div>
                     </div>
 

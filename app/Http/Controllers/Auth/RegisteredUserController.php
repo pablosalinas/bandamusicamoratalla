@@ -130,6 +130,7 @@ class RegisteredUserController extends Controller
             'registration_origin' => $origin,
             'role' => 'musician',
             'is_active' => false, // Por defecto inactivo hasta validación de directiva
+            'is_verified' => false, // Requiere validación por la directiva
         ]);
 
         session()->forget(['prefilled_registration_email', 'prefilled_registration_password', 'register_captcha_result']);
