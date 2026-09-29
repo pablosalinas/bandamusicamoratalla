@@ -152,7 +152,7 @@ class InventoryController extends Controller
         $wasVerified = (bool) $inventory->is_verified;
         $inventory->update($data);
 
-        // Si se ha desvalidado explícitamente, enviar alerta
+        // Si se ha desvalidado explícitamente, enviar alerta a la administración
         if ($wasVerified && !$data['is_verified']) {
             $instrumentCatalogName = $inventory->instrument ? $inventory->instrument->name : 'Instrumento';
             \App\Services\EmailNotificationService::sendPendingValidationAlert('instrument', $instrumentCatalogName . ($inventory->model ? " - {$inventory->model}" : ''), [
@@ -161,12 +161,21 @@ class InventoryController extends Controller
             ]);
         }
 
+        // Si se ha validado explícitamente en edición (estaba no validado y ahora sí), avisar al músico
+        if (!$wasVerified && $data['is_verified']) {
+            \App\Services\EmailNotificationService::sendInstrumentValidatedNotice($inventory);
+        }
+
         return redirect()->route('admin.inventory.index')->with('success', 'Instrumento actualizado correctamente.');
     }
 
     public function verify(Inventory $inventory)
     {
         $inventory->update(['is_verified' => true]);
+
+        // Enviar correo de notificación al músico propietario/asignado
+        \App\Services\EmailNotificationService::sendInstrumentValidatedNotice($inventory);
+
         return back()->with('success', 'Instrumento validado y aprobado para el inventario oficial correctamente.');
     }
 

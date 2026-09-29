@@ -69,6 +69,9 @@ class UserController extends Controller
             'leave_reason' => null
         ]);
 
+        // Enviar correo de confirmación de validación al músico
+        \App\Services\EmailNotificationService::sendMusicianValidatedNotice($user);
+
         return redirect()->back()->with('success', "El músico {$user->name} {$user->last_name} ha sido validado y activado correctamente.");
     }
 
@@ -251,12 +254,17 @@ class UserController extends Controller
         $wasVerified = (bool) $user->is_verified;
         $user->update($data);
 
-        // Si se ha desvalidado explícitamente, enviar alerta
+        // Si se ha desvalidado explícitamente, enviar alerta a la administración
         if ($wasVerified && !$data['is_verified']) {
             \App\Services\EmailNotificationService::sendPendingValidationAlert('musician', $user->name . ' ' . $user->last_name, [
                 'Email' => $user->email,
                 'Estado' => 'Marcado como No Validado en administración',
             ]);
+        }
+
+        // Si se ha validado explícitamente desde edición (estaba no validado y ahora sí), avisar al músico
+        if (!$wasVerified && $data['is_verified']) {
+            \App\Services\EmailNotificationService::sendMusicianValidatedNotice($user);
         }
 
         if ($request->filled('password')) {
