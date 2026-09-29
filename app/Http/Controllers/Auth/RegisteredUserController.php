@@ -108,7 +108,7 @@ class RegisteredUserController extends Controller
         $ip = $request->ip();
         $origin = $request->header('User-Agent') ?? 'Desconocido';
 
-        User::create([
+        $newUser = User::create([
             'name' => mb_strtoupper(trim($request->name), 'UTF-8'),
             'last_name' => mb_strtoupper(trim($request->last_name), 'UTF-8'),
             'nif' => $cleanNif,
@@ -131,6 +131,14 @@ class RegisteredUserController extends Controller
             'role' => 'musician',
             'is_active' => false, // Por defecto inactivo hasta validación de directiva
             'is_verified' => false, // Requiere validación por la directiva
+        ]);
+
+        // Enviar notificación por correo de validación pendiente
+        \App\Services\EmailNotificationService::sendPendingValidationAlert('musician', $newUser->name . ' ' . $newUser->last_name, [
+            'Email' => $newUser->email,
+            'Teléfono' => $newUser->phone,
+            'NIF' => $newUser->nif,
+            'Población' => $newUser->city,
         ]);
 
         session()->forget(['prefilled_registration_email', 'prefilled_registration_password', 'register_captcha_result']);

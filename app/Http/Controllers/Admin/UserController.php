@@ -32,11 +32,13 @@ class UserController extends Controller
         }
 
         if ($status === 'pending') {
-            $query->where('users.role', 'musician')
-                  ->where(function($q) {
-                      $q->where('users.is_verified', false)
-                        ->orWhere('users.is_active', false);
+            $query->where(function($q) {
+                $q->where('users.is_verified', false)
+                  ->orWhere(function($q2) {
+                      $q2->where('users.is_active', false)
+                         ->where('users.role', '!=', 'admin');
                   });
+            });
         } elseif ($status === 'active') {
             $query->where('users.is_active', true);
         } elseif ($status === 'inactive') {
@@ -246,7 +248,16 @@ class UserController extends Controller
             $data['iban'] = $request->iban;
         }
 
+        $wasVerified = (bool) $user->is_verified;
         $user->update($data);
+
+        // Si se ha desvalidado explícitamente, enviar alerta
+        if ($wasVerified && !$data['is_verified']) {
+            \App\Services\EmailNotificationService::sendPendingValidationAlert('musician', $user->name . ' ' . $user->last_name, [
+                'Email' => $user->email,
+                'Estado' => 'Marcado como No Validado en administración',
+            ]);
+        }
 
         if ($request->filled('password')) {
             $user->update(['password' => Hash::make($request->password)]);
@@ -323,7 +334,13 @@ class UserController extends Controller
         }
 
         if ($status === 'pending') {
-            $query->where('users.is_active', false)->where('users.role', 'musician');
+            $query->where(function($q) {
+                $q->where('users.is_verified', false)
+                  ->orWhere(function($q2) {
+                      $q2->where('users.is_active', false)
+                         ->where('users.role', '!=', 'admin');
+                  });
+            });
         } elseif ($status === 'active') {
             $query->where('users.is_active', true);
         } elseif ($status === 'inactive') {

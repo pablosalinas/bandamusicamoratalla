@@ -62,9 +62,12 @@ class User extends Authenticatable
 
     public function scopePendingValidation($query)
     {
-        return $query->where('role', 'musician')->where(function($q) {
+        return $query->where(function($q) {
             $q->where('is_verified', false)
-              ->orWhere('is_active', false);
+              ->orWhere(function($q2) {
+                  $q2->where('is_active', false)
+                     ->where('role', '!=', 'admin');
+              });
         });
     }
 

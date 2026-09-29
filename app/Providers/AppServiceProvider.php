@@ -81,15 +81,18 @@ class AppServiceProvider extends ServiceProvider
 
             try {
                 if (\Illuminate\Support\Facades\Schema::hasTable('users')) {
-                    $pendingMusicians = \App\Models\User::where('users.role', 'musician')
-                        ->where(function ($q) {
-                            if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'is_verified')) {
-                                $q->where('users.is_verified', false)
-                                  ->orWhere('users.is_active', false);
-                            } else {
-                                $q->where('users.is_active', false);
-                            }
-                        })->count();
+                    $pendingMusicians = \App\Models\User::where(function ($q) {
+                        if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'is_verified')) {
+                            $q->where('users.is_verified', false)
+                              ->orWhere(function ($q2) {
+                                  $q2->where('users.is_active', false)
+                                     ->where('users.role', '!=', 'admin');
+                              });
+                        } else {
+                            $q->where('users.is_active', false)
+                              ->where('users.role', '!=', 'admin');
+                        }
+                    })->count();
                 }
                 if (\Illuminate\Support\Facades\Schema::hasTable('inventories')) {
                     if (\Illuminate\Support\Facades\Schema::hasColumn('inventories', 'is_verified')) {

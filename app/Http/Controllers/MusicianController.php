@@ -195,6 +195,15 @@ class MusicianController extends Controller
             'notes' => 'Registrado por el propio músico desde el portal. Pendiente de validación.'
         ]);
 
+        // Enviar alerta por correo de instrumento pendiente de validación
+        $instrumentCatalogName = $inventory->instrument ? $inventory->instrument->name : 'Instrumento';
+        \App\Services\EmailNotificationService::sendPendingValidationAlert('instrument', $instrumentCatalogName . ($inventory->model ? " - {$inventory->model}" : ''), [
+            'Músico solicitante' => $user->name . ' ' . $user->last_name . " ({$user->email})",
+            'Número de Serie' => $inventory->serial_number ?: 'Sin número',
+            'Propiedad' => strtoupper($inventory->propiedad),
+            'Voz / Papel' => $inventory->tipo_partitura ?: 'General',
+        ]);
+
         return back()->with('success', '¡Instrumento registrado correctamente! Ha quedado pendiente de validación por parte de la directiva/administración.');
     }
 

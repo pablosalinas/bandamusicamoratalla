@@ -149,9 +149,17 @@ class InventoryController extends Controller
             }
             $data['invoice_path'] = $request->file('invoice')->store('invoices', 'public');
         }
-        unset($data['invoice']);
-
+        $wasVerified = (bool) $inventory->is_verified;
         $inventory->update($data);
+
+        // Si se ha desvalidado explícitamente, enviar alerta
+        if ($wasVerified && !$data['is_verified']) {
+            $instrumentCatalogName = $inventory->instrument ? $inventory->instrument->name : 'Instrumento';
+            \App\Services\EmailNotificationService::sendPendingValidationAlert('instrument', $instrumentCatalogName . ($inventory->model ? " - {$inventory->model}" : ''), [
+                'Número de Serie' => $inventory->serial_number ?: 'Sin número',
+                'Estado' => 'Marcado como No Validado en administración',
+            ]);
+        }
 
         return redirect()->route('admin.inventory.index')->with('success', 'Instrumento actualizado correctamente.');
     }

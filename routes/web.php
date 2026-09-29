@@ -80,7 +80,18 @@ Route::get('/ejecutar-migraciones-secretas', function() {
             $output .= "<b>Aviso Cuerdas:</b> " . e($eSec->getMessage()) . "<br>";
         }
 
-        // 3. Ejecutar enlace de storage si no existe
+        // 5. Migración de campo is_verified en tabla users (para validación de músicos)
+        try {
+            \Illuminate\Support\Facades\Artisan::call('migrate', [
+                '--path' => 'database/migrations/2026_09_29_234000_add_is_verified_to_users_table.php',
+                '--force' => true
+            ]);
+            $output .= "<b>Migración Validación Músicos (is_verified):</b> " . nl2br(e(\Illuminate\Support\Facades\Artisan::output())) . "<br>";
+        } catch (\Exception $eVerif) {
+            $output .= "<b>Aviso Migración Validación Músicos:</b> " . e($eVerif->getMessage()) . "<br>";
+        }
+
+        // 6. Ejecutar enlace de storage si no existe
         $publicStorage = public_path('storage');
         if (file_exists($publicStorage) && !is_link($publicStorage)) {
             $files = new \RecursiveIteratorIterator(
@@ -433,13 +444,16 @@ Route::get('/debug-validations', function() {
     $pendingInstruments = 0;
 
     if ($hasUsers) {
-        $pendingMusicians = \App\Models\User::where('users.role', 'musician')
-            ->where(function ($q) use ($userHasIsVerified) {
+        $pendingMusicians = \App\Models\User::where(function ($q) use ($userHasIsVerified) {
                 if ($userHasIsVerified) {
                     $q->where('users.is_verified', false)
-                      ->orWhere('users.is_active', false);
+                      ->orWhere(function ($q2) {
+                          $q2->where('users.is_active', false)
+                             ->where('users.role', '!=', 'admin');
+                      });
                 } else {
-                    $q->where('users.is_active', false);
+                    $q->where('users.is_active', false)
+                      ->where('users.role', '!=', 'admin');
                 }
             })->count();
     }
@@ -456,10 +470,16 @@ Route::get('/debug-validations', function() {
         'pending_musicians_count' => $pendingMusicians,
         'pending_instruments_count' => $pendingInstruments,
         'total_pending' => $pendingMusicians + $pendingInstruments,
-        'sample_unverified_musicians' => $hasUsers ? \App\Models\User::where('role', 'musician')->where(function($q) use ($userHasIsVerified) {
-            if ($userHasIsVerified) $q->where('is_verified', false)->orWhere('is_active', false);
-            else $q->where('is_active', false);
-        })->select('id', 'name', 'last_name', 'is_active', 'is_verified')->get() : [],
+        'sample_unverified_musicians' => $hasUsers ? \App\Models\User::where(function($q) use ($userHasIsVerified) {
+            if ($userHasIsVerified) {
+                $q->where('is_verified', false)
+                  ->orWhere(function ($q2) {
+                      $q2->where('is_active', false)->where('role', '!=', 'admin');
+                  });
+            } else {
+                $q->where('is_active', false)->where('role', '!=', 'admin');
+            }
+        })->select('id', 'name', 'last_name', 'role', 'is_active', 'is_verified')->get() : [],
         'sample_unverified_inventories' => ($hasInventories && $invHasIsVerified) ? \App\Models\Inventory::where('is_verified', false)->select('id', 'serial_number', 'model', 'is_active', 'is_verified')->get() : [],
     ]);
 });
