@@ -9,11 +9,17 @@ class InstrumentCatalog extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'type', 'description', 'is_active', 'leave_reason'];
+    protected $fillable = ['name', 'type', 'instrument_section_id', 'order_index', 'description', 'is_active', 'leave_reason'];
 
     protected $casts = [
         'is_active' => 'boolean',
+        'order_index' => 'integer',
     ];
+
+    public function section()
+    {
+        return $this->belongsTo(InstrumentSection::class, 'instrument_section_id');
+    }
 
     public function musicians()
     {

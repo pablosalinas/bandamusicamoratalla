@@ -186,19 +186,29 @@
                     El inventario se divide en dos conceptos esenciales:
                 </p>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div class="p-4 rounded-xl bg-gray-950/70 border border-gray-800">
                         <h4 class="font-bold text-orange-400 mb-1">A. Catálogo de Instrumentos</h4>
                         <p class="text-xs text-gray-300 mb-2">
                             Define las familias y tipos generales: <em>Clarinete Si♭, Saxofón Alto, Trompeta Si♭, Tuba, Percusión, etc.</em>
                         </p>
                         <p class="text-xs text-gray-400">
-                            Sirve como maestro para asociar los instrumentos físicos del inventario y para filtrar las partituras del archivo musical.
+                            Sirve como maestro para asociar los instrumentos físicos del inventario y para vincular las partituras del archivo musical.
                         </p>
                     </div>
 
                     <div class="p-4 rounded-xl bg-gray-950/70 border border-gray-800">
-                        <h4 class="font-bold text-orange-400 mb-1">B. Inventario Físico (Banda y Particulares)</h4>
+                        <h4 class="font-bold text-orange-400 mb-1">B. Cuerdas y Subcuerdas</h4>
+                        <p class="text-xs text-gray-300 mb-2">
+                            Define la jerarquía artística de la banda: Cuerdas (<em>Viento Madera, Viento Metal, Percusión, Cuerda</em>) y sus Subcuerdas (<em>Clarinetes, Flautas, Saxofones, Trompetas, Trombones...</em>).
+                        </p>
+                        <p class="text-xs text-gray-400">
+                            Determina el orden oficial de pase de lista y asignación de instrumentos y músicos.
+                        </p>
+                    </div>
+
+                    <div class="p-4 rounded-xl bg-gray-950/70 border border-gray-800">
+                        <h4 class="font-bold text-orange-400 mb-1">C. Inventario Físico</h4>
                         <p class="text-xs text-gray-300 mb-2">
                             Cada unidad física concreta con su <strong>Marca, Modelo, Número de Serie y Estado de conservación</strong>.
                         </p>

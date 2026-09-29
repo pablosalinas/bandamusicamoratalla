@@ -19,6 +19,7 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'instrument_section_id',
         'is_active',
         'leave_reason',
         'address',
@@ -51,6 +52,11 @@ class User extends Authenticatable
         'joining_year' => 'integer',
         'privacy_accepted_at' => 'datetime',
     ];
+
+    public function section()
+    {
+        return $this->belongsTo(InstrumentSection::class, 'instrument_section_id');
+    }
 
     public function scopePendingValidation($query)
     {

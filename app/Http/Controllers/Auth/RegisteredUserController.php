@@ -30,7 +30,13 @@ class RegisteredUserController extends Controller
         $prefilledEmail = session('prefilled_registration_email', '');
         $prefilledPassword = session('prefilled_registration_password', '');
 
-        return view('auth.register', compact('allowRegistration', 'num1', 'num2', 'prefilledEmail', 'prefilledPassword'));
+        $sections = \App\Models\InstrumentSection::with('parent')
+            ->where('is_active', true)
+            ->orderBy('order_index')
+            ->orderBy('name')
+            ->get();
+
+        return view('auth.register', compact('allowRegistration', 'num1', 'num2', 'prefilledEmail', 'prefilledPassword', 'sections'));
     }
 
     /**
@@ -60,6 +66,7 @@ class RegisteredUserController extends Controller
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class.',email'],
             'nif' => ['required', 'string', 'max:20', new ValidNif, 'unique:'.User::class.',nif'],
             'birth_date' => ['required', 'date', 'before:today'],
+            'instrument_section_id' => ['nullable', 'exists:instrument_sections,id'],
             'address' => ['required', 'string', 'max:255'],
             'postal_code' => ['required', 'string', 'max:10'],
             'city' => ['required', 'string', 'max:100'],
@@ -112,6 +119,7 @@ class RegisteredUserController extends Controller
             'email' => strtolower(trim($request->email)),
             'password' => Hash::make($request->password),
             'birth_date' => $request->birth_date,
+            'instrument_section_id' => $request->instrument_section_id,
             'address' => mb_strtoupper(trim($request->address), 'UTF-8'),
             'postal_code' => trim($request->postal_code),
             'city' => mb_strtoupper(trim($request->city), 'UTF-8'),

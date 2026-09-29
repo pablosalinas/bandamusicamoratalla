@@ -18,16 +18,35 @@
     </x-slot>
 
     <div class="mt-8 max-w-4xl" x-data="attendanceForm()">
-        <div class="mb-4 flex flex-wrap gap-2">
-            <button type="button" @click="markAll('present')" class="rounded-md bg-green-500/20 px-3 py-2 text-sm font-semibold text-green-400 hover:bg-green-500/30 ring-1 ring-inset ring-green-500/30">
-                Marcar todos Presentes
-            </button>
-            <button type="button" @click="markAll('absent')" class="rounded-md bg-red-500/20 px-3 py-2 text-sm font-semibold text-red-400 hover:bg-red-500/30 ring-1 ring-inset ring-red-500/30">
-                Marcar todos Ausentes
-            </button>
-            <button type="button" @click="markAll('excused')" class="rounded-md bg-yellow-500/20 px-3 py-2 text-sm font-semibold text-yellow-400 hover:bg-yellow-500/30 ring-1 ring-inset ring-yellow-500/30">
-                Marcar todos Justificados
-            </button>
+        <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <div class="flex flex-wrap gap-2">
+                <button type="button" @click="markAll('present')" class="rounded-md bg-green-500/20 px-3 py-2 text-sm font-semibold text-green-400 hover:bg-green-500/30 ring-1 ring-inset ring-green-500/30">
+                    Marcar todos Presentes
+                </button>
+                <button type="button" @click="markAll('absent')" class="rounded-md bg-red-500/20 px-3 py-2 text-sm font-semibold text-red-400 hover:bg-red-500/30 ring-1 ring-inset ring-red-500/30">
+                    Marcar todos Ausentes
+                </button>
+                <button type="button" @click="markAll('excused')" class="rounded-md bg-yellow-500/20 px-3 py-2 text-sm font-semibold text-yellow-400 hover:bg-yellow-500/30 ring-1 ring-inset ring-yellow-500/30">
+                    Marcar todos Justificados
+                </button>
+            </div>
+
+            <!-- Selector de Ordenación de Lista -->
+            <div class="flex items-center gap-1.5 bg-gray-900 px-3 py-1.5 rounded-lg border border-gray-800 text-xs text-gray-300">
+                <span class="text-gray-400 font-medium mr-1">Ordenar lista:</span>
+                <a href="{{ route('admin.events.attendance', ['event' => $event, 'order_by' => 'section']) }}" 
+                   class="px-2 py-1 rounded {{ ($orderBy ?? 'section') === 'section' ? 'bg-amber-600 text-white font-semibold' : 'text-gray-400 hover:text-white hover:bg-gray-800' }}">
+                    Cuerdas
+                </a>
+                <a href="{{ route('admin.events.attendance', ['event' => $event, 'order_by' => 'last_name']) }}" 
+                   class="px-2 py-1 rounded {{ ($orderBy ?? 'section') === 'last_name' ? 'bg-amber-600 text-white font-semibold' : 'text-gray-400 hover:text-white hover:bg-gray-800' }}">
+                    Apellidos y Nombre
+                </a>
+                <a href="{{ route('admin.events.attendance', ['event' => $event, 'order_by' => 'name']) }}" 
+                   class="px-2 py-1 rounded {{ ($orderBy ?? 'section') === 'name' ? 'bg-amber-600 text-white font-semibold' : 'text-gray-400 hover:text-white hover:bg-gray-800' }}">
+                    Nombre y Apellidos
+                </a>
+            </div>
         </div>
 
         <form action="{{ route('admin.events.attendance.store', $event) }}" method="POST" class="bg-gray-900 shadow-sm ring-1 ring-gray-800 sm:rounded-xl">
@@ -39,7 +58,7 @@
                     <table class="min-w-full divide-y divide-gray-800">
                         <thead class="bg-gray-900">
                             <tr>
-                                <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-white sm:pl-6">Músico</th>
+                                <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-white sm:pl-6">Músico / Cuerda</th>
                                 <th scope="col" class="px-3 py-3.5 text-center text-sm font-semibold text-white w-1/5">Presente</th>
                                 <th scope="col" class="px-3 py-3.5 text-center text-sm font-semibold text-white w-1/5">Falta</th>
                                 <th scope="col" class="px-3 py-3.5 text-center text-sm font-semibold text-white w-1/5">Falta Justificada</th>
@@ -64,7 +83,20 @@
                                 @endphp
                                 <tr class="{{ $rowClass }}">
                                     <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-white sm:pl-6">
-                                        {{ $user->name }} {{ $user->last_name }}
+                                        <div class="flex items-center gap-2">
+                                            <span>
+                                                @if(($orderBy ?? 'section') === 'last_name')
+                                                    <strong>{{ $user->last_name }}</strong>, {{ $user->name }}
+                                                @else
+                                                    {{ $user->name }} <strong>{{ $user->last_name }}</strong>
+                                                @endif
+                                            </span>
+                                            @if($user->section)
+                                                <span class="inline-flex items-center rounded bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 text-[10px] font-semibold text-amber-300">
+                                                    {{ $user->section->full_name }}
+                                                </span>
+                                            @endif
+                                        </div>
                                         @if($age === null)
                                             <span class="ml-2 inline-flex items-center rounded-md bg-orange-400/10 px-2 py-1 text-xs font-medium text-orange-400 ring-1 ring-inset ring-orange-400/20">Falta fecha nac.</span>
                                         @elseif($age < 18)

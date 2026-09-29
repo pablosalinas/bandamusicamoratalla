@@ -69,6 +69,10 @@
                     <input type="radio" name="order_by" value="name" {{ $orderBy === 'name' ? 'checked' : '' }} onchange="this.form.submit()" class="text-amber-600 focus:ring-amber-500 bg-gray-800 border-gray-700">
                     <span>Nombre</span>
                 </label>
+                <label class="inline-flex items-center gap-1 cursor-pointer hover:text-amber-400">
+                    <input type="radio" name="order_by" value="section" {{ $orderBy === 'section' ? 'checked' : '' }} onchange="this.form.submit()" class="text-amber-600 focus:ring-amber-500 bg-gray-800 border-gray-700">
+                    <span class="font-semibold text-amber-400">Cuerdas</span>
+                </label>
             </div>
 
             <div class="flex items-center gap-2">
@@ -161,11 +165,20 @@
                                             <span class="ml-1 inline-flex items-center rounded-md bg-green-400/10 px-2 py-1 text-xs font-medium text-green-400 ring-1 ring-inset ring-green-400/30">Activo</span>
                                         @endif
                                     </td>
-                                    <td class="px-3 py-4 text-sm text-gray-300 max-w-xs truncate">
+                                    <td class="px-3 py-4 text-sm text-gray-300 max-w-xs">
+                                        @if($user->section)
+                                            <div class="mb-1">
+                                                <span class="inline-flex items-center rounded bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 text-[11px] font-semibold text-amber-300">
+                                                    {{ $user->section->full_name }}
+                                                </span>
+                                            </div>
+                                        @endif
                                         @if($user->inventories->count() > 0)
-                                            {{ $user->inventories->map(fn($inv) => $inv->instrument->name ?? 'Desconocido')->implode(', ') }}
-                                        @else
-                                            <span class="text-gray-600 italic">Ninguno asignado</span>
+                                            <div class="text-xs text-gray-400">
+                                                {{ $user->inventories->map(fn($inv) => $inv->instrument->name ?? 'Desconocido')->implode(', ') }}
+                                            </div>
+                                        @elseif(!$user->section)
+                                            <span class="text-gray-600 italic text-xs">Ninguno asignado</span>
                                         @endif
                                     </td>
                                     @if(auth()->user()->canViewIban())

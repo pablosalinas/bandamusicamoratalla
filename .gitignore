@@ -19,3 +19,11 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
+/dist
+/build
+/splits
+*.spec
+desktop_app/
+test_*.php
+test_*.py
+test_*.pdf

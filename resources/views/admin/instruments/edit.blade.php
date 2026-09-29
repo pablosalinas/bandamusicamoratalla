@@ -29,7 +29,31 @@
                     </div>
 
                     <div>
-                        <label for="type" class="block text-sm font-medium leading-6 text-white">Familia / Tipo (Opcional)</label>
+                        <label for="instrument_section_id" class="block text-sm font-medium leading-6 text-white">Cuerda / Subcuerda</label>
+                        <p class="text-xs text-gray-400 mb-2">Asigna este instrumento a una cuerda o subcuerda organizativa.</p>
+                        <div class="mt-2">
+                            <select name="instrument_section_id" id="instrument_section_id" class="block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6">
+                                <option value="">-- Sin asignar --</option>
+                                @foreach($sections as $sec)
+                                    <option value="{{ $sec->id }}" {{ old('instrument_section_id', $instrument->instrument_section_id) == $sec->id ? 'selected' : '' }}>
+                                        {{ $sec->full_name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        @error('instrument_section_id') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label for="order_index" class="block text-sm font-medium leading-6 text-white">Orden numérico</label>
+                        <div class="mt-2">
+                            <input type="number" name="order_index" id="order_index" value="{{ old('order_index', $instrument->order_index) }}" min="0" class="block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6">
+                        </div>
+                        @error('order_index') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label for="type" class="block text-sm font-medium leading-6 text-white">Familia / Tipo (Opcional o texto libre)</label>
                         <div class="mt-2">
                             <input type="text" name="type" id="type" value="{{ old('type', $instrument->type) }}" class="block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6">
                         </div>

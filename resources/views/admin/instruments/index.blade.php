@@ -20,8 +20,10 @@
                     <table class="min-w-full divide-y divide-gray-800">
                         <thead class="bg-gray-900">
                             <tr>
-                                <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-white sm:pl-6">Nombre del Instrumento</th>
-                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-white">Familia / Tipo (Opcional)</th>
+                                <th scope="col" class="py-3.5 pl-4 pr-2 text-left text-sm font-semibold text-white sm:pl-6 w-16">Orden</th>
+                                <th scope="col" class="py-3.5 pl-2 pr-3 text-left text-sm font-semibold text-white">Nombre del Instrumento</th>
+                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-white">Cuerda / Subcuerda</th>
+                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-white">Familia / Tipo</th>
                                 <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-white">Estado</th>
                                 <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
                                     <span class="sr-only">Acciones</span>
@@ -31,8 +33,20 @@
                         <tbody class="divide-y divide-gray-800 bg-gray-950">
                             @forelse ($instruments as $instrument)
                                 <tr>
-                                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-white sm:pl-6">
+                                    <td class="whitespace-nowrap py-4 pl-4 pr-2 text-sm font-mono text-amber-400 sm:pl-6">
+                                        #{{ $instrument->order_index }}
+                                    </td>
+                                    <td class="whitespace-nowrap py-4 pl-2 pr-3 text-sm font-medium text-white">
                                         {{ $instrument->name }}
+                                    </td>
+                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
+                                        @if($instrument->section)
+                                            <span class="inline-flex items-center rounded bg-gray-800 px-2 py-0.5 text-xs text-amber-300 font-medium">
+                                                {{ $instrument->section->full_name }}
+                                            </span>
+                                        @else
+                                            <span class="text-xs text-gray-500 italic">Sin asignar</span>
+                                        @endif
                                     </td>
                                     <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-400">
                                         {{ $instrument->type ?? '-' }}

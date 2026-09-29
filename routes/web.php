@@ -63,6 +63,23 @@ Route::get('/ejecutar-migraciones-secretas', function() {
             $output .= "<b>Aviso Hemeroteca:</b> " . e($eHem->getMessage()) . "<br>";
         }
 
+        // 4. Migración Cuerdas y Subcuerdas (instrument_sections y asignación a instrumentos y usuarios)
+        try {
+            \Illuminate\Support\Facades\Artisan::call('migrate', [
+                '--path' => 'database/migrations/2026_09_29_000001_create_instrument_sections_table.php',
+                '--force' => true
+            ]);
+            $output .= "<b>Migración Cuerdas y Subcuerdas:</b> " . nl2br(e(\Illuminate\Support\Facades\Artisan::output())) . "<br>";
+
+            \Illuminate\Support\Facades\Artisan::call('db:seed', [
+                '--class' => 'InstrumentSectionSeeder',
+                '--force' => true
+            ]);
+            $output .= "<b>Seeder Cuerdas y Subcuerdas:</b> " . nl2br(e(\Illuminate\Support\Facades\Artisan::output())) . "<br>";
+        } catch (\Exception $eSec) {
+            $output .= "<b>Aviso Cuerdas:</b> " . e($eSec->getMessage()) . "<br>";
+        }
+
         // 3. Ejecutar enlace de storage si no existe
         $publicStorage = public_path('storage');
         if (file_exists($publicStorage) && !is_link($publicStorage)) {
@@ -182,6 +199,8 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     
     Route::post('instruments/ajax-create', [\App\Http\Controllers\Admin\InstrumentController::class, 'ajaxCreate'])->name('instruments.ajax-create');
     Route::resource('instruments', \App\Http\Controllers\Admin\InstrumentController::class)->except(['show']);
+    Route::post('instrument-sections/update-order', [\App\Http\Controllers\Admin\InstrumentSectionController::class, 'updateOrder'])->name('instrument-sections.update-order');
+    Route::resource('instrument-sections', \App\Http\Controllers\Admin\InstrumentSectionController::class)->except(['show']);
     Route::resource('instrument-brands', \App\Http\Controllers\Admin\InstrumentBrandController::class)->only(['index', 'store', 'destroy']);
     Route::post('instrument-photos', [\App\Http\Controllers\Admin\InstrumentPhotoController::class, 'store'])->name('instrument-photos.store');
     Route::put('instrument-photos/{photo}', [\App\Http\Controllers\Admin\InstrumentPhotoController::class, 'update'])->name('instrument-photos.update');
@@ -348,6 +367,22 @@ Route::get('/cargar-instrumentos', function() {
         return 'Instrumentos cargados masivamente con éxito.';
     } catch (\Exception $e) {
         return 'Error al cargar instrumentos: ' . $e->getMessage();
+    }
+});
+
+Route::get('/cargar-cuerdas', function() {
+    try {
+        \Illuminate\Support\Facades\Artisan::call('migrate', [
+            '--path' => 'database/migrations/2026_09_29_000001_create_instrument_sections_table.php',
+            '--force' => true
+        ]);
+        \Illuminate\Support\Facades\Artisan::call('db:seed', [
+            '--class' => 'InstrumentSectionSeeder',
+            '--force' => true
+        ]);
+        return 'Cuerdas y subcuerdas creadas y vinculadas con éxito.';
+    } catch (\Exception $e) {
+        return 'Error al cargar cuerdas: ' . $e->getMessage();
     }
 });
 

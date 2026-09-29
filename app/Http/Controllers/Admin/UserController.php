@@ -17,10 +17,16 @@ class UserController extends Controller
         $search = $request->query('search', '');
         $orderBy = $request->query('order_by', 'last_name');
 
-        $query = User::with('inventories.instrument');
+        $query = User::with(['inventories.instrument', 'section.parent']);
 
         if ($orderBy === 'name') {
             $query->orderBy('name')->orderBy('last_name');
+        } elseif ($orderBy === 'section') {
+            $query->leftJoin('instrument_sections', 'users.instrument_section_id', '=', 'instrument_sections.id')
+                  ->select('users.*')
+                  ->orderByRaw('COALESCE(instrument_sections.order_index, 9999) ASC')
+                  ->orderBy('users.last_name')
+                  ->orderBy('users.name');
         } else {
             $query->orderBy('last_name')->orderBy('name');
         }
@@ -75,7 +81,8 @@ class UserController extends Controller
     {
         $instruments = InstrumentCatalog::where('is_active', true)->orderBy('name')->get();
         $brands = \App\Models\InstrumentBrand::orderBy('name')->get();
-        return view('admin.users.create', compact('instruments', 'brands'));
+        $sections = \App\Models\InstrumentSection::with('parent')->orderBy('order_index')->orderBy('name')->get();
+        return view('admin.users.create', compact('instruments', 'brands', 'sections'));
     }
 
     public function store(Request $request)
@@ -95,6 +102,7 @@ class UserController extends Controller
             'nif' => ['nullable', 'string', new \App\Rules\ValidNif, 'unique:'.User::class.',nif'],
             'password' => ['required', Rules\Password::defaults()],
             'role' => ['required', 'in:admin,treasurer,director,musician'],
+            'instrument_section_id' => ['nullable', 'exists:instrument_sections,id'],
             'instruments' => ['nullable', 'array'],
             'address' => ['nullable', 'string', 'max:255'],
             'postal_code' => ['nullable', 'string', 'max:10'],
@@ -118,6 +126,7 @@ class UserController extends Controller
             'email' => strtolower(trim($request->email)),
             'password' => Hash::make($request->password),
             'role' => $request->role,
+            'instrument_section_id' => $request->instrument_section_id,
             'is_active' => $request->has('is_active'),
             'birth_date' => $request->birth_date,
             'address' => $request->filled('address') ? mb_strtoupper(trim($request->address), 'UTF-8') : null,
@@ -140,6 +149,7 @@ class UserController extends Controller
     public function edit(Request $request, User $user)
     {
         $instruments = InstrumentCatalog::orderBy('name')->get();
+        $sections = \App\Models\InstrumentSection::with('parent')->orderBy('order_index')->orderBy('name')->get();
         
         $filter = $request->query('attendance_filter', 'absent');
         
@@ -168,7 +178,7 @@ class UserController extends Controller
 
         $brands = \App\Models\InstrumentBrand::orderBy('name')->get();
 
-        return view('admin.users.edit', compact('user', 'instruments', 'attendances', 'filter', 'userInstruments', 'brands'));
+        return view('admin.users.edit', compact('user', 'instruments', 'attendances', 'filter', 'userInstruments', 'brands', 'sections'));
     }
 
     public function update(Request $request, User $user)
@@ -187,6 +197,7 @@ class UserController extends Controller
             'email' => ['required', 'string', 'email', 'max:255', 'unique:'.User::class.',email,'.$user->id],
             'nif' => ['nullable', 'string', new \App\Rules\ValidNif, 'unique:'.User::class.',nif,'.$user->id],
             'role' => ['required', 'in:admin,treasurer,director,musician'],
+            'instrument_section_id' => ['nullable', 'exists:instrument_sections,id'],
             'instruments' => ['nullable', 'array'],
             'address' => ['nullable', 'string', 'max:255'],
             'postal_code' => ['nullable', 'string', 'max:10'],
@@ -209,6 +220,7 @@ class UserController extends Controller
             'nif' => $cleanNif,
             'email' => strtolower(trim($request->email)),
             'role' => $request->role,
+            'instrument_section_id' => $request->instrument_section_id,
             'is_active' => $request->has('is_active'),
             'leave_reason' => $request->has('is_active') ? null : $request->leave_reason,
             'birth_date' => $request->birth_date,
@@ -289,10 +301,16 @@ class UserController extends Controller
         $search = $request->query('search', '');
         $orderBy = $request->query('order_by', 'last_name');
 
-        $query = User::query();
+        $query = User::with(['inventories.instrument', 'section.parent']);
 
         if ($orderBy === 'name') {
             $query->orderBy('name')->orderBy('last_name');
+        } elseif ($orderBy === 'section') {
+            $query->leftJoin('instrument_sections', 'users.instrument_section_id', '=', 'instrument_sections.id')
+                  ->select('users.*')
+                  ->orderByRaw('COALESCE(instrument_sections.order_index, 9999) ASC')
+                  ->orderBy('users.last_name')
+                  ->orderBy('users.name');
         } else {
             $query->orderBy('last_name')->orderBy('name');
         }
@@ -362,6 +380,7 @@ class UserController extends Controller
 
             fputcsv($handle, [
                 $nameHeader,
+                'CUERDA / SUBCUERDA',
                 'NOMBRE',
                 'APELLIDOS',
                 'MENOR DE EDAD',
@@ -396,6 +415,7 @@ class UserController extends Controller
                 $menorTexto = $user->birth_date ? ($isMinor ? 'SÍ (MENOR)' : 'NO') : '-';
                 $estado = $user->is_active ? 'Activo' : ($user->privacy_accepted_at ? 'Pendiente Validación' : 'Inactivo / Baja');
                 $rolNombre = $rolesEsp[$user->role] ?? ucfirst($user->role);
+                $cuerdaTexto = $user->section ? $user->section->full_name : '';
 
                 // Composición del nombre según orden seleccionado
                 $composedName = ($orderBy === 'name')
@@ -404,6 +424,7 @@ class UserController extends Controller
 
                 fputcsv($handle, [
                     $composedName,
+                    $cuerdaTexto,
                     $user->name,
                     $user->last_name,
                     $menorTexto,

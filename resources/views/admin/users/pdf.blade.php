@@ -145,6 +145,9 @@
                 <a href="{{ route('admin.users.export.pdf', ['status' => $status, 'search' => $search, 'order_by' => 'name']) }}" class="px-2 py-0.5 rounded text-xs {{ ($orderBy ?? 'last_name') === 'name' ? 'bg-amber-600 text-white font-bold' : 'text-gray-700 hover:bg-gray-100' }}">
                     Nombre y Apellidos
                 </a>
+                <a href="{{ route('admin.users.export.pdf', ['status' => $status, 'search' => $search, 'order_by' => 'section']) }}" class="px-2 py-0.5 rounded text-xs {{ ($orderBy ?? 'last_name') === 'section' ? 'bg-amber-600 text-white font-bold' : 'text-gray-700 hover:bg-gray-100' }}">
+                    Por Cuerdas
+                </a>
             </div>
         </div>
         <div class="flex gap-2">
@@ -170,7 +173,7 @@
         <div class="header-text">
             <h1>{{ $reportTitle }}</h1>
             <div class="text-[10px] text-gray-500">
-                Emitido el {{ now()->format('d/m/Y H:i') }} | Orden: <strong>{{ ($orderBy ?? 'last_name') === 'name' ? 'Por Nombre' : 'Por Apellidos' }}</strong> | Total: {{ $users->count() }} registros
+                Emitido el {{ now()->format('d/m/Y H:i') }} | Orden: <strong>{{ ($orderBy ?? 'last_name') === 'name' ? 'Por Nombre' : (($orderBy ?? 'last_name') === 'section' ? 'Por Cuerdas / Subcuerdas' : 'Por Apellidos') }}</strong> | Total: {{ $users->count() }} registros
             </div>
         </div>
     </div>
@@ -226,8 +229,13 @@
                 @endphp
                 <tr class="{{ $isMinor ? 'bg-amber-50/50' : '' }}">
                     <td>
-                        <div class="flex items-center gap-1.5">
+                        <div class="flex items-center gap-1.5 flex-wrap">
                             <strong class="text-gray-900">{{ $displayName }}</strong>
+                            @if($u->section)
+                                <span class="inline-flex items-center px-1 py-0.2 rounded text-[7px] font-semibold bg-amber-100 text-amber-900 border border-amber-300 whitespace-nowrap">
+                                    {{ $u->section->full_name }}
+                                </span>
+                            @endif
                             @if($isMinor)
                                 <span class="inline-flex items-center px-1 py-0.2 rounded text-[7.5px] font-bold bg-amber-500 text-gray-950 border border-amber-600/30 whitespace-nowrap" title="Menor de 18 años">
                                     MENOR

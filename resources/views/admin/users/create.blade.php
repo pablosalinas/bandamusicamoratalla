@@ -88,6 +88,22 @@
                         @error('role') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
                     </div>
 
+                    <div class="sm:col-span-3">
+                        <label for="instrument_section_id" class="block text-sm font-medium leading-6 text-white">Cuerda / Subcuerda del Músico</label>
+                        <p class="text-xs text-gray-400 mb-1">Cuerda para la ordenación de asistencia y agrupación de ensayos.</p>
+                        <div class="mt-1">
+                            <select id="instrument_section_id" name="instrument_section_id" class="block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6">
+                                <option value="">-- Sin cuerda asignada --</option>
+                                @foreach($sections as $sec)
+                                    <option value="{{ $sec->id }}" {{ old('instrument_section_id') == $sec->id ? 'selected' : '' }}>
+                                        {{ $sec->full_name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        @error('instrument_section_id') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
+                    </div>
+
                     <div class="sm:col-span-3 flex items-center mt-8">
                         <input id="is_active" name="is_active" type="checkbox" value="1" {{ old('is_active', true) ? 'checked' : '' }} class="h-4 w-4 rounded border-gray-700 bg-gray-900 text-amber-600 focus:ring-amber-600 focus:ring-offset-gray-900">
                         <label for="is_active" class="ml-3 block text-sm font-medium leading-6 text-white">Usuario Activo en la Banda</label>

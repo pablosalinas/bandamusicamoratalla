@@ -1,4 +1,9 @@
-<ul role="list" class="-mx-2 space-y-1 flex flex-col flex-1">
+<ul role="list" class="-mx-2 space-y-1 flex flex-col flex-1" x-data="{
+    openInstruments: {{ request()->routeIs('admin.instruments.*') || request()->routeIs('admin.instrument-sections.*') || request()->routeIs('admin.instrument-brands.*') || request()->routeIs('admin.inventory.*') ? 'true' : 'false' }},
+    openBoardAccounting: {{ request()->routeIs('admin.boards.*') || request()->routeIs('admin.fiscal-years.*') || request()->routeIs('admin.budget-movements.*') ? 'true' : 'false' }},
+    openNewsEvents: {{ request()->routeIs('admin.news.*') || request()->routeIs('admin.media-archive.*') || request()->routeIs('admin.events.*') ? 'true' : 'false' }},
+    openUsers: {{ request()->routeIs('admin.users.*') ? 'true' : 'false' }}
+}">
     <!-- Enlace común para todos -->
     <li>
         <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard') ? 'bg-gray-800 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-800' }} group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold transition-colors">
@@ -30,7 +35,6 @@
             <div class="text-xs font-semibold leading-6 text-gray-500 uppercase tracking-wider px-2">Administración</div>
         </div>
         
-        @if(in_array(Auth::user()->role, ['admin', 'treasurer', 'director']) || Auth::user()->isSuperAdmin())
         <li>
             <a href="{{ route('admin.dashboard') }}" class="{{ request()->routeIs('admin.dashboard') ? 'bg-gray-800 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-800' }} group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold transition-colors">
                 <svg class="h-6 w-6 shrink-0 {{ request()->routeIs('admin.dashboard') ? 'text-white' : 'text-gray-400 group-hover:text-white' }}" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
@@ -39,16 +43,36 @@
                 Panel de Control
             </a>
         </li>
-        @if(in_array(Auth::user()->role, ['admin', 'treasurer', 'director']) || Auth::user()->isSuperAdmin())
+
+        <!-- 1. GRUPO: MÚSICOS Y USUARIOS -->
         <li>
-            <a href="{{ route('admin.users.index') }}" class="{{ request()->routeIs('admin.users.*') ? 'bg-gray-800 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-800' }} group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold transition-colors">
-                <svg class="h-6 w-6 shrink-0 {{ request()->routeIs('admin.users.*') ? 'text-white' : 'text-gray-400 group-hover:text-white' }}" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
-                </svg>
-                Músicos / Usuarios
-            </a>
+            <div>
+                <button type="button" @click="openUsers = !openUsers" class="w-full flex items-center justify-between gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold {{ request()->routeIs('admin.users.*') ? 'bg-gray-800 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-800' }} transition-colors">
+                    <div class="flex items-center gap-x-3">
+                        <svg class="h-6 w-6 shrink-0 {{ request()->routeIs('admin.users.*') ? 'text-amber-500' : 'text-gray-400' }}" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+                        </svg>
+                        <span>Músicos y Usuarios</span>
+                    </div>
+                    <svg class="h-4 w-4 transition-transform duration-200" :class="{ 'rotate-180': openUsers }" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                    </svg>
+                </button>
+                <div x-show="openUsers" x-cloak class="mt-1 pl-11 space-y-1">
+                    <a href="{{ route('admin.users.index') }}" class="block rounded-md py-1.5 px-2 text-xs font-medium {{ request()->routeIs('admin.users.index') && request('status') != 'pending' ? 'text-amber-400 font-bold' : 'text-gray-400 hover:text-white' }}">
+                        Listado General
+                    </a>
+                    <a href="{{ route('admin.users.index', ['status' => 'pending']) }}" class="block rounded-md py-1.5 px-2 text-xs font-medium {{ request()->routeIs('admin.users.index') && request('status') == 'pending' ? 'text-amber-400 font-bold' : 'text-gray-400 hover:text-white' }}">
+                        Pendientes Validación
+                    </a>
+                    <a href="{{ route('admin.users.create') }}" class="block rounded-md py-1.5 px-2 text-xs font-medium {{ request()->routeIs('admin.users.create') ? 'text-amber-400 font-bold' : 'text-gray-400 hover:text-white' }}">
+                        + Añadir Músico / Usuario
+                    </a>
+                </div>
+            </div>
         </li>
-        @endif
+
+        <!-- 2. PARTITURAS (DIRECTO) -->
         <li>
             <a href="{{ route('admin.sheet-music.index') }}" class="group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold {{ request()->routeIs('admin.sheet-music.*') ? 'bg-gray-800 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-800' }}">
                 <svg class="h-6 w-6 shrink-0 {{ request()->routeIs('admin.sheet-music.*') ? 'text-white' : 'text-gray-400 group-hover:text-white' }}" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
@@ -57,78 +81,94 @@
                 Catálogo Partituras
             </a>
         </li>
+
+        <!-- 3. GRUPO: INSTRUMENTOS, TIPOS, CUERDAS E INVENTARIO -->
         <li>
-            <a href="{{ route('admin.instruments.index') }}" class="group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold {{ request()->routeIs('admin.instruments.*') ? 'bg-gray-800 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-800' }}">
-                <svg class="h-6 w-6 shrink-0 {{ request()->routeIs('admin.instruments.*') ? 'text-white' : 'text-gray-400 group-hover:text-white' }}" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75z" />
-                </svg>
-                Catálogo Instrumentos
-            </a>
+            <div>
+                <button type="button" @click="openInstruments = !openInstruments" class="w-full flex items-center justify-between gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold {{ request()->routeIs('admin.instruments.*') || request()->routeIs('admin.instrument-sections.*') || request()->routeIs('admin.instrument-brands.*') || request()->routeIs('admin.inventory.*') ? 'bg-gray-800 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-800' }} transition-colors">
+                    <div class="flex items-center gap-x-3">
+                        <svg class="h-6 w-6 shrink-0 {{ request()->routeIs('admin.instruments.*') || request()->routeIs('admin.instrument-sections.*') || request()->routeIs('admin.instrument-brands.*') || request()->routeIs('admin.inventory.*') ? 'text-amber-500' : 'text-gray-400' }}" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75z" />
+                        </svg>
+                        <span>Instrumentos e Inventario</span>
+                    </div>
+                    <svg class="h-4 w-4 transition-transform duration-200" :class="{ 'rotate-180': openInstruments }" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                    </svg>
+                </button>
+                <div x-show="openInstruments" x-cloak class="mt-1 pl-11 space-y-1">
+                    <a href="{{ route('admin.instruments.index') }}" class="block rounded-md py-1.5 px-2 text-xs font-medium {{ request()->routeIs('admin.instruments.*') ? 'text-amber-400 font-bold' : 'text-gray-400 hover:text-white' }}">
+                        Catálogo de Instrumentos
+                    </a>
+                    <a href="{{ route('admin.instrument-sections.index') }}" class="block rounded-md py-1.5 px-2 text-xs font-medium {{ request()->routeIs('admin.instrument-sections.*') ? 'text-amber-400 font-bold' : 'text-gray-400 hover:text-white' }}">
+                        Cuerdas y Subcuerdas
+                    </a>
+                    <a href="{{ route('admin.instrument-brands.index') }}" class="block rounded-md py-1.5 px-2 text-xs font-medium {{ request()->routeIs('admin.instrument-brands.*') ? 'text-amber-400 font-bold' : 'text-gray-400 hover:text-white' }}">
+                        Marcas de Instrumentos
+                    </a>
+                    <a href="{{ route('admin.inventory.index') }}" class="block rounded-md py-1.5 px-2 text-xs font-medium {{ request()->routeIs('admin.inventory.*') ? 'text-amber-400 font-bold' : 'text-gray-400 hover:text-white' }}">
+                        Inventario de la Banda
+                    </a>
+                </div>
+            </div>
         </li>
+
+        <!-- 4. GRUPO: JUNTA DIRECTIVA Y CONTABILIDAD -->
         <li>
-            <a href="{{ route('admin.instrument-brands.index') }}" class="group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold {{ request()->routeIs('admin.instrument-brands.*') ? 'bg-gray-800 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-800' }}">
-                <svg class="h-6 w-6 shrink-0 {{ request()->routeIs('admin.instrument-brands.*') ? 'text-white' : 'text-gray-400 group-hover:text-white' }}" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75v-.008z" />
-                </svg>
-                Marcas Instrumentos
-            </a>
+            <div>
+                <button type="button" @click="openBoardAccounting = !openBoardAccounting" class="w-full flex items-center justify-between gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold {{ request()->routeIs('admin.boards.*') || request()->routeIs('admin.fiscal-years.*') || request()->routeIs('admin.budget-movements.*') ? 'bg-gray-800 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-800' }} transition-colors">
+                    <div class="flex items-center gap-x-3">
+                        <svg class="h-6 w-6 shrink-0 {{ request()->routeIs('admin.boards.*') || request()->routeIs('admin.fiscal-years.*') || request()->routeIs('admin.budget-movements.*') ? 'text-amber-500' : 'text-gray-400' }}" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5m.75-9l3-3 2.148 2.148A12.061 12.061 0 0116.5 7.605" />
+                        </svg>
+                        <span>Directiva y Contabilidad</span>
+                    </div>
+                    <svg class="h-4 w-4 transition-transform duration-200" :class="{ 'rotate-180': openBoardAccounting }" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                    </svg>
+                </button>
+                <div x-show="openBoardAccounting" x-cloak class="mt-1 pl-11 space-y-1">
+                    <a href="{{ route('admin.boards.index') }}" class="block rounded-md py-1.5 px-2 text-xs font-medium {{ request()->routeIs('admin.boards.*') ? 'text-amber-400 font-bold' : 'text-gray-400 hover:text-white' }}">
+                        Junta Directiva y Actas
+                    </a>
+                    @if((Auth::user()->isCurrentBoardMember() && in_array(Auth::user()->role, ['admin', 'treasurer', 'director'])) || Auth::user()->isSuperAdmin())
+                    <a href="{{ route('admin.fiscal-years.index') }}" class="block rounded-md py-1.5 px-2 text-xs font-medium {{ request()->routeIs('admin.fiscal-years.*') || request()->routeIs('admin.budget-movements.*') ? 'text-amber-400 font-bold' : 'text-gray-400 hover:text-white' }}">
+                        Contabilidad y Presupuesto
+                    </a>
+                    @endif
+                </div>
+            </div>
         </li>
+
+        <!-- 5. GRUPO: NOTICIAS, EVENTOS Y ARCHIVO SONORO -->
         <li>
-            <a href="{{ route('admin.inventory.index') }}" class="group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold {{ request()->routeIs('admin.inventory.*') ? 'bg-gray-800 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-800' }}">
-                <svg class="h-6 w-6 shrink-0 {{ request()->routeIs('admin.inventory.*') ? 'text-white' : 'text-gray-400 group-hover:text-white' }}" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5a3.375 3.375 0 00-3.375-3.375H9.75" />
-                </svg>
-                Inventario de la Banda
-            </a>
+            <div>
+                <button type="button" @click="openNewsEvents = !openNewsEvents" class="w-full flex items-center justify-between gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold {{ request()->routeIs('admin.news.*') || request()->routeIs('admin.media-archive.*') || request()->routeIs('admin.events.*') ? 'bg-gray-800 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-800' }} transition-colors">
+                    <div class="flex items-center gap-x-3">
+                        <svg class="h-6 w-6 shrink-0 {{ request()->routeIs('admin.news.*') || request()->routeIs('admin.media-archive.*') || request()->routeIs('admin.events.*') ? 'text-amber-500' : 'text-gray-400' }}" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5m-7.5 3h7.5m3-9h3.375c.621 0 1.125.504 1.125 1.125V18a2.25 2.25 0 01-2.25 2.25M16.5 7.5V18a2.25 2.25 0 002.25 2.25M16.5 7.5V4.875c0-.621-.504-1.125-1.125-1.125H4.125C3.504 3.75 3 4.254 3 4.875V18a2.25 2.25 0 002.25 2.25h13.5M6 7.5h3v3H6v-3z" />
+                        </svg>
+                        <span>Noticias y Eventos</span>
+                    </div>
+                    <svg class="h-4 w-4 transition-transform duration-200" :class="{ 'rotate-180': openNewsEvents }" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                    </svg>
+                </button>
+                <div x-show="openNewsEvents" x-cloak class="mt-1 pl-11 space-y-1">
+                    <a href="{{ route('admin.news.index') }}" class="block rounded-md py-1.5 px-2 text-xs font-medium {{ request()->routeIs('admin.news.*') ? 'text-amber-400 font-bold' : 'text-gray-400 hover:text-white' }}">
+                        Noticias y Actividades
+                    </a>
+                    <a href="{{ route('admin.events.index') }}" class="block rounded-md py-1.5 px-2 text-xs font-medium {{ request()->routeIs('admin.events.*') ? 'text-amber-400 font-bold' : 'text-gray-400 hover:text-white' }}">
+                        Eventos y Pasar Lista
+                    </a>
+                    <a href="{{ route('admin.media-archive.index') }}" class="block rounded-md py-1.5 px-2 text-xs font-medium {{ request()->routeIs('admin.media-archive.*') ? 'text-amber-400 font-bold' : 'text-gray-400 hover:text-white' }}">
+                        Archivo Sonoro / Grabaciones
+                    </a>
+                </div>
+            </div>
         </li>
-        @endif
-        @if(in_array(Auth::user()->role, ['admin', 'treasurer', 'director']) || Auth::user()->isSuperAdmin())
-        <li>
-            <a href="{{ route('admin.boards.index') }}" class="{{ request()->routeIs('admin.boards.*') ? 'bg-gray-800 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-800' }} group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold transition-colors">
-                <svg class="h-6 w-6 shrink-0 {{ request()->routeIs('admin.boards.*') ? 'text-white' : 'text-gray-400 group-hover:text-white' }}" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5m.75-9l3-3 2.148 2.148A12.061 12.061 0 0116.5 7.605" />
-                </svg>
-                Junta Directiva
-            </a>
-        </li>
-        @endif
-        @if((Auth::user()->isCurrentBoardMember() && in_array(Auth::user()->role, ['admin', 'treasurer', 'director'])) || Auth::user()->isSuperAdmin())
-        <li>
-            <a href="{{ route('admin.fiscal-years.index') }}" class="{{ request()->routeIs('admin.fiscal-years.*') || request()->routeIs('admin.budget-movements.*') ? 'bg-gray-800 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-800' }} group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold transition-colors">
-                <svg class="h-6 w-6 shrink-0 {{ request()->routeIs('admin.fiscal-years.*') || request()->routeIs('admin.budget-movements.*') ? 'text-white' : 'text-gray-400 group-hover:text-white' }}" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z" />
-                </svg>
-                Contabilidad
-            </a>
-        </li>
-        @endif
-        @if(in_array(Auth::user()->role, ['admin', 'treasurer', 'director']) || Auth::user()->isSuperAdmin())
-        <li>
-            <a href="{{ route('admin.news.index') }}" class="{{ request()->routeIs('admin.news.*') ? 'bg-gray-800 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-800' }} group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
-                <svg class="h-6 w-6 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5m-7.5 3h7.5m3-9h3.375c.621 0 1.125.504 1.125 1.125V18a2.25 2.25 0 01-2.25 2.25M16.5 7.5V18a2.25 2.25 0 002.25 2.25M16.5 7.5V4.875c0-.621-.504-1.125-1.125-1.125H4.125C3.504 3.75 3 4.254 3 4.875V18a2.25 2.25 0 002.25 2.25h13.5M6 7.5h3v3H6v-3z" />
-                </svg>
-                Noticias
-            </a>
-        </li>
-        <li>
-            <a href="{{ route('admin.media-archive.index') }}" class="{{ request()->routeIs('admin.media-archive.*') ? 'bg-gray-800 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-800' }} group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
-                <svg class="h-6 w-6 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path>
-                </svg>
-                Archivo Sonoro
-            </a>
-        </li>
-        <li>
-            <a href="{{ route('admin.events.index') }}" class="{{ request()->routeIs('admin.events.*') ? 'bg-gray-800 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-800' }} group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
-                <svg class="h-6 w-6 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5m-9-6h.008v.008H12v-.008zM12 15h.008v.008H12V15zm0 2.25h.008v.008H12v-.008zM9.75 15h.008v.008H9.75V15zm0 2.25h.008v.008H9.75v-.008zM7.5 15h.008v.008H7.5V15zm0 2.25h.008v.008H7.5v-.008zm6.75-4.5h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V15zm0 2.25h.008v.008h-.008v-.008zm2.25-4.5h.008v.008H16.5v-.008zm0 2.25h.008v.008H16.5V15z" />
-                </svg>
-                Eventos / Planning
-            </a>
-        </li>
-        @endif
-        @if(in_array(Auth::user()->role, ['admin', 'treasurer', 'director']) || Auth::user()->isSuperAdmin())
+
+        <!-- 6. CONFIGURACIÓN Y SISTEMA -->
         <li>
             <a href="{{ route('admin.settings.index') }}" class="{{ request()->routeIs('admin.settings.*') ? 'bg-gray-800 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-800' }} group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
                 <svg class="h-6 w-6 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
@@ -155,8 +195,6 @@
                 Registros
             </a>
         </li>
-        @endif
-        @if(in_array(Auth::user()->role, ['admin', 'treasurer', 'director']) || Auth::user()->isSuperAdmin())
         <li>
             <a href="{{ route('admin.manual') }}" class="{{ request()->routeIs('admin.manual') ? 'bg-gray-800 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-800' }} group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold">
                 <svg class="h-6 w-6 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
@@ -165,7 +203,6 @@
                 Manual Administrador
             </a>
         </li>
-        @endif
     @endif
     <li class="mt-auto pb-4">
         <a href="{{ url('/') }}" class="group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold text-gray-400 hover:text-white hover:bg-gray-800">

@@ -104,13 +104,29 @@ class EventController extends Controller
         return redirect()->route('admin.events.index')->with('success', 'Evento eliminado.');
     }
 
-    public function attendance(Event $event)
+    public function attendance(Request $request, Event $event)
     {
-        // Solo obtener usuarios activos
-        $users = User::where('is_active', true)->orderBy('name')->get();
+        $orderBy = $request->query('order_by', 'section');
+
+        $query = User::where('is_active', true)->with(['section.parent', 'inventories.instrument']);
+
+        if ($orderBy === 'name') {
+            $query->orderBy('name')->orderBy('last_name');
+        } elseif ($orderBy === 'last_name') {
+            $query->orderBy('last_name')->orderBy('name');
+        } else {
+            // Ordenar por cuerdas y subcuerdas (default)
+            $query->leftJoin('instrument_sections', 'users.instrument_section_id', '=', 'instrument_sections.id')
+                  ->select('users.*')
+                  ->orderByRaw('COALESCE(instrument_sections.order_index, 9999) ASC')
+                  ->orderBy('users.last_name')
+                  ->orderBy('users.name');
+        }
+
+        $users = $query->get();
         $attendances = $event->attendances()->get()->keyBy('user_id');
 
-        return view('admin.events.attendance', compact('event', 'users', 'attendances'));
+        return view('admin.events.attendance', compact('event', 'users', 'attendances', 'orderBy'));
     }
 
     public function storeAttendance(Request $request, Event $event)

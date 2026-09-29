@@ -173,6 +173,21 @@
                         <p class="text-[11px] text-gray-500 mt-1">Año en que entraste o tienes previsto debutar.</p>
                         <x-input-error :messages="$errors->get('joining_year')" class="mt-1" />
                     </div>
+
+                    <!-- Cuerda / Subcuerda -->
+                    <div>
+                        <x-input-label for="instrument_section_id" value="Cuerda / Instrumento Principal (Opcional)" />
+                        <select id="instrument_section_id" name="instrument_section_id" class="block mt-1 w-full rounded-md border-gray-700 bg-gray-900 text-white shadow-sm focus:border-amber-500 focus:ring-amber-500 sm:text-sm">
+                            <option value="">-- Selecciona tu cuerda o subcuerda --</option>
+                            @foreach($sections ?? [] as $sec)
+                                <option value="{{ $sec->id }}" {{ old('instrument_section_id') == $sec->id ? 'selected' : '' }}>
+                                    {{ $sec->full_name }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <p class="text-[11px] text-gray-500 mt-1">Sección o cuerda musical en la que tocas habitualmente.</p>
+                        <x-input-error :messages="$errors->get('instrument_section_id')" class="mt-1" />
+                    </div>
                 </div>
             </div>
 
