@@ -36,6 +36,20 @@
             animation: slogan-shine 4s linear infinite, slogan-float 3s ease-in-out infinite;
             display: inline-block;
         }
+        @keyframes pending-pulse {
+            0%, 100% {
+                opacity: 1;
+                filter: drop-shadow(0 0 1px rgba(245, 158, 11, 0.4));
+            }
+            50% {
+                opacity: 0.35;
+                filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.9));
+                transform: scale(1.02);
+            }
+        }
+        .animate-pending-blink {
+            animation: pending-pulse 1.3s cubic-bezier(0.4, 0, 0.6, 1) infinite !important;
+        }
     </style>
 </head>
 <body class="h-full font-sans antialiased text-gray-100 bg-gray-950">
@@ -57,10 +71,17 @@
                     <!-- Sidebar component for mobile -->
                     <div class="flex grow flex-col gap-y-5 overflow-y-auto bg-gray-900 px-6 pb-2 ring-1 ring-white/10">
                         <div class="flex h-16 shrink-0 items-center gap-2 mt-2">
-                            <x-logo-rotator class="h-10 w-10" textClass="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-600" />
+                            <x-logo-rotator class="h-10 w-10 {{ ($totalPendingValidationsCount ?? 0) > 0 ? 'animate-pending-blink ring-2 ring-red-500/50 rounded-full' : '' }}" textClass="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-600" />
                             <div class="flex flex-col leading-none">
-                                <span class="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-600">Banda Moratalla</span>
-                                <span class="text-[10px] font-medium italic tracking-widest mt-1 animate-slogan">{{ \App\Models\SiteSetting::getSetting('site_slogan', 'Tu banda') }}</span>
+                                <span class="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-600 {{ ($totalPendingValidationsCount ?? 0) > 0 ? 'animate-pending-blink' : '' }}">Banda Moratalla</span>
+                                @if(($totalPendingValidationsCount ?? 0) > 0)
+                                    <span class="text-[10px] font-bold text-red-400 mt-1 flex items-center gap-1">
+                                        <span class="inline-block w-1.5 h-1.5 rounded-full bg-red-500 animate-ping"></span>
+                                        {{ $totalPendingValidationsCount }} pendiente{{ $totalPendingValidationsCount > 1 ? 's' : '' }}
+                                    </span>
+                                @else
+                                    <span class="text-[10px] font-medium italic tracking-widest mt-1 animate-slogan">{{ \App\Models\SiteSetting::getSetting('site_slogan', 'Tu banda') }}</span>
+                                @endif
                             </div>
                         </div>
                         <nav class="flex flex-1 flex-col">
@@ -74,13 +95,25 @@
         <!-- Static sidebar for desktop -->
         <div class="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col print:hidden">
             <div class="flex grow flex-col gap-y-5 overflow-y-auto bg-gray-900/50 backdrop-blur-xl border-r border-gray-800 px-6">
-                <div class="flex shrink-0 items-center mt-6 mb-4 flex-col gap-2">
-                    <x-logo-rotator class="h-24 w-24" />
-                    <h1 class="font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-600 leading-tight text-center">
+                <div class="flex shrink-0 items-center mt-6 mb-4 flex-col gap-2 relative">
+                    <x-logo-rotator class="h-24 w-24 {{ ($totalPendingValidationsCount ?? 0) > 0 ? 'animate-pending-blink ring-4 ring-red-500/40 rounded-full' : '' }}" />
+                    
+                    <h1 class="font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-600 leading-tight text-center {{ ($totalPendingValidationsCount ?? 0) > 0 ? 'animate-pending-blink' : '' }}">
                         <span class="text-sm">Banda de Música</span><br>
                         <span class="text-2xl uppercase tracking-wider">Moratalla</span>
                     </h1>
-                    <span class="text-xs font-medium italic tracking-widest mt-1 animate-slogan text-center">{{ \App\Models\SiteSetting::getSetting('site_slogan', 'Tu banda') }}</span>
+
+                    @if(($totalPendingValidationsCount ?? 0) > 0)
+                        <div class="mt-1 flex items-center justify-center gap-1.5 px-3 py-1 rounded-full bg-red-950/90 border border-red-500/80 text-red-200 text-[11px] font-bold shadow-lg shadow-red-900/40 animate-pulse">
+                            <span class="relative flex h-2 w-2">
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                            </span>
+                            <span>{{ $totalPendingValidationsCount }} pendiente{{ $totalPendingValidationsCount > 1 ? 's' : '' }}</span>
+                        </div>
+                    @else
+                        <span class="text-xs font-medium italic tracking-widest mt-1 animate-slogan text-center">{{ \App\Models\SiteSetting::getSetting('site_slogan', 'Tu banda') }}</span>
+                    @endif
                 </div>
                 <nav class="flex flex-1 flex-col pb-4">
                     @include('admin.partials.nav')
@@ -98,7 +131,27 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
                     </svg>
                 </button>
-                <div class="flex flex-1 gap-x-4 self-stretch lg:gap-x-6 justify-end items-center">
+                <div class="flex flex-1 gap-x-4 self-stretch lg:gap-x-6 justify-between items-center">
+                    <div class="flex items-center gap-2">
+                        @if(($totalPendingValidationsCount ?? 0) > 0)
+                            <div class="flex items-center gap-2">
+                                <span class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-bold bg-red-950/80 text-red-300 border border-red-500/50 animate-pulse">
+                                    <span class="inline-block w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
+                                    <span>Atención: Hay {{ $totalPendingValidationsCount }} elemento{{ $totalPendingValidationsCount > 1 ? 's' : '' }} pendiente{{ $totalPendingValidationsCount > 1 ? 's' : '' }} de validar</span>
+                                </span>
+                                @if(($pendingMusiciansCount ?? 0) > 0)
+                                    <a href="{{ route('admin.users.index', ['status' => 'pending']) }}" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 transition-colors">
+                                        👤 {{ $pendingMusiciansCount }} Músico{{ $pendingMusiciansCount > 1 ? 's' : '' }}
+                                    </a>
+                                @endif
+                                @if(($pendingInstrumentsCount ?? 0) > 0)
+                                    <a href="{{ route('admin.inventory.index', ['verification' => 'pending']) }}" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold bg-blue-500/10 hover:bg-blue-500/20 text-blue-300 border border-blue-500/30 transition-colors">
+                                        🎷 {{ $pendingInstrumentsCount }} Instrumento{{ $pendingInstrumentsCount > 1 ? 's' : '' }}
+                                    </a>
+                                @endif
+                            </div>
+                        @endif
+                    </div>
                     <div class="flex items-center gap-x-4 lg:gap-x-6">
                         <!-- Profile dropdown -->
                         <div class="relative" x-data="{ open: false }" @click.outside="open = false">

@@ -73,5 +73,27 @@ class AppServiceProvider extends ServiceProvider
             \Illuminate\Support\Facades\View::share('globalBandName', 'Banda de Música de Moratalla');
             \Illuminate\Support\Facades\View::share('globalStatutes', '');
         }
+
+        // Compartir contador de validaciones pendientes (músicos e inventario) en el panel de administración
+        \Illuminate\Support\Facades\View::composer(['components.admin-layout', 'admin.*', 'dashboard', 'profile.*', 'musician.*'], function ($view) {
+            $pendingMusicians = 0;
+            $pendingInstruments = 0;
+
+            try {
+                if (\Illuminate\Support\Facades\Schema::hasTable('users')) {
+                    $pendingMusicians = \App\Models\User::where('users.is_active', false)->where('users.role', 'musician')->count();
+                }
+                if (\Illuminate\Support\Facades\Schema::hasTable('inventories')) {
+                    $pendingInstruments = \App\Models\Inventory::where('is_verified', false)->count();
+                }
+            } catch (\Exception $e) {
+                // Silencioso si aún no se han ejecutado las migraciones
+            }
+
+            $totalPending = $pendingMusicians + $pendingInstruments;
+            $view->with('pendingMusiciansCount', $pendingMusicians)
+                 ->with('pendingInstrumentsCount', $pendingInstruments)
+                 ->with('totalPendingValidationsCount', $totalPending);
+        });
     }
 }
