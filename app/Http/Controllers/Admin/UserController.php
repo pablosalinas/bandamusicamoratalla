@@ -81,7 +81,7 @@ class UserController extends Controller
     {
         $instruments = InstrumentCatalog::where('is_active', true)->orderBy('name')->get();
         $brands = \App\Models\InstrumentBrand::orderBy('name')->get();
-        $sections = \App\Models\InstrumentSection::with('parent')->orderBy('order_index')->orderBy('name')->get();
+        $sections = \App\Models\InstrumentSection::getOrderedForSelect(false);
         return view('admin.users.create', compact('instruments', 'brands', 'sections'));
     }
 
@@ -149,7 +149,7 @@ class UserController extends Controller
     public function edit(Request $request, User $user)
     {
         $instruments = InstrumentCatalog::orderBy('name')->get();
-        $sections = \App\Models\InstrumentSection::with('parent')->orderBy('order_index')->orderBy('name')->get();
+        $sections = \App\Models\InstrumentSection::getOrderedForSelect(false);
         
         $filter = $request->query('attendance_filter', 'absent');
         

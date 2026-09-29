@@ -23,7 +23,6 @@
                                 <th scope="col" class="py-3.5 pl-4 pr-2 text-left text-sm font-semibold text-white sm:pl-6 w-16">Orden</th>
                                 <th scope="col" class="py-3.5 pl-2 pr-3 text-left text-sm font-semibold text-white">Nombre del Instrumento</th>
                                 <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-white">Cuerda / Subcuerda</th>
-                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-white">Familia / Tipo</th>
                                 <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-white">Estado</th>
                                 <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
                                     <span class="sr-only">Acciones</span>
@@ -49,9 +48,6 @@
                                         @endif
                                     </td>
                                     <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-400">
-                                        {{ $instrument->type ?? '-' }}
-                                    </td>
-                                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-400">
                                         @if($instrument->is_active)
                                             <span class="inline-flex items-center rounded-md bg-green-500/10 px-2 py-1 text-xs font-medium text-green-400 ring-1 ring-inset ring-green-500/20">Activo</span>
                                         @else
@@ -69,7 +65,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="3" class="px-3 py-8 text-sm text-gray-400 text-center">
+                                    <td colspan="5" class="px-3 py-8 text-sm text-gray-400 text-center">
                                         No hay instrumentos registrados en el catálogo.<br>
                                         <a href="{{ route('admin.instruments.create') }}" class="text-amber-500 hover:underline mt-2 inline-block">Añadir el primero</a>
                                     </td>

@@ -30,11 +30,7 @@ class RegisteredUserController extends Controller
         $prefilledEmail = session('prefilled_registration_email', '');
         $prefilledPassword = session('prefilled_registration_password', '');
 
-        $sections = \App\Models\InstrumentSection::with('parent')
-            ->where('is_active', true)
-            ->orderBy('order_index')
-            ->orderBy('name')
-            ->get();
+        $sections = \App\Models\InstrumentSection::getOrderedForSelect(true);
 
         return view('auth.register', compact('allowRegistration', 'num1', 'num2', 'prefilledEmail', 'prefilledPassword', 'sections'));
     }

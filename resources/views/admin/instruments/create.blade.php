@@ -51,13 +51,6 @@
                         @error('order_index') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
                     </div>
 
-                    <div>
-                        <label for="type" class="block text-sm font-medium leading-6 text-white">Familia / Tipo (Opcional o texto libre)</label>
-                        <div class="mt-2">
-                            <input type="text" name="type" id="type" value="{{ old('type') }}" placeholder="Ej: VIENTO MADERA, VIENTO METAL, PERCUSIÓN..." class="block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-sm sm:leading-6">
-                        </div>
-                        @error('type') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
-                    </div>
 
                     <div>
                         <label for="description" class="block text-sm font-medium leading-6 text-white">Descripción (Opcional)</label>

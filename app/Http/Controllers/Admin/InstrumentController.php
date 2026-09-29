@@ -11,18 +11,18 @@ class InstrumentController extends Controller
     public function index()
     {
         $instruments = InstrumentCatalog::with('section.parent')
-            ->orderBy('order_index')
-            ->orderBy('name')
+            ->leftJoin('instrument_sections', 'instrument_catalogs.instrument_section_id', '=', 'instrument_sections.id')
+            ->select('instrument_catalogs.*')
+            ->orderByRaw('COALESCE(instrument_sections.order_index, 9999) ASC')
+            ->orderBy('instrument_catalogs.order_index')
+            ->orderBy('instrument_catalogs.name')
             ->paginate(20);
         return view('admin.instruments.index', compact('instruments'));
     }
 
     public function create()
     {
-        $sections = \App\Models\InstrumentSection::with('parent')
-            ->orderBy('order_index')
-            ->orderBy('name')
-            ->get();
+        $sections = \App\Models\InstrumentSection::getOrderedForSelect(false);
         return view('admin.instruments.create', compact('sections'));
     }
 
@@ -86,10 +86,7 @@ class InstrumentController extends Controller
 
     public function edit(InstrumentCatalog $instrument)
     {
-        $sections = \App\Models\InstrumentSection::with('parent')
-            ->orderBy('order_index')
-            ->orderBy('name')
-            ->get();
+        $sections = \App\Models\InstrumentSection::getOrderedForSelect(false);
         return view('admin.instruments.edit', compact('instrument', 'sections'));
     }
 

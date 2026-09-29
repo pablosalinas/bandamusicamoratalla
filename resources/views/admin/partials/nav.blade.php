@@ -90,7 +90,7 @@
                         <svg class="h-6 w-6 shrink-0 {{ request()->routeIs('admin.instruments.*') || request()->routeIs('admin.instrument-sections.*') || request()->routeIs('admin.instrument-brands.*') || request()->routeIs('admin.inventory.*') ? 'text-amber-500' : 'text-gray-400' }}" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75z" />
                         </svg>
-                        <span>Instrumentos e Inventario</span>
+                        <span>Instrumentos</span>
                     </div>
                     <svg class="h-4 w-4 transition-transform duration-200" :class="{ 'rotate-180': openInstruments }" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
