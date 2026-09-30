@@ -185,7 +185,7 @@
                                         </div>
                                         @if($image->author)
                                             <div class="absolute bottom-2 left-2 z-10 bg-black/75 backdrop-blur-md px-2 py-0.5 rounded text-[11px] font-medium text-gray-200 border border-white/10 pointer-events-none">
-                                                Autor: {{ $image->author }}
+                                                Autor/a: {{ $image->author }}
                                             </div>
                                         @endif
                                     </div>
@@ -280,7 +280,7 @@
                                             <template x-if="slide.type !== 'video'">
                                                 <img :src="slide.url" class="max-h-[85vh] max-w-full object-contain rounded-lg shadow-2xl">
                                             </template>
-                                            <p x-show="slide.author" class="absolute bottom-16 bg-black/75 backdrop-blur-md px-3 py-1 rounded text-xs text-gray-200 border border-white/10 z-[120]" x-text="'Autor: ' + slide.author"></p>
+                                            <p x-show="slide.author" class="absolute bottom-16 bg-black/75 backdrop-blur-md px-3 py-1 rounded text-xs text-gray-200 border border-white/10 z-[120]" x-text="'Autor/a: ' + slide.author"></p>
                                         </div>
                                     </template>
                                 </div>

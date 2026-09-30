@@ -648,7 +648,7 @@
                                     <template x-for="(slide, index) in newsSlides" :key="'author-' + index">
                                         <div x-show="activeNewsSlide === index && slide.author" class="absolute bottom-2.5 right-2.5 bg-black/70 backdrop-blur-md text-gray-200 text-[11px] px-2.5 py-0.5 rounded-full border border-white/10 flex items-center gap-1 shadow-lg pointer-events-none z-10">
                                             <svg class="w-3 h-3 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                                            <span>Autor: <span class="font-medium text-white" x-text="slide.author"></span></span>
+                                            <span>Autor/a: <span class="font-medium text-white" x-text="slide.author"></span></span>
                                         </div>
                                     </template>
                                 </div>
@@ -667,7 +667,7 @@
                                     @if(!empty($item->mainImage->author))
                                         <div class="absolute bottom-2.5 right-2.5 bg-black/70 backdrop-blur-md text-gray-200 text-[11px] px-2.5 py-0.5 rounded-full border border-white/10 flex items-center gap-1 shadow-lg pointer-events-none z-10">
                                             <svg class="w-3 h-3 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                                            <span>Autor: <span class="font-medium text-white">{{ $item->mainImage->author }}</span></span>
+                                            <span>Autor/a: <span class="font-medium text-white">{{ $item->mainImage->author }}</span></span>
                                         </div>
                                     @endif
                                 </div>
@@ -732,7 +732,7 @@
                                                                 <p x-show="slide.desc" class="text-white text-xs sm:text-sm md:text-base bg-black/75 px-4 py-1.5 rounded-full backdrop-blur-sm shadow-lg border border-white/10" x-text="slide.desc"></p>
                                                                 <p x-show="slide.author" class="text-amber-300 text-xs sm:text-sm bg-black/75 px-3 py-1 rounded-full backdrop-blur-sm shadow-lg border border-amber-500/20 flex items-center gap-1.5">
                                                                     <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                                                                    <span>Autor: <span class="font-medium text-white" x-text="slide.author"></span></span>
+                                                                    <span>Autor/a: <span class="font-medium text-white" x-text="slide.author"></span></span>
                                                                 </p>
                                                             </div>
                                                         </div>
@@ -1042,7 +1042,7 @@
                                           @if($image->author)
                                               <div class="absolute bottom-2 right-2 bg-black/75 backdrop-blur-sm text-gray-200 text-[10px] px-2 py-0.5 rounded-full border border-white/10 flex items-center gap-1 pointer-events-none z-10 shadow">
                                                   <svg class="w-3 h-3 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                                                  <span>Autor: <span class="font-medium text-white">{{ $image->author }}</span></span>
+                                                  <span>Autor/a: <span class="font-medium text-white">{{ $image->author }}</span></span>
                                               </div>
                                           @endif
                                             <div class="absolute inset-0 bg-black/50 opacity-0 group-hover/img:opacity-100 flex items-center justify-center transition-opacity">
@@ -1127,7 +1127,7 @@
                                                 </template>
                                                 <p x-show="slide.author" class="absolute bottom-16 text-amber-300 text-xs sm:text-sm bg-black/75 px-4 py-1.5 rounded-full backdrop-blur-sm shadow-xl border border-amber-500/20 flex items-center gap-1.5 z-[110]">
                                                     <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                                                    <span>Autor: <span class="font-medium text-white" x-text="slide.author"></span></span>
+                                                    <span>Autor/a: <span class="font-medium text-white" x-text="slide.author"></span></span>
                                                 </p>
                                             </div>
                                         </template>
