@@ -160,7 +160,7 @@
                     <div x-data="{ openLightbox: false, activeLightboxSlide: 0, lightboxSlides: {{ json_encode($media->images->map(function($i) {
                         $ext = strtolower(pathinfo($i->file_path, PATHINFO_EXTENSION));
                         $isVideo = in_array($ext, ['mp4', 'mov', 'webm', 'avi']);
-                        return ['url' => asset('storage/' . $i->file_path), 'type' => $isVideo ? 'video' : 'image'];
+                        return ['url' => asset('storage/' . $i->file_path), 'author' => $i->author, 'type' => $isVideo ? 'video' : 'image'];
                     })) }} }" class="glass-panel rounded-2xl overflow-hidden hover:-translate-y-1.5 transition-all duration-300 group flex flex-col hover:shadow-[0_0_30px_rgba(245,158,11,0.15)]">
                         
                         @if($media->images->count() > 0)
@@ -183,6 +183,11 @@
                                                 Ver foto en grande
                                             </span>
                                         </div>
+                                        @if($image->author)
+                                            <div class="absolute bottom-2 left-2 z-10 bg-black/75 backdrop-blur-md px-2 py-0.5 rounded text-[11px] font-medium text-gray-200 border border-white/10 pointer-events-none">
+                                                Autor: {{ $image->author }}
+                                            </div>
+                                        @endif
                                     </div>
                                 @endforeach
                                 
@@ -275,6 +280,7 @@
                                             <template x-if="slide.type !== 'video'">
                                                 <img :src="slide.url" class="max-h-[85vh] max-w-full object-contain rounded-lg shadow-2xl">
                                             </template>
+                                            <p x-show="slide.author" class="absolute bottom-16 bg-black/75 backdrop-blur-md px-3 py-1 rounded text-xs text-gray-200 border border-white/10 z-[120]" x-text="'Autor: ' + slide.author"></p>
                                         </div>
                                     </template>
                                 </div>

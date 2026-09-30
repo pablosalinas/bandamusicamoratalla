@@ -12,6 +12,7 @@ class MediaArchiveImage extends Model
     protected $fillable = [
         'media_archive_id',
         'file_path',
+        'author',
         'sort_order'
     ];
 

@@ -78,7 +78,8 @@ class MediaArchiveController extends Controller
 
         if ($request->hasFile('images')) {
             $imgOrder = 0;
-            foreach ($request->file('images') as $file) {
+            $authors = $request->input('image_authors', []);
+            foreach ($request->file('images') as $idx => $file) {
                 $imgPath = $file->store('media_archive_images', 'public');
                 \App\Services\ImageWatermarkService::applyWatermark(storage_path('app/public/' . $imgPath));
                 
@@ -86,6 +87,7 @@ class MediaArchiveController extends Controller
                 \App\Models\MediaArchiveImage::create([
                     'media_archive_id' => $mediaArchive->id,
                     'file_path' => $imgPath,
+                    'author' => $authors[$idx] ?? $request->input('images_author'),
                     'sort_order' => $imgOrder
                 ]);
             }
@@ -118,7 +120,8 @@ class MediaArchiveController extends Controller
 
         if ($request->hasFile('images')) {
             $imgOrder = $mediaArchive->images()->max('sort_order') ?? 0;
-            foreach ($request->file('images') as $file) {
+            $authors = $request->input('image_authors', []);
+            foreach ($request->file('images') as $idx => $file) {
                 $imgPath = $file->store('media_archive_images', 'public');
                 \App\Services\ImageWatermarkService::applyWatermark(storage_path('app/public/' . $imgPath));
                 
@@ -126,6 +129,7 @@ class MediaArchiveController extends Controller
                 \App\Models\MediaArchiveImage::create([
                     'media_archive_id' => $mediaArchive->id,
                     'file_path' => $imgPath,
+                    'author' => $authors[$idx] ?? $request->input('new_images_author'),
                     'sort_order' => $imgOrder
                 ]);
             }
@@ -156,6 +160,18 @@ class MediaArchiveController extends Controller
         ]);
 
         return back()->with('success', 'Orden actualizado.');
+    }
+
+    public function updateImage(Request $request, \App\Models\MediaArchiveImage $image)
+    {
+        $validated = $request->validate([
+            'author' => 'nullable|string|max:255',
+            'sort_order' => 'nullable|integer',
+        ]);
+
+        $image->update($validated);
+
+        return back()->with('success', 'Imagen actualizada.');
     }
 
     public function destroyImage(\App\Models\MediaArchiveImage $image)

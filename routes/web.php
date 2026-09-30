@@ -91,7 +91,18 @@ Route::get('/ejecutar-migraciones-secretas', function() {
             $output .= "<b>Aviso Migración Validación Músicos:</b> " . e($eVerif->getMessage()) . "<br>";
         }
 
-        // 6. Ejecutar enlace de storage si no existe
+        // 6. Migración Autor en fotos de noticias/eventos y galería
+        try {
+            \Illuminate\Support\Facades\Artisan::call('migrate', [
+                '--path' => 'database/migrations/2026_09_30_000001_add_author_to_news_and_media_images.php',
+                '--force' => true
+            ]);
+            $output .= "<b>Migración Autor Fotos:</b> " . nl2br(e(\Illuminate\Support\Facades\Artisan::output())) . "<br>";
+        } catch (\Exception $eAuth) {
+            $output .= "<b>Aviso Migración Autor Fotos:</b> " . e($eAuth->getMessage()) . "<br>";
+        }
+
+        // 7. Ejecutar enlace de storage si no existe
         $publicStorage = public_path('storage');
         if (file_exists($publicStorage) && !is_link($publicStorage)) {
             $files = new \RecursiveIteratorIterator(
@@ -152,7 +163,7 @@ Route::get('/', function () {
     $historySpeed = (int) \App\Models\SiteSetting::getSetting('history_speed', 4);
     $waitVideosFinish = \App\Models\SiteSetting::getSetting('wait_videos_finish', '1') == '1';
     
-    $mediaArchives = \App\Models\MediaArchive::where('is_active', true)->orderBy('sort_order')->get();
+    $mediaArchives = \App\Models\MediaArchive::where('is_active', true)->with('images')->orderBy('sort_order')->get();
 
     return view('welcome', compact('news', 'band_history', 'bandHistoryImages', 'visit_count', 'carouselMedia', 'carouselSpeed', 'newsSpeed', 'historySpeed', 'waitVideosFinish', 'mediaArchives'));
 });
@@ -279,6 +290,7 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
         // Media Archive (Archivo Sonoro)
         Route::resource('media-archive', \App\Http\Controllers\Admin\MediaArchiveController::class)->except(['create', 'show', 'edit']);
         Route::post('media-archive/{mediaArchive}/update-order', [\App\Http\Controllers\Admin\MediaArchiveController::class, 'updateOrder'])->name('media-archive.update-order');
+        Route::put('media-archive/images/{image}', [\App\Http\Controllers\Admin\MediaArchiveController::class, 'updateImage'])->name('media-archive.images.update');
         Route::delete('media-archive/images/{image}', [\App\Http\Controllers\Admin\MediaArchiveController::class, 'destroyImage'])->name('media-archive.images.destroy');
 
         // Analytics & Logs

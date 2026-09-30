@@ -168,15 +168,19 @@
                 
                 <form action="{{ route('admin.news.images.store', $news) }}" method="POST" enctype="multipart/form-data" class="mb-8">
                     @csrf
-                    <div class="sm:col-span-6">
+                    <div class="sm:col-span-6 space-y-3">
                         <label for="news_image" class="block text-sm font-medium leading-6 text-white">Subir nueva imagen</label>
-                        <div class="mt-2 flex items-center gap-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <input type="file" name="image" id="news_image" accept="image/*,video/*" required class="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-gray-800 file:text-amber-500 hover:file:bg-gray-700">
+                            <input type="text" name="author" placeholder="Autor de la foto (opcional)" class="block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-xs">
+                        </div>
+                        <div class="flex justify-end">
                             <button type="submit" class="rounded-md bg-amber-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-amber-500">
                                 Añadir Imagen
                             </button>
                         </div>
                         @error('image') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
+                        @error('author') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
                     </div>
                 </form>
 
@@ -209,6 +213,7 @@
                                         <label class="text-xs text-gray-400 w-12">Orden:</label>
                                         <input type="number" name="sort_order" value="{{ $image->sort_order }}" class="block w-16 rounded-md border-0 bg-gray-900 py-1 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-xs text-center" title="Orden de aparición (menor = primero)">
                                     </div>
+                                    <input type="text" name="author" value="{{ $image->author }}" placeholder="Autor de la foto (opcional)..." class="block w-full rounded-md border-0 bg-gray-900 py-1 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-xs">
                                     <input type="text" name="description" value="{{ $image->description }}" placeholder="Descripción de la imagen..." class="block w-full rounded-md border-0 bg-gray-900 py-1 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-xs">
                                     <button type="submit" class="rounded-md bg-amber-600 px-2 py-1 text-xs font-semibold text-white shadow-sm hover:bg-amber-500 mt-1">
                                         Guardar cambios

@@ -13,6 +13,7 @@ class NewsImage extends Model
         'news_activity_id',
         'file_path',
         'description',
+        'author',
         'sort_order',
     ];
 

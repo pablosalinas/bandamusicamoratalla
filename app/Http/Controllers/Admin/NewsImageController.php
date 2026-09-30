@@ -13,6 +13,7 @@ class NewsImageController extends Controller
     {
         $request->validate([
             'image' => 'required|file|mimes:jpg,jpeg,png,webp,mp4,mov,avi,webm|max:30720',
+            'author' => 'nullable|string|max:255',
         ]);
 
         $file = $request->file('image');
@@ -30,6 +31,7 @@ class NewsImageController extends Controller
 
         $news->newsImages()->create([
             'file_path' => $filename,
+            'author' => $request->input('author'),
             'sort_order' => $maxSort + 1,
         ]);
 
@@ -40,6 +42,7 @@ class NewsImageController extends Controller
     {
         $validated = $request->validate([
             'description' => 'nullable|string|max:255',
+            'author' => 'nullable|string|max:255',
             'sort_order' => 'required|integer',
         ]);
 

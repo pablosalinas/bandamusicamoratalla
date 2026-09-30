@@ -83,8 +83,9 @@
                         <div class="sm:col-span-1">
                             <label for="images" class="block text-sm font-medium leading-6 text-white">Carrusel de Imágenes (Opcional)</label>
                             <p class="text-sm text-gray-400 mb-2">Puedes añadir varias fotos.</p>
-                            <div class="mt-2">
+                            <div class="mt-2 space-y-2">
                                 <input type="file" name="images[]" id="images" multiple accept="image/*" class="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-gray-800 file:text-amber-500 hover:file:bg-gray-700">
+                                <input type="text" name="images_author" placeholder="Autor de las fotos (opcional)" class="block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-xs">
                             </div>
                             @error('images') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
                             @error('images.*') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
@@ -156,9 +157,10 @@
                                 <textarea name="description" rows="2" class="block w-full rounded-md border-0 bg-gray-900 py-1 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-xs" placeholder="Descripción...">{{ $media->description }}</textarea>
                             </div>
 
-                            <div class="mt-2 border-t border-gray-700 pt-2">
-                                <label class="block text-xs text-gray-400 mb-1">Añadir más imágenes al carrusel</label>
+                            <div class="mt-2 border-t border-gray-700 pt-2 space-y-2">
+                                <label class="block text-xs text-gray-400">Añadir más imágenes al carrusel</label>
                                 <input type="file" name="images[]" multiple accept="image/*" class="block w-full text-xs text-gray-400 file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-gray-800 file:text-amber-500 hover:file:bg-gray-700">
+                                <input type="text" name="new_images_author" placeholder="Autor de las nuevas fotos (opcional)" class="block w-full rounded-md border-0 bg-gray-900 py-1 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-amber-500 sm:text-xs">
                             </div>
                             
                             <div class="flex items-center justify-between mt-2 flex-wrap gap-2">
@@ -200,19 +202,27 @@
                         @if($media->images->count() > 0)
                             <div class="mt-4 pt-4 border-t border-gray-700">
                                 <h4 class="text-xs font-semibold text-gray-400 mb-2">Imágenes del Carrusel</h4>
-                                <div class="grid grid-cols-4 gap-2">
+                                <div class="grid grid-cols-2 gap-3">
                                     @foreach($media->images as $image)
-                                        <div class="relative group aspect-square bg-gray-900 rounded overflow-hidden">
-                                            <img src="{{ asset('storage/' . $image->file_path) }}" class="w-full h-full object-cover">
-                                            <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                                <form action="{{ route('admin.media-archive.images.destroy', $image) }}" method="POST" onsubmit="return confirm('¿Eliminar esta imagen?');">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="text-red-500 hover:text-red-400">
-                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                                                    </button>
-                                                </form>
+                                        <div class="bg-gray-900 p-2 rounded border border-gray-700 flex flex-col gap-2">
+                                            <div class="relative group aspect-video bg-black rounded overflow-hidden">
+                                                <img src="{{ asset('storage/' . $image->file_path) }}" class="w-full h-full object-cover">
+                                                <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                    <form action="{{ route('admin.media-archive.images.destroy', $image) }}" method="POST" onsubmit="return confirm('¿Eliminar esta imagen?');">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="text-red-500 hover:text-red-400">
+                                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                                        </button>
+                                                    </form>
+                                                </div>
                                             </div>
+                                            <form action="{{ route('admin.media-archive.images.update', $image) }}" method="POST" class="flex flex-col gap-1">
+                                                @csrf
+                                                @method('PUT')
+                                                <input type="text" name="author" value="{{ $image->author }}" placeholder="Autor de la foto..." class="block w-full rounded border-0 bg-gray-800 py-0.5 px-1.5 text-white text-[11px] ring-1 ring-inset ring-white/10 focus:ring-1 focus:ring-amber-500">
+                                                <button type="submit" class="text-[10px] text-amber-500 hover:text-amber-400 text-right font-medium">Guardar autor</button>
+                                            </form>
                                         </div>
                                     @endforeach
                                 </div>
