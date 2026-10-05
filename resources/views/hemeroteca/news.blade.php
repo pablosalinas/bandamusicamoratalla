@@ -216,9 +216,9 @@
                             },
                             stopAutoplay() {
                                 if (this.timer) { clearTimeout(this.timer); this.timer = null; }
-                                if (this.$el) { this.$el.querySelectorAll('video').forEach(v => { v.onended = null; }); }
+                                if (this.$el) { this.$el.querySelectorAll('video').forEach(v => { v.pause(); v.muted = true; v.onended = null; }); }
                                 let modalContainer = document.getElementById('modal-news-hemeroteca-{{ $item->id }}');
-                                if (modalContainer) { modalContainer.querySelectorAll('video').forEach(v => { v.onended = null; }); }
+                                if (modalContainer) { modalContainer.querySelectorAll('video').forEach(v => { v.pause(); v.muted = true; v.onended = null; }); }
                             },
                             next() {
                                 this.stopAutoplay();

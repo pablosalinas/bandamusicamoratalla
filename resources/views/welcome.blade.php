@@ -214,7 +214,7 @@
 
     <!-- Carrusel Section -->
     @if(isset($carouselMedia) && $carouselMedia->count() > 0)
-    <section id="carrusel" class="w-full bg-gray-950 border-b border-gray-900 relative pt-24 pb-8"
+    <section id="carrusel" class="w-full bg-gray-950 border-b border-gray-900 relative pt-28 sm:pt-32 lg:pt-36 pb-8"
         @resize.window="windowWidth = window.innerWidth; currentIndex = Math.min(currentIndex, maxIndex)"
         x-data="{
             slides: [
@@ -259,6 +259,13 @@
             stopAllVideos() {
                 document.querySelectorAll('.carousel-video').forEach(v => {
                     v.pause();
+                    v.muted = true;
+                    v.currentTime = 0;
+                    v.onended = null;
+                });
+                document.querySelectorAll('[id^="lightbox-video-"]').forEach(v => {
+                    v.pause();
+                    v.muted = true;
                     v.currentTime = 0;
                     v.onended = null;
                 });
@@ -338,6 +345,7 @@
             
             closeLightbox() {
                 this.lightboxOpen = false;
+                this.stopAllVideos();
                 document.body.style.overflow = '';
             }
         }">
@@ -591,12 +599,16 @@
                                        }
                                        if (this.$el) {
                                            this.$el.querySelectorAll('video').forEach(v => {
+                                               v.pause();
+                                               v.muted = true;
                                                v.onended = null;
                                            });
                                        }
                                        let modalContainer = document.getElementById('modal-news-carousel-{{ $item->id }}');
                                        if (modalContainer) {
                                            modalContainer.querySelectorAll('video').forEach(v => {
+                                               v.pause();
+                                               v.muted = true;
                                                v.onended = null;
                                            });
                                        }
@@ -866,10 +878,14 @@
                             }
                             if (this.$el) {
                                 this.$el.querySelectorAll('video').forEach(v => {
+                                    v.pause();
+                                    v.muted = true;
                                     v.onended = null;
                                 });
                             }
                             document.querySelectorAll('.lightbox-media-container video').forEach(v => {
+                                v.pause();
+                                v.muted = true;
                                 v.onended = null;
                             });
                         },
