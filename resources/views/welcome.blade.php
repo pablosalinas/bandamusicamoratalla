@@ -263,7 +263,7 @@
                     v.currentTime = 0;
                     v.onended = null;
                 });
-                document.querySelectorAll('[id^="lightbox-video-"]').forEach(v => {
+                document.querySelectorAll('[id^=\'lightbox-video-\']').forEach(v => {
                     v.pause();
                     v.muted = true;
                     v.currentTime = 0;
