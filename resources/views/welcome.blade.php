@@ -275,18 +275,7 @@
                 this.stopAutoplay();
                 this.$nextTick(() => {
                     let currentSlide = this.slides[this.currentIndex];
-                    if (!currentSlide || currentSlide.type !== 'video' || !this.waitVideosFinish) {
-                        if (currentSlide && currentSlide.type === 'video') {
-                            let videoEl = document.getElementById('carousel-video-' + this.currentIndex);
-                            if (videoEl) {
-                                videoEl.muted = true;
-                                videoEl.currentTime = 0;
-                                let playPromise = videoEl.play();
-                                if (playPromise !== undefined) playPromise.catch(() => {});
-                            }
-                        }
-                        this.scheduleNext();
-                    } else {
+                    if (currentSlide && currentSlide.type === 'video') {
                         let videoEl = document.getElementById('carousel-video-' + this.currentIndex);
                         if (videoEl) {
                             videoEl.muted = true; // Siempre sin sonido en el carrusel principal
@@ -299,6 +288,8 @@
                         } else {
                             this.scheduleNext();
                         }
+                    } else {
+                        this.scheduleNext();
                     }
                 });
             },
@@ -548,20 +539,7 @@
                                            // Si estamos dentro del modal de información detallada de la noticia:
                                            if (this.openNews) {
                                                let modalContainer = document.getElementById('modal-news-carousel-{{ $item->id }}');
-                                               if (!currentSlide || currentSlide.type !== 'video' || !this.waitVideosFinish) {
-                                                   if (currentSlide && currentSlide.type === 'video' && modalContainer) {
-                                                       let videoEl = modalContainer.querySelector('video');
-                                                       if (videoEl) {
-                                                           videoEl.currentTime = 0;
-                                                           let playPromise = videoEl.play();
-                                                           if (playPromise !== undefined) playPromise.catch(() => {});
-                                                       }
-                                                   }
-                                                   this.timer = setTimeout(() => {
-                                                       this.next();
-                                                   }, this.speed);
-                                               } else {
-                                                   // Es un vídeo dentro del modal y la opción esperar a que acabe el vídeo está activa
+                                               if (currentSlide && currentSlide.type === 'video') {
                                                    let videoEl = modalContainer ? modalContainer.querySelector('video') : null;
                                                    if (videoEl) {
                                                        videoEl.currentTime = 0;
@@ -572,23 +550,34 @@
                                                            this.next();
                                                        };
                                                    } else {
-                                                       this.timer = setTimeout(() => {
-                                                           this.next();
-                                                       }, this.speed);
+                                                       this.timer = setTimeout(() => { this.next(); }, this.speed);
                                                    }
+                                               } else {
+                                                   this.timer = setTimeout(() => {
+                                                       this.next();
+                                                   }, this.speed);
                                                }
                                            } else {
-                                               // En la tarjeta de la portada (rotación general): avanzar según la velocidad configurada
-                                               let container = this.$el.querySelector('.card-news-carousel');
-                                               let videoEl = container ? container.querySelector('video') : null;
-                                               if (videoEl) {
-                                                   videoEl.currentTime = 0;
-                                                   let playPromise = videoEl.play();
-                                                   if (playPromise !== undefined) playPromise.catch(() => {});
+                                               // En la tarjeta de la portada: si es vídeo, reproducir y esperar a que acabe; si es foto, temporizador
+                                               if (currentSlide && currentSlide.type === 'video') {
+                                                   let container = this.$el.querySelector('.card-news-carousel');
+                                                   let videoEl = container ? container.querySelector('video') : null;
+                                                   if (videoEl) {
+                                                       videoEl.currentTime = 0;
+                                                       let playPromise = videoEl.play();
+                                                       if (playPromise !== undefined) playPromise.catch(() => {});
+                                                       videoEl.onended = () => {
+                                                           videoEl.onended = null;
+                                                           this.next();
+                                                       };
+                                                   } else {
+                                                       this.timer = setTimeout(() => { this.next(); }, this.speed);
+                                                   }
+                                               } else {
+                                                   this.timer = setTimeout(() => {
+                                                       this.next();
+                                                   }, this.speed);
                                                }
-                                               this.timer = setTimeout(() => {
-                                                   this.next();
-                                               }, this.speed);
                                            }
                                        });
                                    },
@@ -641,7 +630,7 @@
                                              x-transition:leave-end="opacity-0 scale-105"
                                              class="absolute inset-0 w-full h-full">
                                             <template x-if="slide.type === 'video'">
-                                                <video :src="slide.url" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" muted loop autoplay playsinline></video>
+                                                <video :src="slide.url" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" muted autoplay playsinline></video>
                                             </template>
                                             <template x-if="slide.type !== 'video'">
                                                 <img :src="slide.url" :alt="slide.desc || '{{ addslashes($item->title) }}'" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
@@ -839,20 +828,7 @@
 
                             this.$nextTick(() => {
                                 let currentSlide = this.slides[this.activeSlide];
-                                if (!currentSlide || currentSlide.type !== 'video' || !this.waitVideosFinish) {
-                                    if (currentSlide && currentSlide.type === 'video') {
-                                        let container = this.openLightbox ? document.querySelector('.lightbox-media-container') : this.$el.querySelector('.historia-card-carousel');
-                                        let videoEl = container ? container.querySelector('video') : null;
-                                        if (videoEl) {
-                                            videoEl.currentTime = 0;
-                                            let playPromise = videoEl.play();
-                                            if (playPromise !== undefined) playPromise.catch(() => {});
-                                        }
-                                    }
-                                    this.timer = setTimeout(() => {
-                                        this.next();
-                                    }, this.speed);
-                                } else {
+                                if (currentSlide && currentSlide.type === 'video') {
                                     let container = this.openLightbox ? document.querySelector('.lightbox-media-container') : this.$el.querySelector('.historia-card-carousel');
                                     let videoEl = container ? container.querySelector('video') : null;
                                     if (videoEl) {
@@ -868,6 +844,10 @@
                                             this.next();
                                         }, this.speed);
                                     }
+                                } else {
+                                    this.timer = setTimeout(() => {
+                                        this.next();
+                                    }, this.speed);
                                 }
                             });
                         },

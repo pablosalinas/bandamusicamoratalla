@@ -181,17 +181,7 @@
                                     let currentSlide = this.newsSlides[this.activeNewsSlide];
                                     if (this.openNews) {
                                         let modalContainer = document.getElementById('modal-news-hemeroteca-{{ $item->id }}');
-                                        if (!currentSlide || currentSlide.type !== 'video' || !this.waitVideosFinish) {
-                                            if (currentSlide && currentSlide.type === 'video' && modalContainer) {
-                                                let videoEl = modalContainer.querySelector('video');
-                                                if (videoEl) {
-                                                    videoEl.currentTime = 0;
-                                                    let playPromise = videoEl.play();
-                                                    if (playPromise !== undefined) playPromise.catch(() => {});
-                                                }
-                                            }
-                                            this.timer = setTimeout(() => { this.next(); }, this.speed);
-                                        } else {
+                                        if (currentSlide && currentSlide.type === 'video') {
                                             let videoEl = modalContainer ? modalContainer.querySelector('video') : null;
                                             if (videoEl) {
                                                 videoEl.currentTime = 0;
@@ -201,16 +191,24 @@
                                             } else {
                                                 this.timer = setTimeout(() => { this.next(); }, this.speed);
                                             }
+                                        } else {
+                                            this.timer = setTimeout(() => { this.next(); }, this.speed);
                                         }
                                     } else {
-                                        let container = this.$el.querySelector('.card-news-carousel');
-                                        let videoEl = container ? container.querySelector('video') : null;
-                                        if (videoEl) {
-                                            videoEl.currentTime = 0;
-                                            let playPromise = videoEl.play();
-                                            if (playPromise !== undefined) playPromise.catch(() => {});
+                                        if (currentSlide && currentSlide.type === 'video') {
+                                            let container = this.$el.querySelector('.card-news-carousel');
+                                            let videoEl = container ? container.querySelector('video') : null;
+                                            if (videoEl) {
+                                                videoEl.currentTime = 0;
+                                                let playPromise = videoEl.play();
+                                                if (playPromise !== undefined) playPromise.catch(() => {});
+                                                videoEl.onended = () => { videoEl.onended = null; this.next(); };
+                                            } else {
+                                                this.timer = setTimeout(() => { this.next(); }, this.speed);
+                                            }
+                                        } else {
+                                            this.timer = setTimeout(() => { this.next(); }, this.speed);
                                         }
-                                        this.timer = setTimeout(() => { this.next(); }, this.speed);
                                     }
                                 });
                             },
@@ -248,7 +246,7 @@
                                          x-transition:leave-end="opacity-0 scale-105"
                                          class="absolute inset-0 w-full h-full">
                                         <template x-if="slide.type === 'video'">
-                                            <video :src="slide.url" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" muted loop autoplay playsinline></video>
+                                            <video :src="slide.url" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" muted autoplay playsinline></video>
                                         </template>
                                         <template x-if="slide.type !== 'video'">
                                             <img :src="slide.url" :alt="slide.desc || '{{ addslashes($item->title) }}'" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
