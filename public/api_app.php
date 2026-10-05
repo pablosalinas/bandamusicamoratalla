@@ -106,14 +106,15 @@ switch ($action) {
 
     case 'news':
         if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-            // Obtenemos noticias y su primera imagen para la portada
+            // Obtenemos noticias y su primera imagen para la portada junto a su autor
             // Priorizamos la tabla news_images de Laravel, con fallback a media
             $stmt = $pdo->query("
                 SELECT n.id, n.title, n.event_date, n.is_published as is_active_home, n.is_published as is_active_category,
                 COALESCE(
                     (SELECT file_path FROM news_images ni WHERE ni.news_activity_id = n.id ORDER BY ni.sort_order ASC, ni.id ASC LIMIT 1),
                     (SELECT file_path FROM media m WHERE m.news_activity_id = n.id ORDER BY m.sort_order ASC, m.id ASC LIMIT 1)
-                ) as raw_image_path
+                ) as raw_image_path,
+                (SELECT author FROM news_images ni WHERE ni.news_activity_id = n.id ORDER BY ni.sort_order ASC, ni.id ASC LIMIT 1) as image_author
                 FROM news_activities n
                 ORDER BY n.id DESC LIMIT 100
             ");
@@ -141,6 +142,104 @@ switch ($action) {
         }
         break;
 
+    case 'update_main_image':
+    case 'set_main_image':
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $news_id = $_POST['news_id'] ?? 0;
+            $author = trim($_POST['author'] ?? '');
+
+            if (!$news_id) {
+                http_response_code(400);
+                echo json_encode(['error' => 'ID de noticia requerido']);
+                exit;
+            }
+
+            // Subir nuevo archivo para colocarlo como principal (orden 0)
+            if (isset($_FILES['file']) && $_FILES['file']['error'] === UPLOAD_ERR_OK) {
+                $file = $_FILES['file'];
+                $uploadDir = __DIR__ . '/uploads/news/';
+                if (!is_dir($uploadDir)) {
+                    mkdir($uploadDir, 0755, true);
+                }
+
+                $fileExt = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+                $filename = uniqid('app_main_') . '.' . $fileExt;
+                $targetFile = $uploadDir . $filename;
+                $isVid = in_array($fileExt, ['mp4', 'webm', 'ogg', 'mov', 'avi', 'mkv', '3gp']) ? 'video' : 'image';
+
+                if (move_uploaded_file($file['tmp_name'], $targetFile)) {
+                    // Reordenar las imágenes existentes para que esta nueva quede la primera
+                    $pdo->prepare("UPDATE news_images SET sort_order = sort_order + 1 WHERE news_activity_id = ?")->execute([$news_id]);
+
+                    $stmtImg = $pdo->prepare("INSERT INTO news_images (news_activity_id, file_path, description, author, sort_order, created_at, updated_at) VALUES (?, ?, NULL, ?, 0, NOW(), NOW())");
+                    $stmtImg->execute([$news_id, $filename, $author ?: null]);
+                    $newId = $pdo->lastInsertId();
+
+                    // Guardar también en media
+                    try {
+                        $pdo->prepare("UPDATE media SET sort_order = sort_order + 1 WHERE news_activity_id = ?")->execute([$news_id]);
+                        $stmtMedia = $pdo->prepare("INSERT INTO media (news_activity_id, file_path, type, sort_order, created_at, updated_at) VALUES (?, ?, ?, 0, NOW(), NOW())");
+                        $stmtMedia->execute([$news_id, 'uploads/news/' . $filename, $isVid]);
+                    } catch (\Exception $e) {}
+
+                    $dbPath = 'uploads/news/' . $filename;
+                    echo json_encode(['success' => true, 'image_path' => $dbPath, 'image_author' => $author]);
+                    exit;
+                } else {
+                    http_response_code(500);
+                    echo json_encode(['error' => 'Error al guardar la imagen']);
+                    exit;
+                }
+            } else {
+                // Asignar una imagen existente como la principal (sort_order = 0)
+                $media_id = $_POST['media_id'] ?? 0;
+                $image_path = trim($_POST['image_path'] ?? '');
+
+                if ($media_id) {
+                    // Poner esta imagen con el sort_order mínimo
+                    $minSort = (int) $pdo->query("SELECT COALESCE(MIN(sort_order), 0) FROM news_images WHERE news_activity_id = " . (int)$news_id)->fetchColumn();
+                    $newOrder = $minSort <= 0 ? $minSort - 1 : 0;
+                    
+                    if (isset($_POST['author'])) {
+                        $stmt = $pdo->prepare("UPDATE news_images SET sort_order = ?, author = ? WHERE id = ?");
+                        $stmt->execute([$newOrder, $author ?: null, $media_id]);
+                    } else {
+                        $stmt = $pdo->prepare("UPDATE news_images SET sort_order = ? WHERE id = ?");
+                        $stmt->execute([$newOrder, $media_id]);
+                    }
+                    echo json_encode(['success' => true, 'image_author' => $author]);
+                    exit;
+                } elseif ($image_path) {
+                    $baseFile = basename($image_path);
+                    $stmt = $pdo->prepare("SELECT id FROM news_images WHERE news_activity_id = ? AND file_path LIKE ? LIMIT 1");
+                    $stmt->execute([$news_id, '%' . $baseFile]);
+                    $foundId = $stmt->fetchColumn();
+                    if ($foundId) {
+                        $minSort = (int) $pdo->query("SELECT COALESCE(MIN(sort_order), 0) FROM news_images WHERE news_activity_id = " . (int)$news_id)->fetchColumn();
+                        $newOrder = $minSort <= 0 ? $minSort - 1 : 0;
+                        $stmt = $pdo->prepare("UPDATE news_images SET sort_order = ?, author = ? WHERE id = ?");
+                        $stmt->execute([$newOrder, $author ?: null, $foundId]);
+                        echo json_encode(['success' => true, 'image_author' => $author]);
+                        exit;
+                    }
+                } elseif (isset($_POST['author'])) {
+                    // Actualizar el autor de la primera imagen
+                    $stmtFirst = $pdo->prepare("SELECT id FROM news_images WHERE news_activity_id = ? ORDER BY sort_order ASC, id ASC LIMIT 1");
+                    $stmtFirst->execute([$news_id]);
+                    $firstId = $stmtFirst->fetchColumn();
+                    if ($firstId) {
+                        $pdo->prepare("UPDATE news_images SET author = ? WHERE id = ?")->execute([$author ?: null, $firstId]);
+                    }
+                    echo json_encode(['success' => true, 'image_author' => $author]);
+                    exit;
+                }
+                http_response_code(400);
+                echo json_encode(['error' => 'Parámetros no válidos para asignar imagen principal']);
+                exit;
+            }
+        }
+        break;
+
     case 'toggle_news':
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $data = json_decode(file_get_contents("php://input"), true);
@@ -162,14 +261,14 @@ switch ($action) {
         if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             $news_id = $_GET['news_id'] ?? 0;
             
-            // Consultar imágenes de la noticia desde news_images (sistema oficial de Laravel)
-            $stmt = $pdo->prepare("SELECT id, file_path as raw_path, description as caption, sort_order, 'news_images' as source FROM news_images WHERE news_activity_id = ? ORDER BY sort_order ASC, id ASC");
+            // Consultar imágenes de la noticia desde news_images (incluyendo author)
+            $stmt = $pdo->prepare("SELECT id, file_path as raw_path, description as caption, author, sort_order, 'news_images' as source FROM news_images WHERE news_activity_id = ? ORDER BY sort_order ASC, id ASC");
             $stmt->execute([$news_id]);
             $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             // Si no tiene registros en news_images, buscar en tabla media como fallback
             if (empty($rows)) {
-                $stmt = $pdo->prepare("SELECT id, file_path as raw_path, '' as caption, sort_order, type, 'media' as source FROM media WHERE news_activity_id = ? ORDER BY sort_order ASC, id ASC");
+                $stmt = $pdo->prepare("SELECT id, file_path as raw_path, '' as caption, NULL as author, sort_order, type, 'media' as source FROM media WHERE news_activity_id = ? ORDER BY sort_order ASC, id ASC");
                 $stmt->execute([$news_id]);
                 $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
             }
@@ -193,7 +292,8 @@ switch ($action) {
                     'image_path' => $appPath,
                     'is_video' => $isVideo ? 1 : 0,
                     'sort_order' => (int)$r['sort_order'],
-                    'caption' => $r['caption'] ?? ''
+                    'caption' => $r['caption'] ?? '',
+                    'author' => $r['author'] ?? ''
                 ];
             }
 
@@ -201,6 +301,7 @@ switch ($action) {
         } 
         elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $news_id = $_POST['news_id'] ?? 0;
+            $author = trim($_POST['author'] ?? '');
             if (!$news_id || !isset($_FILES['file'])) {
                 http_response_code(400);
                 echo json_encode(['error' => 'Falta el ID de la noticia o el archivo']);
@@ -234,8 +335,8 @@ switch ($action) {
                 $nextOrder = (int) $stmtOrder->fetchColumn();
 
                 // Guardar en news_images (utilizado por el panel y frontend de Laravel)
-                $stmtImg = $pdo->prepare("INSERT INTO news_images (news_activity_id, file_path, description, sort_order, created_at, updated_at) VALUES (?, ?, NULL, ?, NOW(), NOW())");
-                $stmtImg->execute([$news_id, $filename, $nextOrder]);
+                $stmtImg = $pdo->prepare("INSERT INTO news_images (news_activity_id, file_path, description, author, sort_order, created_at, updated_at) VALUES (?, ?, NULL, ?, ?, NOW(), NOW())");
+                $stmtImg->execute([$news_id, $filename, $author ?: null, $nextOrder]);
                 $newId = $pdo->lastInsertId();
 
                 // Guardar también en tabla media para compatibilidad
@@ -252,6 +353,7 @@ switch ($action) {
                     'image_path' => $dbPath,
                     'is_video' => $isVid === 'video' ? 1 : 0,
                     'caption' => null,
+                    'author' => $author ?: null,
                     'sort_order' => $nextOrder
                 ]]);
             } else {
@@ -260,14 +362,23 @@ switch ($action) {
             }
         }
         elseif ($_SERVER['REQUEST_METHOD'] === 'PUT') {
-            // Actualizar pie de foto / descripción
+            // Actualizar pie de foto / descripción y/o autor
             $data = json_decode(file_get_contents("php://input"), true);
             $media_id = $data['id'] ?? 0;
-            $caption = $data['caption'] ?? '';
+            $caption = $data['caption'] ?? null;
+            $author = isset($data['author']) ? trim($data['author']) : null;
             
             if ($media_id) {
-                $stmt = $pdo->prepare("UPDATE news_images SET description = ? WHERE id = ?");
-                $stmt->execute([$caption, $media_id]);
+                if ($author !== null && $caption !== null) {
+                    $stmt = $pdo->prepare("UPDATE news_images SET description = ?, author = ? WHERE id = ?");
+                    $stmt->execute([$caption, $author ?: null, $media_id]);
+                } elseif ($author !== null) {
+                    $stmt = $pdo->prepare("UPDATE news_images SET author = ? WHERE id = ?");
+                    $stmt->execute([$author ?: null, $media_id]);
+                } else {
+                    $stmt = $pdo->prepare("UPDATE news_images SET description = ? WHERE id = ?");
+                    $stmt->execute([$caption ?? '', $media_id]);
+                }
                 echo json_encode(['success' => true]);
             } else {
                 http_response_code(400);
