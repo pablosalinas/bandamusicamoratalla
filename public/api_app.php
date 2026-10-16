@@ -302,6 +302,7 @@ switch ($action) {
         elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $news_id = $_POST['news_id'] ?? 0;
             $author = trim($_POST['author'] ?? '');
+            $caption = trim($_POST['caption'] ?? $_POST['description'] ?? '');
             if (!$news_id || !isset($_FILES['file'])) {
                 http_response_code(400);
                 echo json_encode(['error' => 'Falta el ID de la noticia o el archivo']);
@@ -335,8 +336,8 @@ switch ($action) {
                 $nextOrder = (int) $stmtOrder->fetchColumn();
 
                 // Guardar en news_images (utilizado por el panel y frontend de Laravel)
-                $stmtImg = $pdo->prepare("INSERT INTO news_images (news_activity_id, file_path, description, author, sort_order, created_at, updated_at) VALUES (?, ?, NULL, ?, ?, NOW(), NOW())");
-                $stmtImg->execute([$news_id, $filename, $author ?: null, $nextOrder]);
+                $stmtImg = $pdo->prepare("INSERT INTO news_images (news_activity_id, file_path, description, author, sort_order, created_at, updated_at) VALUES (?, ?, ?, ?, ?, NOW(), NOW())");
+                $stmtImg->execute([$news_id, $filename, $caption ?: null, $author ?: null, $nextOrder]);
                 $newId = $pdo->lastInsertId();
 
                 // Guardar también en tabla media para compatibilidad
@@ -352,7 +353,7 @@ switch ($action) {
                     'id' => (int)$newId,
                     'image_path' => $dbPath,
                     'is_video' => $isVid === 'video' ? 1 : 0,
-                    'caption' => null,
+                    'caption' => $caption ?: null,
                     'author' => $author ?: null,
                     'sort_order' => $nextOrder
                 ]]);
