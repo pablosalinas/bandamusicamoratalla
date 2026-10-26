@@ -210,6 +210,8 @@ Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(
     Route::resource('sheet-music', \App\Http\Controllers\Admin\SheetMusicController::class)->parameters([
         'sheet-music' => 'sheetMusic'
     ]);
+    Route::post('sheet-music/{sheetMusic}/quick-update', [\App\Http\Controllers\Admin\SheetMusicController::class, 'quickUpdate'])->name('sheet-music.quick-update');
+    Route::post('sheet-music/{sheetMusic}', [\App\Http\Controllers\Admin\SheetMusicController::class, 'update'])->name('sheet-music.update-post');
     Route::get('sheet-music/{sheetMusic}/download', [\App\Http\Controllers\Admin\SheetMusicController::class, 'download'])->name('sheet-music.download');
     Route::get('sheet-music/{sheetMusic}/view', [\App\Http\Controllers\Admin\SheetMusicController::class, 'view'])->name('sheet-music.view');
     Route::post('sheet-music/{sheetMusic}/upload-part-ajax', [\App\Http\Controllers\Admin\SheetMusicController::class, 'uploadPartAjax'])->name('sheet-music.upload-part-ajax');

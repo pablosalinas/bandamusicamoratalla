@@ -111,10 +111,31 @@ class SheetMusicController extends Controller
         return view('admin.sheet-music.edit', compact('sheetMusic', 'instruments', 'filesIndexed'));
     }
 
-    public function update(Request $request, SheetMusic $sheetMusic)
+    public function quickUpdate(Request $request, SheetMusic $sheetMusic)
     {
         $request->validate([
             'title' => ['required', 'string', 'max:255'],
+        ]);
+
+        $sheetMusic->update([
+            'title' => $request->title,
+        ]);
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Nombre de la partitura actualizado correctamente.',
+                'title' => $sheetMusic->title,
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Nombre de la partitura actualizado correctamente.');
+    }
+
+    public function update(Request $request, SheetMusic $sheetMusic)
+    {
+        $request->validate([
+            'title' => ['sometimes', 'required', 'string', 'max:255'],
             'composer' => ['nullable', 'string', 'max:255'],
             'arranger' => ['nullable', 'string', 'max:255'],
             'work_type' => ['nullable', 'string', 'max:255'],
@@ -122,8 +143,27 @@ class SheetMusicController extends Controller
             'leave_reason' => ['nullable', 'string', 'max:255'],
         ]);
 
-        $data = $request->only(['title', 'composer', 'arranger', 'work_type', 'leave_reason']);
-        $data['is_active'] = $request->has('is_active');
+        $data = [];
+        if ($request->has('title')) {
+            $data['title'] = $request->title;
+        }
+        if ($request->has('composer')) {
+            $data['composer'] = $request->composer;
+        }
+        if ($request->has('arranger')) {
+            $data['arranger'] = $request->arranger;
+        }
+        if ($request->has('work_type')) {
+            $data['work_type'] = $request->work_type;
+        }
+        if ($request->has('leave_reason')) {
+            $data['leave_reason'] = $request->leave_reason;
+        }
+        if ($request->has('is_active_present')) {
+            $data['is_active'] = $request->has('is_active');
+        } elseif ($request->has('is_active')) {
+            $data['is_active'] = true;
+        }
 
         if ($request->hasFile('pdf_file')) {
             if ($sheetMusic->pdf_file_path && Storage::disk('local')->exists($sheetMusic->pdf_file_path)) {
@@ -132,7 +172,13 @@ class SheetMusicController extends Controller
             $data['pdf_file_path'] = $request->file('pdf_file')->store('sheet-music', 'local');
         }
 
-        $sheetMusic->update($data);
+        if (!empty($data)) {
+            $sheetMusic->update($data);
+        }
+
+        if ($request->has('only_sheet_music_data')) {
+            return redirect()->route('admin.sheet-music.edit', $sheetMusic)->with('success', 'Datos principales de la partitura actualizados correctamente.');
+        }
 
         // Procesar eliminación de archivos
         if ($request->has('delete_files') && is_array($request->delete_files)) {

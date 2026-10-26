@@ -29,12 +29,23 @@
         </div>
     </x-slot>
 
-    <div class="mt-8 max-w-3xl">
-        <form id="sheet-music-form" action="{{ route('admin.sheet-music.update', $sheetMusic) }}" method="POST" enctype="multipart/form-data" class="bg-gray-900 shadow-sm ring-1 ring-gray-800 sm:rounded-xl">
+    <div class="mt-8 max-w-3xl space-y-8">
+        <!-- FORMULARIO 1: DATOS PRINCIPALES DE LA PARTITURA / OBRA (TABLA DE OBRAS) -->
+        <form id="sheet-music-main-form" action="{{ route('admin.sheet-music.update', $sheetMusic) }}" method="POST" enctype="multipart/form-data" class="bg-gray-900 shadow-sm ring-1 ring-gray-800 sm:rounded-xl">
             @csrf
             @method('PUT')
+            <input type="hidden" name="is_active_present" value="1">
+            <input type="hidden" name="only_sheet_music_data" value="1">
             
             <div class="px-4 py-6 sm:p-8">
+                <div class="border-b border-gray-800 pb-4 mb-6">
+                    <h3 class="text-xl font-bold text-white flex items-center gap-2">
+                        <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                        Datos Principales de la Partitura
+                    </h3>
+                    <p class="mt-1 text-xs text-gray-400">Guarda exclusivamente los datos generales de la obra (título, compositor, arreglista, tipo, guión general o estado).</p>
+                </div>
+
                 <div class="grid max-w-2xl grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
                     
                     <div class="sm:col-span-4">
@@ -122,22 +133,49 @@
                         </div>
                     </div>
 
-                    <div class="sm:col-span-6 border-t border-gray-800 pt-6 mt-2">
-                        <label class="block text-xl font-semibold leading-6 text-white mb-4">Archivos por Instrumento y Tipo</label>
-                        <div class="rounded-md bg-blue-900/50 p-4 mb-6 border border-blue-800">
-                            <div class="flex">
-                                <div class="flex-shrink-0">
-                                    <svg class="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
-                                    </svg>
-                                </div>
-                                <div class="ml-3 flex-1 md:flex md:justify-between">
-                                    <p class="text-sm text-blue-300">
-                                        <strong>Consejo:</strong> El sistema mantiene tu sesión activa automáticamente mientras estés en esta página. Sin embargo, si vas a subir muchos archivos, es recomendable <strong>guardar periódicamente</strong> (pulsando Actualizar) para evitar que el tamaño total del envío supere el límite del servidor, lo que causaría un error 419 (Página caducada).
-                                    </p>
-                                </div>
-                            </div>
+                </div>
+            </div>
+            
+            <div class="flex items-center justify-between border-t border-gray-800 px-4 py-4 sm:px-8 bg-gray-900/60 rounded-b-xl">
+                <a href="{{ route('admin.sheet-music.index') }}" class="text-sm font-semibold leading-6 text-gray-400 hover:text-white flex items-center gap-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                    Volver al archivo
+                </a>
+                <button type="submit" class="inline-flex items-center gap-2 rounded-md bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 shadow-md">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    Guardar exclusivamente datos de la partitura
+                </button>
+            </div>
+        </form>
+
+        <!-- FORMULARIO 2: ARCHIVOS Y PARTICELLAS POR INSTRUMENTO -->
+        <form id="sheet-music-parts-form" action="{{ route('admin.sheet-music.update', $sheetMusic) }}" method="POST" enctype="multipart/form-data" class="bg-gray-900 shadow-sm ring-1 ring-gray-800 sm:rounded-xl">
+            @csrf
+            @method('PUT')
+            
+            <div class="px-4 py-6 sm:p-8">
+                <div class="border-b border-gray-800 pb-4 mb-6">
+                    <h3 class="text-xl font-bold text-white flex items-center gap-2">
+                        <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/></svg>
+                        Archivos por Instrumento y Tipo (Particellas)
+                    </h3>
+                    <p class="mt-1 text-xs text-gray-400">Asigna o actualiza las partituras y particellas asociadas a cada instrumento del catálogo.</p>
+                </div>
+
+                <div class="rounded-md bg-blue-900/50 p-4 mb-6 border border-blue-800">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                            </svg>
                         </div>
+                        <div class="ml-3 flex-1 md:flex md:justify-between">
+                            <p class="text-sm text-blue-300">
+                                <strong>Consejo:</strong> Al guardar particellas, solo se enviarán los archivos seleccionados para optimizar la velocidad y evitar errores de límite de subida en el servidor.
+                            </p>
+                        </div>
+                    </div>
+                </div>
 
                         <!-- Smart Assignment Section -->
                         <div class="mb-6 bg-gray-800/80 border border-gray-700 rounded-lg p-5">
@@ -250,18 +288,15 @@
                                 </div>
                             @endforeach
                         </div>
-                    </div>
-
-                </div>
             </div>
             
-            <div class="flex items-center justify-end gap-x-6 border-t border-gray-800 px-4 py-4 sm:px-8">
+            <div class="flex items-center justify-end gap-x-6 border-t border-gray-800 px-4 py-4 sm:px-8 bg-gray-900/60 rounded-b-xl">
                 <button type="button" onclick="if(confirm('¿Estás seguro de que quieres borrar TODOS los archivos y desasignar todos los instrumentos? Esta acción no se puede deshacer.')) document.getElementById('form-delete-all-parts').submit();" class="rounded-md bg-red-600 px-6 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 mr-auto">
                     Vaciar Particellas
                 </button>
                 <a href="{{ route('admin.sheet-music.index') }}" class="text-sm font-semibold leading-6 text-white">Cancelar</a>
-                <button type="submit" class="rounded-md bg-blue-600 px-6 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
-                    Actualizar Partitura
+                <button type="submit" class="rounded-md bg-amber-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-amber-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-600 shadow-md">
+                    Guardar y Actualizar Particellas
                 </button>
             </div>
         </form>
@@ -588,73 +623,84 @@
             });
         }
 
-        const mainForm = document.querySelector('form');
-        const submitBtn = mainForm.querySelector('button[type="submit"]');
-        
-        mainForm.addEventListener('submit', async function(e) {
-            const gridFileRows = document.querySelectorAll('.smart-file-uuid');
-            let uuidsToUpload = [];
-            gridFileRows.forEach(div => {
-                let uuid = div.getAttribute('data-uuid');
-                if (smartGridFilesMap[uuid]) {
-                    uuidsToUpload.push(uuid);
+        const partsForm = document.getElementById('sheet-music-parts-form');
+        if (partsForm) {
+            const submitBtn = partsForm.querySelector('button[type="submit"]');
+            
+            partsForm.addEventListener('submit', async function(e) {
+                const gridFileRows = document.querySelectorAll('.smart-file-uuid');
+                let uuidsToUpload = [];
+                gridFileRows.forEach(div => {
+                    let uuid = div.getAttribute('data-uuid');
+                    if (smartGridFilesMap[uuid]) {
+                        uuidsToUpload.push(uuid);
+                    }
+                });
+                
+                if (uuidsToUpload.length > 0) {
+                    e.preventDefault();
+                    submitBtn.disabled = true;
+                    
+                    const originalText = submitBtn.innerText;
+                    let current = 0;
+                    let total = uuidsToUpload.length;
+                    
+                    for (let uuid of uuidsToUpload) {
+                        current++;
+                        submitBtn.innerText = "Subiendo archivo " + current + " de " + total + " (pausa 1s)...";
+                        
+                        let file = smartGridFilesMap[uuid];
+                        let formData = new FormData();
+                        formData.append('_token', partsForm.querySelector('input[name="_token"]').value);
+                        formData.append('file', file);
+                        
+                        let instInputs = document.querySelectorAll('input[name="smart_grid_instruments[' + uuid + '][]"]');
+                        let typeInputs = document.querySelectorAll('select[name="smart_grid_types[' + uuid + '][]"]');
+                        
+                        let insts = [];
+                        let types = [];
+                        instInputs.forEach(el => insts.push(el.value));
+                        typeInputs.forEach(el => types.push(el.value));
+                        
+                        formData.append('instruments', JSON.stringify(insts));
+                        formData.append('types', JSON.stringify(types));
+                        
+                        try {
+                            let response = await fetch("{{ route('admin.sheet-music.upload-grid-row-ajax', $sheetMusic) }}", {
+                                method: "POST",
+                                body: formData
+                            });
+                            
+                            if (!response.ok) {
+                                console.error("Error subiendo", file.name);
+                            }
+                        } catch(err) {
+                            console.error(err);
+                        }
+                        
+                        delete smartGridFilesMap[uuid];
+                        
+                        if (current < total) {
+                            await new Promise(r => setTimeout(r, 1000));
+                        }
+                    }
+                    
+                    document.getElementById('smart_grid_body').innerHTML = '';
+                }
+
+                // Deshabilitar inputs de archivo vacíos para no exceder max_file_uploads de PHP
+                partsForm.querySelectorAll('input[type="file"]').forEach(input => {
+                    if (!input.files || input.files.length === 0) {
+                        input.disabled = true;
+                    }
+                });
+
+                if (uuidsToUpload.length > 0) {
+                    submitBtn.innerText = "Guardando formulario de particellas...";
+                    partsForm.submit();
                 }
             });
-            
-            if (uuidsToUpload.length > 0) {
-                e.preventDefault();
-                submitBtn.disabled = true;
-                
-                const originalText = submitBtn.innerText;
-                let current = 0;
-                let total = uuidsToUpload.length;
-                
-                for (let uuid of uuidsToUpload) {
-                    current++;
-                    submitBtn.innerText = "Subiendo archivo " + current + " de " + total + " (pausa 1s)...";
-                    
-                    let file = smartGridFilesMap[uuid];
-                    let formData = new FormData();
-                    formData.append('_token', document.querySelector('input[name="_token"]').value);
-                    formData.append('file', file);
-                    
-                    let instInputs = document.querySelectorAll('input[name="smart_grid_instruments[' + uuid + '][]"]');
-                    let typeInputs = document.querySelectorAll('select[name="smart_grid_types[' + uuid + '][]"]');
-                    
-                    let insts = [];
-                    let types = [];
-                    instInputs.forEach(el => insts.push(el.value));
-                    typeInputs.forEach(el => types.push(el.value));
-                    
-                    formData.append('instruments', JSON.stringify(insts));
-                    formData.append('types', JSON.stringify(types));
-                    
-                    try {
-                        let response = await fetch("{{ route('admin.sheet-music.upload-grid-row-ajax', $sheetMusic) }}", {
-                            method: "POST",
-                            body: formData
-                        });
-                        
-                        if (!response.ok) {
-                            console.error("Error subiendo", file.name);
-                        }
-                    } catch(err) {
-                        console.error(err);
-                    }
-                    
-                    delete smartGridFilesMap[uuid];
-                    
-                    if (current < total) {
-                        await new Promise(r => setTimeout(r, 1000));
-                    }
-                }
-                
-                document.getElementById('smart_grid_body').innerHTML = '';
-                
-                submitBtn.innerText = "Guardando formulario principal...";
-                mainForm.submit();
-            }
-        });
+        }
     });
 </script>
 

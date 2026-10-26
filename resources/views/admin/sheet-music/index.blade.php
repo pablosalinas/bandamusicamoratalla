@@ -80,9 +80,47 @@
                         <tbody class="divide-y divide-gray-800 bg-gray-950">
                             @forelse ($sheetMusics as $sheet)
                                 <tr>
-                                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
-                                        <div class="font-medium text-white flex flex-col sm:flex-row sm:items-center gap-2">
-                                            <span>{{ $sheet->title }}</span>
+                                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6" x-data="{ 
+                                        editing: false, 
+                                        title: '{{ addslashes($sheet->title) }}', 
+                                        savedTitle: '{{ addslashes($sheet->title) }}', 
+                                        loading: false, 
+                                        errorMsg: '',
+                                        saveTitle() {
+                                            let trimmed = this.title.trim();
+                                            if (!trimmed) return;
+                                            this.loading = true;
+                                            this.errorMsg = '';
+                                            fetch('{{ route('admin.sheet-music.quick-update', $sheet) }}', {
+                                                method: 'POST',
+                                                headers: {
+                                                    'Content-Type': 'application/json',
+                                                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                                    'Accept': 'application/json'
+                                                },
+                                                body: JSON.stringify({ title: trimmed })
+                                            })
+                                            .then(res => {
+                                                if (!res.ok) throw new Error('Error al actualizar');
+                                                return res.json();
+                                            })
+                                            .then(data => {
+                                                this.loading = false;
+                                                this.savedTitle = trimmed;
+                                                this.editing = false;
+                                            })
+                                            .catch(err => {
+                                                this.loading = false;
+                                                this.errorMsg = 'Error al guardar';
+                                            });
+                                        }
+                                    }">
+                                        <!-- Modo Visualización -->
+                                        <div x-show="!editing" class="font-medium text-white flex flex-col sm:flex-row sm:items-center gap-2">
+                                            <span class="font-semibold text-white" x-text="savedTitle">{{ $sheet->title }}</span>
+                                            <button type="button" @click="editing = true; $nextTick(() => $refs.titleInput.focus())" class="text-gray-400 hover:text-amber-400 transition-colors p-1 rounded hover:bg-gray-800" title="Cambiar nombre de la partitura directamente en la tabla">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                                            </button>
                                             @if($sheet->pdf_file_path)
                                                 <span class="inline-flex items-center rounded-md bg-emerald-500/10 px-2 py-0.5 text-xs font-medium text-emerald-400 ring-1 ring-inset ring-emerald-500/20" title="Guión / Partitura completa subida">
                                                     <svg class="mr-1 h-3 w-3" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
@@ -98,6 +136,19 @@
                                                     Falta Guión
                                                 </span>
                                             @endif
+                                        </div>
+
+                                        <!-- Modo Edición Rápida de Nombre -->
+                                        <div x-show="editing" x-cloak class="flex items-center gap-2">
+                                            <input type="text" x-ref="titleInput" x-model="title" @keydown.enter.prevent="saveTitle()" @keydown.escape="editing = false; title = savedTitle" class="bg-gray-900 text-white text-xs rounded border border-amber-500 px-2.5 py-1.5 focus:ring-amber-500 focus:outline-none w-56 shadow-inner">
+                                            <button type="button" @click="saveTitle()" :disabled="loading" class="inline-flex items-center gap-1 rounded bg-emerald-600 px-2.5 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-emerald-500 disabled:opacity-50">
+                                                <span x-show="!loading">Guardar</span>
+                                                <span x-show="loading" x-cloak>...</span>
+                                            </button>
+                                            <button type="button" @click="editing = false; title = savedTitle" class="text-xs text-gray-400 hover:text-white px-1.5 py-1">
+                                                Cancelar
+                                            </button>
+                                            <span x-show="errorMsg" x-text="errorMsg" class="text-xs text-red-400"></span>
                                         </div>
                                     </td>
                                     <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-400">
