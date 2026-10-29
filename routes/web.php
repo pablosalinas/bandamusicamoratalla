@@ -165,8 +165,19 @@ Route::get('/', function () {
     
     $mediaArchives = \App\Models\MediaArchive::where('is_active', true)->with('images')->orderBy('sort_order')->get();
 
-    return view('welcome', compact('news', 'band_history', 'bandHistoryImages', 'visit_count', 'carouselMedia', 'carouselSpeed', 'newsSpeed', 'historySpeed', 'waitVideosFinish', 'mediaArchives'));
+    $availableYears = \App\Models\NewsActivity::where('is_published', true)
+        ->selectRaw('DISTINCT YEAR(COALESCE(event_date, created_at)) as yr')
+        ->pluck('yr')
+        ->merge(\App\Models\MediaArchive::where('is_active', true)->selectRaw('DISTINCT YEAR(COALESCE(performance_date, created_at)) as yr')->pluck('yr'))
+        ->filter()
+        ->unique()
+        ->sortDesc()
+        ->values();
+
+    return view('welcome', compact('news', 'band_history', 'bandHistoryImages', 'visit_count', 'carouselMedia', 'carouselSpeed', 'newsSpeed', 'historySpeed', 'waitVideosFinish', 'mediaArchives', 'availableYears'));
 });
+
+Route::get('/buscar', [\App\Http\Controllers\SearchController::class, 'index'])->name('search.index');
 
 Route::get('/hemeroteca/noticias', [\App\Http\Controllers\HemerotecaController::class, 'news'])->name('hemeroteca.news');
 Route::get('/hemeroteca/multimedia', [\App\Http\Controllers\HemerotecaController::class, 'media'])->name('hemeroteca.media');

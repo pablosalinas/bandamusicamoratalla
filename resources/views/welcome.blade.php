@@ -106,11 +106,19 @@
                         <span class="text-xs sm:text-sm lg:text-lg font-medium italic tracking-widest mt-0.5 animate-slogan">{{ \App\Models\SiteSetting::getSetting('site_slogan', 'Tu banda') }}</span>
                     </div>
                 </div>
-                <div class="hidden md:flex items-center space-x-7">
+                <div class="hidden md:flex items-center space-x-6">
                     <a href="#inicio" class="text-gray-300 hover:text-white transition-colors font-medium">Inicio</a>
                     <a href="#historia" class="text-gray-300 hover:text-white transition-colors font-medium">Historia</a>
                     <a href="#noticias" class="text-gray-300 hover:text-white transition-colors font-medium">Noticias</a>
                     <a href="#archivo-sonoro" class="text-gray-300 hover:text-white transition-colors font-medium">Archivo Sonoro</a>
+
+                    <!-- Botón Buscador Global y Externo -->
+                    <a href="{{ route('search.index') }}" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider bg-gray-900/90 text-gray-200 border border-gray-700 hover:border-amber-400 hover:text-amber-400 transition-all shadow-sm" title="Buscar en la web o en Internet">
+                        <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                        <span>Buscador</span>
+                    </a>
                     
                     <!-- Hemeroteca Dropdown Destacado -->
                     <div class="relative" x-data="{ open: false }" @click.away="open = false">
@@ -130,9 +138,13 @@
                              x-transition:leave="transition ease-in duration-100"
                              x-transition:leave-start="opacity-100 scale-100"
                              x-transition:leave-end="opacity-0 scale-95"
-                             class="absolute left-0 mt-2 w-56 rounded-xl bg-gray-900/95 backdrop-blur-md border border-amber-500/30 shadow-[0_10px_30px_rgba(0,0,0,0.8)] py-2 z-50" 
+                             class="absolute left-0 mt-2 w-60 rounded-xl bg-gray-900/95 backdrop-blur-md border border-amber-500/30 shadow-[0_10px_30px_rgba(0,0,0,0.8)] py-2 z-50" 
                              style="display: none;">
-                            <div class="px-3 py-1 text-[10px] font-bold text-amber-500/80 uppercase tracking-wider border-b border-gray-800 mb-1">Archivo Histórico</div>
+                            <div class="px-3 py-1 text-[10px] font-bold text-amber-500/80 uppercase tracking-wider border-b border-gray-800 mb-1">Archivo Histórico y Búsqueda</div>
+                            <a href="{{ route('search.index') }}" class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-amber-300 font-semibold hover:bg-amber-500/10 hover:text-amber-400 transition-colors border-b border-gray-800/60">
+                                <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                                <span>Buscador Web e Internet</span>
+                            </a>
                             <a href="{{ route('hemeroteca.news') }}" class="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-200 hover:bg-amber-500/10 hover:text-amber-400 transition-colors">
                                 <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>
                                 <span>Noticias y Eventos</span>
@@ -162,7 +174,10 @@
                     @endauth
                 </div>
                 <!-- Mobile menu button -->
-                <div class="flex items-center md:hidden">
+                <div class="flex items-center gap-2 md:hidden">
+                    <a href="{{ route('search.index') }}" class="p-2 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 hover:bg-amber-500/20" title="Buscador">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    </a>
                     <button @click="mobileMenuOpen = !mobileMenuOpen" type="button" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-800 focus:outline-none transition-colors">
                         <span class="sr-only">Abrir menú</span>
                         <svg x-show="!mobileMenuOpen" class="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -183,6 +198,10 @@
                 <a href="#historia" @click="mobileMenuOpen = false" class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-800">Historia</a>
                 <a href="#noticias" @click="mobileMenuOpen = false" class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-800">Noticias</a>
                 <a href="#archivo-sonoro" @click="mobileMenuOpen = false" class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-800">Archivo Sonoro</a>
+                <a href="{{ route('search.index') }}" class="flex items-center gap-2 px-3 py-2 rounded-md text-base font-bold text-amber-400 hover:bg-gray-800">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    <span>Buscador Web e Internet</span>
+                </a>
                 <div class="pt-2 pb-1 border-t border-gray-800/80 bg-amber-500/5 rounded-xl px-2 my-1">
                     <span class="px-2 text-xs uppercase tracking-wider text-amber-400 font-bold flex items-center gap-1.5 py-1">
                         <svg class="w-3.5 h-3.5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
@@ -484,6 +503,103 @@
         </div>
     </section>
 
+    <!-- Buscador Global de la Web (por defecto) y Externo en Internet -->
+    <section id="buscador" class="pt-6 pb-2 relative bg-gray-950">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" x-data="{ homeScope: 'web', homeCat: 'all', showDates: false }">
+            <div class="glass-panel rounded-2xl p-4 sm:p-5 border border-amber-500/20 shadow-[0_0_25px_rgba(245,158,11,0.08)]">
+                <form method="GET" action="{{ route('search.index') }}" class="space-y-3">
+                    <input type="hidden" name="scope" :value="homeScope">
+                    <input type="hidden" name="category" :value="homeCat">
+
+                    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+                        <!-- Selector: En la web por defecto / En toda Internet -->
+                        <div class="flex flex-wrap items-center gap-2">
+                            <span class="text-xs font-bold uppercase tracking-wider text-amber-400 mr-1 flex items-center gap-1.5">
+                                <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                                <span>Buscador:</span>
+                            </span>
+                            <div class="inline-flex rounded-xl p-1 bg-gray-950 border border-gray-800 gap-1">
+                                <button type="button" @click="homeScope = 'web'"
+                                        :class="homeScope === 'web' ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-black font-extrabold shadow' : 'text-gray-300 hover:text-amber-400'"
+                                        class="px-3 py-1.5 rounded-lg text-xs transition-all flex items-center gap-1.5">
+                                    <span>🏠 En esta Web (Por defecto)</span>
+                                </button>
+                                <button type="button" @click="homeScope = 'internet'"
+                                        :class="homeScope === 'internet' ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-extrabold shadow' : 'text-gray-300 hover:text-blue-400'"
+                                        class="px-3 py-1.5 rounded-lg text-xs transition-all flex items-center gap-1.5">
+                                    <span>🌍 En toda Internet</span>
+                                </button>
+                                <button type="button" @click="homeScope = 'both'"
+                                        :class="homeScope === 'both' ? 'bg-gradient-to-r from-amber-500 to-blue-600 text-white font-extrabold shadow' : 'text-gray-300 hover:text-amber-300'"
+                                        class="px-3 py-1.5 rounded-lg text-xs transition-all hidden sm:flex items-center gap-1.5">
+                                    <span>⚡ Web + Internet</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Categorías de la web -->
+                        <div x-show="homeScope !== 'internet'" class="flex flex-wrap items-center gap-1.5">
+                            @foreach(['all' => 'Todo', 'news' => 'Noticias', 'events' => 'Eventos', 'music' => 'Música', 'photos' => 'Fotos', 'history' => 'Historia'] as $cKey => $cLabel)
+                                <button type="button" @click="homeCat = '{{ $cKey }}'"
+                                        :class="homeCat === '{{ $cKey }}' ? 'bg-amber-500/20 text-amber-300 border-amber-500/60 font-bold' : 'bg-gray-950/70 text-gray-400 border-gray-800 hover:text-gray-200'"
+                                        class="px-2.5 py-1 rounded-lg text-xs border transition-all">
+                                    {{ $cLabel }}
+                                </button>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    <!-- Barra de texto + Botón de filtros de fecha + Botón Buscar -->
+                    <div class="flex flex-col sm:flex-row gap-2.5">
+                        <div class="relative flex-1">
+                            <input type="text" name="q" placeholder="Buscar en noticias, eventos, música, fotos, historia o en Internet..."
+                                   class="w-full rounded-xl bg-gray-950 border border-gray-800 py-2.5 pl-10 pr-4 text-sm text-white placeholder-gray-500 focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
+                            <svg class="w-4 h-4 text-amber-500 absolute left-3.5 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                            </svg>
+                        </div>
+
+                        <button type="button" @click="showDates = !showDates"
+                                class="px-3.5 py-2.5 rounded-xl bg-gray-900 hover:bg-gray-800 border border-gray-700 text-xs font-semibold text-gray-300 hover:text-amber-400 transition-colors flex items-center justify-center gap-1.5 shrink-0">
+                            <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                            <span>Fechas: Todas (Por defecto)</span>
+                            <svg class="w-3.5 h-3.5 transition-transform" :class="{'rotate-180': showDates}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                        </button>
+
+                        <button type="submit"
+                                class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black font-extrabold text-sm transition-all shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2 shrink-0">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                            <span>Buscar</span>
+                        </button>
+                    </div>
+
+                    <!-- Desplegable de Filtros de Fechas (por defecto vacíos = coge todas las fechas) -->
+                    <div x-show="showDates" x-transition style="display: none;" class="pt-3 border-t border-gray-800/80 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div>
+                            <label class="block text-[11px] font-semibold text-gray-400 uppercase mb-1">Año (Por defecto: Todos)</label>
+                            <select name="year" class="w-full rounded-xl bg-gray-950 border border-gray-800 py-2 px-3 text-xs text-white focus:border-amber-500">
+                                <option value="">Todos los años (Coger todo)</option>
+                                @if(isset($availableYears))
+                                    @foreach($availableYears as $yr)
+                                        <option value="{{ $yr }}">{{ $yr }}</option>
+                                    @endforeach
+                                @endif
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-semibold text-gray-400 uppercase mb-1">Desde Fecha (Opcional)</label>
+                            <input type="date" name="from_date" class="w-full rounded-xl bg-gray-950 border border-gray-800 py-2 px-3 text-xs text-white focus:border-amber-500" style="color-scheme: dark;">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-semibold text-gray-400 uppercase mb-1">Hasta Fecha (Opcional)</label>
+                            <input type="date" name="to_date" class="w-full rounded-xl bg-gray-950 border border-gray-800 py-2 px-3 text-xs text-white focus:border-amber-500" style="color-scheme: dark;">
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
     <!-- Noticias Section -->
     <section id="noticias" class="pt-6 pb-8 relative bg-gray-950/50">
         <div class="max-w-7xl mx-auto px-6 lg:px-8">
@@ -493,10 +609,15 @@
                 <p class="mt-2 text-gray-400 max-w-xl mx-auto text-sm">
                     Mantente informado sobre nuestros conciertos, eventos y novedades de la banda.
                 </p>
-                <div class="mt-3">
+                <div class="mt-3 flex flex-wrap items-center justify-center gap-4">
                     <a href="{{ route('hemeroteca.news') }}" class="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-500 hover:text-amber-400 transition-colors uppercase tracking-wider">
                         <span>Ir a la Hemeroteca de Noticias</span>
                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                    </a>
+                    <span class="text-gray-700">•</span>
+                    <a href="{{ route('search.index') }}" class="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-300 hover:text-amber-400 transition-colors uppercase tracking-wider">
+                        <svg class="w-3.5 h-3.5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                        <span>Buscador Avanzado Web / Internet</span>
                     </a>
                 </div>
             </div>

@@ -81,7 +81,7 @@
                     <p class="text-gray-400 mt-1 text-sm sm:text-base">Archivo sonoro y visual: audios, interpretaciones, vídeos y galerías fotográficas de nuestras actuaciones.</p>
                 </div>
                 <!-- Pestañas de Hemeroteca Destacadas -->
-                <div class="inline-flex rounded-xl p-1.5 bg-gray-900/90 border border-amber-500/30 shadow-[0_0_20px_rgba(245,158,11,0.15)] self-start md:self-auto gap-1">
+                <div class="inline-flex flex-wrap rounded-xl p-1.5 bg-gray-900/90 border border-amber-500/30 shadow-[0_0_20px_rgba(245,158,11,0.15)] self-start md:self-auto gap-1">
                     <a href="{{ route('hemeroteca.news') }}" class="px-4 py-2 rounded-lg text-xs font-semibold text-gray-400 hover:text-amber-400 hover:bg-gray-800/80 transition-colors flex items-center gap-1.5">
                         <svg class="w-4 h-4 text-gray-500 hover:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>
                         <span>Noticias y Eventos</span>
@@ -90,6 +90,10 @@
                         <svg class="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/></svg>
                         <span>Multimedia</span>
                     </span>
+                    <a href="{{ route('search.index') }}" class="px-4 py-2 rounded-lg text-xs font-semibold text-amber-300 hover:text-amber-200 hover:bg-amber-500/10 transition-colors flex items-center gap-1.5 border border-amber-500/20">
+                        <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                        <span>Buscador Global / Internet</span>
+                    </a>
                 </div>
             </div>
         </div>

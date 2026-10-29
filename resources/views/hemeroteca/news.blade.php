@@ -81,7 +81,7 @@
                     <p class="text-gray-400 mt-1 text-sm sm:text-base">Archivo cronológico de publicaciones, conciertos y actividades de la banda ordenadas cronológicamente.</p>
                 </div>
                 <!-- Pestañas de Hemeroteca Destacadas -->
-                <div class="inline-flex rounded-xl p-1.5 bg-gray-900/90 border border-amber-500/30 shadow-[0_0_20px_rgba(245,158,11,0.15)] self-start md:self-auto gap-1">
+                <div class="inline-flex flex-wrap rounded-xl p-1.5 bg-gray-900/90 border border-amber-500/30 shadow-[0_0_20px_rgba(245,158,11,0.15)] self-start md:self-auto gap-1">
                     <span class="px-4 py-2 rounded-lg text-xs font-extrabold bg-gradient-to-r from-amber-500 to-amber-600 text-black shadow-md flex items-center gap-1.5">
                         <svg class="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>
                         <span>Noticias y Eventos</span>
@@ -90,56 +90,92 @@
                         <svg class="w-4 h-4 text-gray-500 hover:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/></svg>
                         <span>Multimedia</span>
                     </a>
+                    <a href="{{ route('search.index') }}" class="px-4 py-2 rounded-lg text-xs font-semibold text-amber-300 hover:text-amber-200 hover:bg-amber-500/10 transition-colors flex items-center gap-1.5 border border-amber-500/20">
+                        <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                        <span>Buscador Global / Internet</span>
+                    </a>
                 </div>
             </div>
         </div>
 
         <!-- Filtros y Búsqueda -->
-        <div class="glass-panel p-5 rounded-2xl mb-10 shadow-xl">
-            <form method="GET" action="{{ route('hemeroteca.news') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4 items-end">
-                <!-- Buscador de texto -->
-                <div class="sm:col-span-2 lg:col-span-4">
-                    <label for="q" class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">Búsqueda por Título o Contenido</label>
-                    <div class="relative">
-                        <input type="text" name="q" id="q" value="{{ request('q') }}" placeholder="Ej: concierto de santa cecilia, certamen..." class="w-full rounded-xl bg-gray-950 border border-gray-800 py-2.5 pl-10 pr-4 text-sm text-white placeholder-gray-500 focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
-                        <svg class="w-4 h-4 text-gray-500 absolute left-3.5 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+        <div class="glass-panel p-5 rounded-2xl mb-10 shadow-xl" x-data="{ searchTarget: 'hemeroteca' }">
+            <form method="GET" :action="searchTarget === 'hemeroteca' ? '{{ route('hemeroteca.news') }}' : '{{ route('search.index') }}'" class="space-y-4">
+                <template x-if="searchTarget === 'web_all'">
+                    <input type="hidden" name="scope" value="web">
+                </template>
+                <template x-if="searchTarget === 'internet'">
+                    <input type="hidden" name="scope" value="internet">
+                </template>
+
+                <!-- Selector de Ámbito de Búsqueda -->
+                <div class="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-gray-800/80">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <span class="text-xs font-bold uppercase tracking-wider text-amber-400 mr-1">Ámbito de búsqueda:</span>
+                        <button type="button" @click="searchTarget = 'hemeroteca'"
+                                :class="searchTarget === 'hemeroteca' ? 'bg-amber-500 text-black font-extrabold shadow' : 'bg-gray-900 text-gray-300 hover:text-amber-400 border border-gray-800'"
+                                class="px-3 py-1.5 rounded-lg text-xs transition-all">
+                            📰 Noticias de la Web (Por defecto)
+                        </button>
+                        <button type="button" @click="searchTarget = 'web_all'"
+                                :class="searchTarget === 'web_all' ? 'bg-amber-500 text-black font-extrabold shadow' : 'bg-gray-900 text-gray-300 hover:text-amber-400 border border-gray-800'"
+                                class="px-3 py-1.5 rounded-lg text-xs transition-all">
+                            🏠 Toda la Web (Noticias, Eventos, Música, Fotos, Historia)
+                        </button>
+                        <button type="button" @click="searchTarget = 'internet'"
+                                :class="searchTarget === 'internet' ? 'bg-blue-600 text-white font-extrabold shadow' : 'bg-gray-900 text-gray-300 hover:text-blue-400 border border-gray-800'"
+                                class="px-3 py-1.5 rounded-lg text-xs transition-all">
+                            🌍 En toda Internet (Externo)
+                        </button>
                     </div>
+                    <span class="text-[11px] text-gray-400">Por defecto las fechas están abiertas para mostrarlo todo.</span>
                 </div>
 
-                <!-- Selector de Año -->
-                <div class="lg:col-span-2">
-                    <label for="year" class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">Por Año</label>
-                    <select name="year" id="year" class="w-full rounded-xl bg-gray-950 border border-gray-800 py-2.5 px-3 text-sm text-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
-                        <option value="">Todos los años</option>
-                        @foreach($availableYears as $yr)
-                            <option value="{{ $yr }}" {{ request('year') == $yr ? 'selected' : '' }}>{{ $yr }}</option>
-                        @endforeach
-                    </select>
-                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4 items-end">
+                    <!-- Buscador de texto -->
+                    <div class="sm:col-span-2 lg:col-span-4">
+                        <label for="q" class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">Búsqueda por Título o Contenido</label>
+                        <div class="relative">
+                            <input type="text" name="q" id="q" value="{{ request('q') }}" placeholder="Ej: concierto de santa cecilia, certamen..." class="w-full rounded-xl bg-gray-950 border border-gray-800 py-2.5 pl-10 pr-4 text-sm text-white placeholder-gray-500 focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
+                            <svg class="w-4 h-4 text-gray-500 absolute left-3.5 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        </div>
+                    </div>
 
-                <!-- Fecha Desde -->
-                <div class="lg:col-span-2">
-                    <label for="from_date" class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">Desde Fecha</label>
-                    <input type="date" name="from_date" id="from_date" value="{{ request('from_date') }}" class="w-full rounded-xl bg-gray-950 border border-gray-800 py-2.5 px-3 text-sm text-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500" style="color-scheme: dark;">
-                </div>
+                    <!-- Selector de Año -->
+                    <div class="lg:col-span-2">
+                        <label for="year" class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">Por Año (Todo por defecto)</label>
+                        <select name="year" id="year" class="w-full rounded-xl bg-gray-950 border border-gray-800 py-2.5 px-3 text-sm text-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
+                            <option value="">Todos los años</option>
+                            @foreach($availableYears as $yr)
+                                <option value="{{ $yr }}" {{ request('year') == $yr ? 'selected' : '' }}>{{ $yr }}</option>
+                            @endforeach
+                        </select>
+                    </div>
 
-                <!-- Fecha Hasta -->
-                <div class="lg:col-span-2">
-                    <label for="to_date" class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">Hasta Fecha</label>
-                    <input type="date" name="to_date" id="to_date" value="{{ request('to_date') }}" class="w-full rounded-xl bg-gray-950 border border-gray-800 py-2.5 px-3 text-sm text-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500" style="color-scheme: dark;">
-                </div>
+                    <!-- Fecha Desde -->
+                    <div class="lg:col-span-2">
+                        <label for="from_date" class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">Desde Fecha</label>
+                        <input type="date" name="from_date" id="from_date" value="{{ request('from_date') }}" class="w-full rounded-xl bg-gray-950 border border-gray-800 py-2.5 px-3 text-sm text-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500" style="color-scheme: dark;">
+                    </div>
 
-                <!-- Botones Acción -->
-                <div class="sm:col-span-2 lg:col-span-2 flex gap-2">
-                    <button type="submit" class="flex-1 rounded-xl bg-amber-600 hover:bg-amber-500 py-2.5 px-4 text-sm font-semibold text-white transition-all shadow-md hover:shadow-amber-500/20 flex items-center justify-center gap-1.5">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
-                        <span>Filtrar</span>
-                    </button>
-                    @if(request()->anyFilled(['q', 'year', 'from_date', 'to_date']))
-                        <a href="{{ route('hemeroteca.news') }}" class="rounded-xl bg-gray-800 hover:bg-gray-700 py-2.5 px-3 text-sm font-semibold text-gray-300 transition-colors flex items-center justify-center" title="Limpiar filtros">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                        </a>
-                    @endif
+                    <!-- Fecha Hasta -->
+                    <div class="lg:col-span-2">
+                        <label for="to_date" class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">Hasta Fecha</label>
+                        <input type="date" name="to_date" id="to_date" value="{{ request('to_date') }}" class="w-full rounded-xl bg-gray-950 border border-gray-800 py-2.5 px-3 text-sm text-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500" style="color-scheme: dark;">
+                    </div>
+
+                    <!-- Botones Acción -->
+                    <div class="sm:col-span-2 lg:col-span-2 flex gap-2">
+                        <button type="submit" class="flex-1 rounded-xl bg-amber-600 hover:bg-amber-500 py-2.5 px-4 text-sm font-semibold text-white transition-all shadow-md hover:shadow-amber-500/20 flex items-center justify-center gap-1.5">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                            <span x-text="searchTarget === 'hemeroteca' ? 'Buscar / Filtrar' : 'Ir al Buscador'">Buscar / Filtrar</span>
+                        </button>
+                        @if(request()->anyFilled(['q', 'year', 'from_date', 'to_date']))
+                            <a href="{{ route('hemeroteca.news') }}" class="rounded-xl bg-gray-800 hover:bg-gray-700 py-2.5 px-3 text-sm font-semibold text-gray-300 transition-colors flex items-center justify-center" title="Limpiar filtros">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                            </a>
+                        @endif
+                    </div>
                 </div>
             </form>
         </div>
