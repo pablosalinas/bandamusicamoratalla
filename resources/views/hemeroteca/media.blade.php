@@ -98,61 +98,83 @@
             </div>
         </div>
 
-        <!-- Filtros y Ordenación -->
-        <div class="glass-panel p-5 rounded-2xl mb-10 shadow-xl">
-            <form method="GET" action="{{ route('hemeroteca.media') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4 items-end">
-                <!-- Ordenación Alfabética (Título / Compositor) -->
-                <div class="sm:col-span-2 lg:col-span-3">
-                    <label for="sort" class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">Ordenación</label>
-                    <select name="sort" id="sort" class="w-full rounded-xl bg-gray-950 border border-gray-800 py-2.5 px-3 text-sm text-amber-400 font-semibold focus:border-amber-500 focus:ring-1 focus:ring-amber-500" onchange="this.form.submit()">
-                        <option value="title" {{ request('sort', 'title') == 'title' ? 'selected' : '' }}>🔤 Título (A - Z)</option>
-                        <option value="composer" {{ request('sort') == 'composer' ? 'selected' : '' }}>👤 Compositor (A - Z)</option>
-                        <option value="date_desc" {{ request('sort') == 'date_desc' ? 'selected' : '' }}>📅 Fecha (Más recientes primero)</option>
-                    </select>
-                </div>
+        <!-- Filtros y Búsqueda Amigable en Multimedia -->
+        <div class="glass-panel p-5 sm:p-7 rounded-3xl mb-10 shadow-2xl border-2 border-amber-500/30 bg-gradient-to-b from-gray-900/95 to-gray-950/95">
+            <form method="GET" action="{{ route('hemeroteca.media') }}" class="space-y-5">
+                <!-- Fila Principal: Buscador por Título y Botón -->
+                <div>
+                    <label for="title" class="block text-sm sm:text-base font-bold text-amber-400 mb-2 flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                        <span>Buscar Obra, Audio o Vídeo en la Hemeroteca Multimedia</span>
+                    </label>
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <div class="relative flex-1">
+                            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 sm:pl-5">
+                                <svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                </svg>
+                            </div>
+                            <input type="text" name="title" id="title" value="{{ request('title') }}"
+                                   placeholder="Escribe el título de la obra, pasodoble, marcha o actuación..."
+                                   class="w-full rounded-2xl bg-white text-gray-950 font-semibold placeholder-gray-400 border-2 border-amber-400 py-3.5 sm:py-4 pl-12 sm:pl-14 pr-10 text-base sm:text-lg shadow-[0_0_25px_rgba(245,158,11,0.2)] focus:border-amber-500 focus:outline-none focus:ring-4 focus:ring-amber-500/30 transition-all">
+                        </div>
 
-                <!-- Buscador por Título -->
-                <div class="lg:col-span-3">
-                    <label for="title" class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">Buscar por Título</label>
-                    <div class="relative">
-                        <input type="text" name="title" id="title" value="{{ request('title') }}" placeholder="Título de la obra..." class="w-full rounded-xl bg-gray-950 border border-gray-800 py-2.5 pl-10 pr-4 text-sm text-white placeholder-gray-500 focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
-                        <svg class="w-4 h-4 text-gray-500 absolute left-3.5 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        <button type="submit" class="rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 py-3.5 sm:py-4 px-7 text-base font-extrabold text-black transition-all shadow-xl shadow-amber-500/25 flex items-center justify-center gap-2 shrink-0">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                            <span>Buscar</span>
+                        </button>
                     </div>
                 </div>
 
-                <!-- Buscador por Compositor -->
-                <div class="lg:col-span-2">
-                    <label for="composer" class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">Compositor</label>
-                    <input list="composers_list" type="text" name="composer" id="composer" value="{{ request('composer') }}" placeholder="Ej: Ferrer Ferran..." class="w-full rounded-xl bg-gray-950 border border-gray-800 py-2.5 px-3 text-sm text-white placeholder-gray-500 focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
-                    <datalist id="composers_list">
-                        @foreach($composers as $c)
-                            <option value="{{ $c }}"></option>
-                        @endforeach
-                    </datalist>
-                </div>
+                <!-- Fila Secundaria: Compositor, Año, Ordenación y Enlace a Buscador Global -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4 items-end pt-3 border-t border-gray-800/80">
+                    <!-- Buscador por Compositor -->
+                    <div class="lg:col-span-4">
+                        <label for="composer" class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1.5">Compositor / Autor</label>
+                        <input list="composers_list" type="text" name="composer" id="composer" value="{{ request('composer') }}"
+                               placeholder="Ej: Ferrer Ferran, Cebrián..."
+                               class="w-full rounded-xl bg-white text-gray-950 font-semibold placeholder-gray-400 border-2 border-amber-400/70 py-2.5 px-3.5 text-sm focus:border-amber-500 focus:ring-2 focus:ring-amber-500/30">
+                        <datalist id="composers_list">
+                            @foreach($composers as $c)
+                                <option value="{{ $c }}"></option>
+                            @endforeach
+                        </datalist>
+                    </div>
 
-                <!-- Por Año -->
-                <div class="lg:col-span-2">
-                    <label for="year" class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">Año</label>
-                    <select name="year" id="year" class="w-full rounded-xl bg-gray-950 border border-gray-800 py-2.5 px-3 text-sm text-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
-                        <option value="">Todos los años</option>
-                        @foreach($availableYears as $yr)
-                            <option value="{{ $yr }}" {{ request('year') == $yr ? 'selected' : '' }}>{{ $yr }}</option>
-                        @endforeach
-                    </select>
-                </div>
+                    <!-- Por Año -->
+                    <div class="lg:col-span-3">
+                        <label for="year" class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1.5">Año (Todo por defecto)</label>
+                        <select name="year" id="year" class="w-full rounded-xl bg-gray-950 border-2 border-gray-700 py-2.5 px-3 text-sm text-white font-semibold focus:border-amber-500 focus:ring-1 focus:ring-amber-500" onchange="this.form.submit()">
+                            <option value="">📅 Todos los años</option>
+                            @foreach($availableYears as $yr)
+                                <option value="{{ $yr }}" {{ request('year') == $yr ? 'selected' : '' }}>{{ $yr }}</option>
+                            @endforeach
+                        </select>
+                    </div>
 
-                <!-- Botones Acción -->
-                <div class="sm:col-span-2 lg:col-span-2 flex gap-2">
-                    <button type="submit" class="flex-1 rounded-xl bg-amber-600 hover:bg-amber-500 py-2.5 px-4 text-sm font-semibold text-white transition-all shadow-md hover:shadow-amber-500/20 flex items-center justify-center gap-1.5">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
-                        <span>Filtrar</span>
-                    </button>
-                    @if(request()->anyFilled(['title', 'composer', 'year', 'sort', 'from_date', 'to_date', 'type']))
-                        <a href="{{ route('hemeroteca.media') }}" class="rounded-xl bg-gray-800 hover:bg-gray-700 py-2.5 px-3 text-sm font-semibold text-gray-300 transition-colors flex items-center justify-center" title="Limpiar filtros">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                        </a>
-                    @endif
+                    <!-- Ordenación Alfabética (Título / Compositor) -->
+                    <div class="lg:col-span-3">
+                        <label for="sort" class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1.5">Ordenar por</label>
+                        <select name="sort" id="sort" class="w-full rounded-xl bg-gray-950 border-2 border-gray-700 py-2.5 px-3 text-sm text-amber-400 font-semibold focus:border-amber-500 focus:ring-1 focus:ring-amber-500" onchange="this.form.submit()">
+                            <option value="title" {{ request('sort', 'title') == 'title' ? 'selected' : '' }}>🔤 Título (A - Z)</option>
+                            <option value="composer" {{ request('sort') == 'composer' ? 'selected' : '' }}>👤 Compositor (A - Z)</option>
+                            <option value="date_desc" {{ request('sort') == 'date_desc' ? 'selected' : '' }}>📅 Más recientes primero</option>
+                        </select>
+                    </div>
+
+                    <!-- Limpiar o ir a buscador global -->
+                    <div class="sm:col-span-2 lg:col-span-2 flex gap-2">
+                        @if(request()->anyFilled(['title', 'composer', 'year', 'sort', 'from_date', 'to_date', 'type']))
+                            <a href="{{ route('hemeroteca.media') }}" class="w-full rounded-xl bg-rose-500/10 border border-rose-500/20 hover:bg-rose-500/20 py-2.5 px-3 text-xs font-bold text-rose-400 transition-colors flex items-center justify-center gap-1.5" title="Limpiar filtros">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                <span>Limpiar</span>
+                            </a>
+                        @else
+                            <a href="{{ route('search.index') }}" class="w-full rounded-xl bg-gray-900 border border-amber-500/30 hover:border-amber-400 py-2.5 px-3 text-xs font-bold text-amber-300 transition-colors flex items-center justify-center gap-1.5" title="Buscar en toda la Web o Internet">
+                                <span>🌍 Web / Internet</span>
+                            </a>
+                        @endif
+                    </div>
                 </div>
             </form>
         </div>

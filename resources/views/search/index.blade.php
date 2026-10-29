@@ -38,7 +38,7 @@
                         <a href="{{ url('/') }}" class="text-lg sm:text-xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-600 hover:opacity-90 transition-opacity">
                             {{ $globalBandName }}
                         </a>
-                        <span class="text-xs text-gray-400 font-medium tracking-wide">Buscador Global Web e Internet</span>
+                        <span class="text-xs text-gray-400 font-medium tracking-wide">Hemeroteca Histórica · Buscador</span>
                     </div>
                 </div>
 
@@ -69,183 +69,231 @@
               category: '{{ $category }}',
               datePreset: '{{ $datePreset }}',
               bandContext: {{ $bandContext ? 'true' : 'false' }},
+              showDateFilters: {{ ($year || $fromDate || $toDate || $datePreset !== 'all') ? 'true' : 'false' }},
               openHistoryModal: false,
               photoLightboxOpen: false,
               activePhotoIndex: 0,
               photoList: {{ json_encode($photoResults->values()) }}
           }">
 
-        <!-- Breadcrumb & Header -->
-        <div class="mb-6">
-            <div class="flex items-center gap-2 text-xs text-gray-400 mb-2">
+        <!-- Breadcrumb & Header de la Zona de Hemeroteca -->
+        <div class="mb-8">
+            <div class="flex items-center gap-2 text-xs text-gray-400 mb-3">
                 <a href="{{ url('/') }}" class="hover:text-amber-400 transition-colors">Inicio</a>
+                <span>/</span>
+                <a href="{{ route('hemeroteca.news') }}" class="hover:text-amber-400 transition-colors">Hemeroteca</a>
                 <span>/</span>
                 <span class="text-amber-500 font-medium">Buscador</span>
             </div>
             <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div>
                     <h1 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight flex items-center gap-3">
-                        <svg class="w-8 h-8 text-amber-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                        </svg>
-                        <span>Buscador de la Web e Internet</span>
+                        <span class="p-2.5 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-400 shadow-lg shadow-amber-500/10">
+                            <svg class="w-7 h-7 sm:w-8 sm:h-8 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                            </svg>
+                        </span>
+                        <span>Hemeroteca · Buscador</span>
                     </h1>
-                    <p class="text-gray-400 mt-1 text-sm sm:text-base">
-                        Busca por defecto dentro de toda nuestra web (noticias, eventos, música, fotos, historia) o selecciona buscar externamente en toda Internet. Por defecto se incluyen todas las fechas.
+                    <p class="text-gray-400 mt-1.5 text-sm sm:text-base">
+                        Encuentra noticias, eventos, música, fotos e historia dentro de nuestra web o en toda Internet.
                     </p>
+                </div>
+
+                <!-- Pestañas de Hemeroteca Destacadas -->
+                <div class="inline-flex flex-wrap rounded-xl p-1.5 bg-gray-900/90 border border-amber-500/30 shadow-[0_0_20px_rgba(245,158,11,0.15)] self-start md:self-auto gap-1">
+                    <a href="{{ route('hemeroteca.news') }}" class="px-4 py-2 rounded-lg text-xs font-semibold text-gray-400 hover:text-amber-400 hover:bg-gray-800/80 transition-colors flex items-center gap-1.5">
+                        <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>
+                        <span>Noticias y Eventos</span>
+                    </a>
+                    <a href="{{ route('hemeroteca.media') }}" class="px-4 py-2 rounded-lg text-xs font-semibold text-gray-400 hover:text-amber-400 hover:bg-gray-800/80 transition-colors flex items-center gap-1.5">
+                        <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/></svg>
+                        <span>Multimedia</span>
+                    </a>
+                    <span class="px-4 py-2 rounded-lg text-xs font-extrabold bg-gradient-to-r from-amber-500 to-amber-600 text-black shadow-md flex items-center gap-1.5">
+                        <svg class="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                        <span>Buscador Web / Internet</span>
+                    </span>
                 </div>
             </div>
         </div>
 
-        <!-- Formulario Principal de Búsqueda -->
-        <div class="glass-panel p-5 sm:p-6 rounded-2xl mb-8 shadow-2xl border border-amber-500/20">
-            <form method="GET" action="{{ route('search.index') }}" id="global-search-form" class="space-y-5">
+        <!-- Formulario Principal de Búsqueda (Amigable y de Alta Visibilidad) -->
+        <div class="glass-panel p-5 sm:p-8 rounded-3xl mb-10 shadow-2xl border-2 border-amber-500/30 bg-gradient-to-b from-gray-900/95 to-gray-950/95">
+            <form method="GET" action="{{ route('search.index') }}" id="global-search-form" class="space-y-6">
                 <input type="hidden" name="scope" :value="scope">
                 <input type="hidden" name="category" :value="category">
                 <input type="hidden" name="band_context" :value="bandContext ? '1' : '0'">
 
-                <!-- Fila 1: Selector de Ámbito (Web por defecto vs Toda Internet) -->
-                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-gray-800/80">
-                    <div>
-                        <span class="block text-xs font-bold uppercase tracking-wider text-amber-400 mb-2">1. ¿Dónde quieres buscar?</span>
-                        <div class="inline-flex flex-wrap rounded-xl p-1 bg-gray-950 border border-gray-800 gap-1">
+                <!-- PROTAGONISTA: Campo de Búsqueda Grande y Muy Visible -->
+                <div>
+                    <label for="q" class="block text-sm sm:text-base font-bold text-amber-400 mb-2.5 flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                        <span>¿Qué estás buscando?</span>
+                    </label>
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <div class="relative flex-1">
+                            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 sm:pl-5">
+                                <svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                </svg>
+                            </div>
+                            <input type="text" name="q" id="q" value="{{ $q }}" autofocus
+                                   placeholder="Escribe aquí lo que buscas: Santa Cecilia, pasodoble, concierto, director..."
+                                   class="w-full rounded-2xl bg-white text-gray-950 font-semibold placeholder-gray-400 border-2 border-amber-400 py-4 pl-12 sm:pl-14 pr-12 text-base sm:text-lg shadow-[0_0_25px_rgba(245,158,11,0.2)] focus:border-amber-500 focus:outline-none focus:ring-4 focus:ring-amber-500/30 transition-all">
+                            @if($q !== '')
+                                <a href="{{ route('search.index', ['scope' => $scope, 'category' => $category]) }}"
+                                   class="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-400 hover:text-gray-700 transition-colors"
+                                   title="Borrar texto">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                </a>
+                            @endif
+                        </div>
+
+                        <button type="submit" class="rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 py-4 px-8 text-base sm:text-lg font-extrabold text-black transition-all shadow-xl shadow-amber-500/25 hover:scale-[1.02] active:scale-[0.99] flex items-center justify-center gap-2.5 shrink-0">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                            <span>Buscar ahora</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Opciones Amigables en Tarjetas Claras -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 pt-2 border-t border-gray-800/80">
+                    <!-- 1. ¿Dónde buscar? -->
+                    <div class="lg:col-span-5 bg-gray-900/70 border border-gray-800 rounded-2xl p-4">
+                        <span class="block text-xs font-bold uppercase tracking-wider text-amber-400 mb-2.5">1. ¿Dónde quieres buscar?</span>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
                             <button type="button"
                                     @click="scope = 'web'"
-                                    :class="scope === 'web' ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-black font-extrabold shadow-md' : 'text-gray-300 hover:text-amber-400 hover:bg-gray-900 font-semibold'"
-                                    class="px-4 py-2 rounded-lg text-xs sm:text-sm transition-all flex items-center gap-2">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-                                <span>Dentro de la Web (Por defecto)</span>
+                                    :class="scope === 'web' ? 'bg-amber-500 text-black font-extrabold border-amber-400 shadow-md' : 'bg-gray-950 text-gray-300 border-gray-800 hover:border-amber-500/40 hover:text-amber-300 font-semibold'"
+                                    class="px-3 py-2.5 rounded-xl text-xs sm:text-sm border transition-all flex items-center justify-center gap-1.5 text-center">
+                                <span>🏠 En la Web</span>
                             </button>
 
                             <button type="button"
                                     @click="scope = 'internet'"
-                                    :class="scope === 'internet' ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-extrabold shadow-md' : 'text-gray-300 hover:text-blue-400 hover:bg-gray-900 font-semibold'"
-                                    class="px-4 py-2 rounded-lg text-xs sm:text-sm transition-all flex items-center gap-2">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
-                                <span>En toda Internet (Externo)</span>
+                                    :class="scope === 'internet' ? 'bg-blue-600 text-white font-extrabold border-blue-400 shadow-md' : 'bg-gray-950 text-gray-300 border-gray-800 hover:border-blue-500/40 hover:text-blue-300 font-semibold'"
+                                    class="px-3 py-2.5 rounded-xl text-xs sm:text-sm border transition-all flex items-center justify-center gap-1.5 text-center">
+                                <span>🌍 En Internet</span>
                             </button>
 
                             <button type="button"
                                     @click="scope = 'both'"
-                                    :class="scope === 'both' ? 'bg-gradient-to-r from-amber-500 via-amber-600 to-blue-600 text-white font-extrabold shadow-md' : 'text-gray-300 hover:text-amber-300 hover:bg-gray-900 font-semibold'"
-                                    class="px-4 py-2 rounded-lg text-xs sm:text-sm transition-all flex items-center gap-2">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                                <span>Web + Toda Internet</span>
+                                    :class="scope === 'both' ? 'bg-gradient-to-r from-amber-500 to-blue-600 text-white font-extrabold border-amber-400 shadow-md' : 'bg-gray-950 text-gray-300 border-gray-800 hover:border-amber-500/40 hover:text-amber-300 font-semibold'"
+                                    class="px-3 py-2.5 rounded-xl text-xs sm:text-sm border transition-all flex items-center justify-center gap-1.5 text-center">
+                                <span>⚡ En Ambos</span>
                             </button>
+                        </div>
+
+                        <!-- Opción contextual cuando se busca en Internet -->
+                        <div x-show="scope === 'internet' || scope === 'both'" x-transition class="mt-3 pt-3 border-t border-gray-800 flex items-start gap-2.5">
+                            <input type="checkbox" id="band_context_toggle" x-model="bandContext" class="mt-0.5 rounded bg-gray-900 border-gray-600 text-amber-500 focus:ring-amber-500 w-4 h-4 cursor-pointer">
+                            <label for="band_context_toggle" class="text-xs text-gray-300 cursor-pointer select-none leading-snug">
+                                <span class="font-bold text-blue-300">Relacionado con "{{ $globalBandName }}"</span>
+                                <span class="block text-[11px] text-gray-400">Desmárcalo para buscar cualquier tema libre en Internet.</span>
+                            </label>
                         </div>
                     </div>
 
-                    <!-- Opción contextual cuando se busca en Internet -->
-                    <div x-show="scope === 'internet' || scope === 'both'" x-transition class="bg-blue-950/30 border border-blue-500/30 rounded-xl px-4 py-2.5 flex items-center gap-3">
-                        <input type="checkbox" id="band_context_toggle" x-model="bandContext" class="rounded bg-gray-900 border-gray-700 text-amber-500 focus:ring-amber-500 w-4 h-4">
-                        <label for="band_context_toggle" class="text-xs text-gray-200 cursor-pointer select-none">
-                            <span class="font-bold text-blue-300">Vincular a "{{ $globalBandName }}"</span>
-                            <span class="block text-[11px] text-gray-400">Desmarca esta casilla si deseas buscar cualquier término libremente en toda Internet.</span>
-                        </label>
-                    </div>
-                </div>
-
-                <!-- Fila 2: Categorías dentro de la Web -->
-                <div x-show="scope === 'web' || scope === 'both'" x-transition class="pb-4 border-b border-gray-800/80">
-                    <span class="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-2">2. Secciones de la Web a incluir</span>
-                    <div class="flex flex-wrap gap-2">
-                        @php
-                            $categoriesList = [
-                                'all' => ['label' => 'Todo en la Web', 'icon' => 'M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z'],
-                                'news' => ['label' => 'Noticias', 'icon' => 'M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z'],
-                                'events' => ['label' => 'Eventos y Conciertos', 'icon' => 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z'],
-                                'music' => ['label' => 'Música y Audios/Vídeos', 'icon' => 'M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3'],
-                                'photos' => ['label' => 'Fotos y Galería', 'icon' => 'M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z'],
-                                'history' => ['label' => 'Historia', 'icon' => 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253'],
-                            ];
-                        @endphp
-                        @foreach($categoriesList as $catKey => $catInfo)
-                            <button type="button"
-                                    @click="category = '{{ $catKey }}'"
-                                    :class="category === '{{ $catKey }}' ? 'bg-amber-500/20 text-amber-300 border-amber-500 shadow-[0_0_12px_rgba(245,158,11,0.2)]' : 'bg-gray-950/80 text-gray-400 border-gray-800 hover:border-gray-700 hover:text-gray-200'"
-                                    class="px-3.5 py-2 rounded-xl text-xs font-bold border transition-all flex items-center gap-2">
-                                <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $catInfo['icon'] }}"/>
-                                </svg>
-                                <span>{{ $catInfo['label'] }}</span>
-                            </button>
-                        @endforeach
-                    </div>
-                </div>
-
-                <!-- Fila 3: Cuadro de texto y Filtros de Fechas (Por defecto lo cogen todo) -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4 items-end">
-                    <!-- Campo de búsqueda -->
-                    <div class="sm:col-span-2 lg:col-span-4">
-                        <label for="q" class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">
-                            Término de Búsqueda
-                        </label>
-                        <div class="relative">
-                            <input type="text" name="q" id="q" value="{{ $q }}"
-                                   placeholder="Ej: Santa Cecilia, pasodoble, certamen, director..."
-                                   class="w-full rounded-xl bg-gray-950 border border-gray-800 py-2.5 pl-10 pr-4 text-sm text-white placeholder-gray-500 focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
-                            <svg class="w-4 h-4 text-amber-500 absolute left-3.5 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                            </svg>
-                        </div>
-                    </div>
-
-                    <!-- Periodo de fechas (por defecto: Todas las fechas) -->
-                    <div class="lg:col-span-2">
-                        <label for="date_preset" class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">
-                            Periodo
-                        </label>
-                        <select name="date_preset" id="date_preset" x-model="datePreset"
-                                @change="if(datePreset === 'all') { document.getElementById('from_date').value = ''; document.getElementById('to_date').value = ''; document.getElementById('year').value = ''; }"
-                                class="w-full rounded-xl bg-gray-950 border border-gray-800 py-2.5 px-3 text-sm text-amber-400 font-semibold focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
-                            <option value="all">📅 Todas las fechas (Todo)</option>
-                            <option value="week">Última semana</option>
-                            <option value="month">Último mes</option>
-                            <option value="year">Último año</option>
-                            <option value="custom">Rango personalizado</option>
-                        </select>
-                    </div>
-
-                    <!-- Por Año -->
-                    <div class="lg:col-span-1">
-                        <label for="year" class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">Año</label>
-                        <select name="year" id="year"
-                                @change="if($el.value !== '') datePreset = 'custom'"
-                                class="w-full rounded-xl bg-gray-950 border border-gray-800 py-2.5 px-2.5 text-sm text-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
-                            <option value="">Todos</option>
-                            @foreach($availableYears as $yr)
-                                <option value="{{ $yr }}" {{ (string)$year === (string)$yr ? 'selected' : '' }}>{{ $yr }}</option>
+                    <!-- 2. ¿En qué apartado de la web? -->
+                    <div class="lg:col-span-7 bg-gray-900/70 border border-gray-800 rounded-2xl p-4" x-show="scope === 'web' || scope === 'both'" x-transition>
+                        <span class="block text-xs font-bold uppercase tracking-wider text-amber-400 mb-2.5">2. ¿Qué apartado de la web quieres ver?</span>
+                        <div class="flex flex-wrap gap-2">
+                            @php
+                                $categoriesList = [
+                                    'all' => ['label' => '✨ Todo', 'desc' => 'Todas las secciones'],
+                                    'news' => ['label' => '📰 Noticias', 'desc' => 'Publicaciones'],
+                                    'events' => ['label' => '🎫 Eventos', 'desc' => 'Conciertos y actos'],
+                                    'music' => ['label' => '🎵 Música', 'desc' => 'Audios y vídeos'],
+                                    'photos' => ['label' => '📸 Fotos', 'desc' => 'Galerías'],
+                                    'history' => ['label' => '📜 Historia', 'desc' => 'Historia de la banda'],
+                                ];
+                            @endphp
+                            @foreach($categoriesList as $catKey => $catInfo)
+                                <button type="button"
+                                        @click="category = '{{ $catKey }}'"
+                                        :class="category === '{{ $catKey }}' ? 'bg-amber-500 text-black font-extrabold border-amber-400 shadow-md' : 'bg-gray-950 text-gray-300 border-gray-800 hover:border-gray-700 hover:text-white font-semibold'"
+                                        class="px-3.5 py-2 rounded-xl text-xs sm:text-sm border transition-all flex items-center gap-1.5">
+                                    <span>{{ $catInfo['label'] }}</span>
+                                </button>
                             @endforeach
-                        </select>
+                        </div>
                     </div>
+                </div>
 
-                    <!-- Fecha Desde -->
-                    <div class="lg:col-span-2">
-                        <label for="from_date" class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">Desde Fecha</label>
-                        <input type="date" name="from_date" id="from_date" value="{{ $fromDate }}"
-                               @change="if($el.value !== '') datePreset = 'custom'"
-                               class="w-full rounded-xl bg-gray-950 border border-gray-800 py-2.5 px-3 text-sm text-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500" style="color-scheme: dark;">
-                    </div>
+                <!-- 3. Filtro de Fechas (Amigable y por defecto lo coge todo) -->
+                <div class="bg-gray-900/70 border border-gray-800 rounded-2xl p-4">
+                    <div class="flex flex-wrap items-center justify-between gap-3">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <span class="text-xs font-bold uppercase tracking-wider text-amber-400 mr-1">3. Fechas:</span>
 
-                    <!-- Fecha Hasta -->
-                    <div class="lg:col-span-2">
-                        <label for="to_date" class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">Hasta Fecha</label>
-                        <input type="date" name="to_date" id="to_date" value="{{ $toDate }}"
-                               @change="if($el.value !== '') datePreset = 'custom'"
-                               class="w-full rounded-xl bg-gray-950 border border-gray-800 py-2.5 px-3 text-sm text-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500" style="color-scheme: dark;">
-                    </div>
+                            <button type="button"
+                                    @click="datePreset = 'all'; showDateFilters = false; document.getElementById('from_date').value = ''; document.getElementById('to_date').value = ''; document.getElementById('year').value = '';"
+                                    :class="datePreset === 'all' && !showDateFilters ? 'bg-emerald-500 text-black font-extrabold border-emerald-400 shadow' : 'bg-gray-950 text-gray-300 border-gray-800 hover:text-white'"
+                                    class="px-3.5 py-1.5 rounded-xl text-xs sm:text-sm border transition-all flex items-center gap-1.5">
+                                <span>📅 Todas las fechas (Por defecto)</span>
+                            </button>
 
-                    <!-- Botones Acción -->
-                    <div class="sm:col-span-2 lg:col-span-1 flex gap-2">
-                        <button type="submit" class="flex-1 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 py-2.5 px-4 text-sm font-extrabold text-black transition-all shadow-lg shadow-amber-500/20 flex items-center justify-center gap-1.5">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                            <span class="lg:hidden">Buscar</span>
-                        </button>
+                            <button type="button"
+                                    @click="datePreset = 'month'; showDateFilters = false; document.getElementById('from_date').value = ''; document.getElementById('to_date').value = ''; document.getElementById('year').value = '';"
+                                    :class="datePreset === 'month' ? 'bg-amber-500 text-black font-extrabold border-amber-400 shadow' : 'bg-gray-950 text-gray-300 border-gray-800 hover:text-white'"
+                                    class="px-3 py-1.5 rounded-xl text-xs sm:text-sm border transition-all">
+                                Último mes
+                            </button>
+
+                            <button type="button"
+                                    @click="datePreset = 'year'; showDateFilters = false; document.getElementById('from_date').value = ''; document.getElementById('to_date').value = ''; document.getElementById('year').value = '';"
+                                    :class="datePreset === 'year' ? 'bg-amber-500 text-black font-extrabold border-amber-400 shadow' : 'bg-gray-950 text-gray-300 border-gray-800 hover:text-white'"
+                                    class="px-3 py-1.5 rounded-xl text-xs sm:text-sm border transition-all">
+                                Último año
+                            </button>
+
+                            <button type="button"
+                                    @click="showDateFilters = !showDateFilters"
+                                    :class="showDateFilters ? 'bg-amber-500/20 text-amber-300 border-amber-500/50 font-bold' : 'bg-gray-950 text-gray-300 border-gray-800 hover:text-amber-400'"
+                                    class="px-3.5 py-1.5 rounded-xl text-xs sm:text-sm border transition-all flex items-center gap-1.5">
+                                <span>🔍 Filtrar por Año o Fechas concretas</span>
+                                <svg class="w-3.5 h-3.5 transition-transform" :class="{ 'rotate-180': showDateFilters }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                            </button>
+                        </div>
+
                         @if($q !== '' || $scope !== 'web' || $category !== 'all' || $year || $fromDate || $toDate || $datePreset !== 'all')
-                            <a href="{{ route('search.index') }}" class="rounded-xl bg-gray-800 hover:bg-gray-700 py-2.5 px-3 text-sm font-semibold text-gray-300 transition-colors flex items-center justify-center" title="Restablecer todo por defecto">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                            <a href="{{ route('search.index') }}" class="inline-flex items-center gap-1.5 text-xs font-bold text-rose-400 hover:text-rose-300 bg-rose-500/10 border border-rose-500/20 px-3 py-1.5 rounded-xl transition-colors">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                <span>Limpiar búsqueda</span>
                             </a>
                         @endif
+                    </div>
+
+                    <input type="hidden" name="date_preset" :value="datePreset">
+
+                    <!-- Desplegable suave para Año / Desde / Hasta -->
+                    <div x-show="showDateFilters" x-transition class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4 pt-4 border-t border-gray-800">
+                        <div>
+                            <label for="year" class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1.5">Año concreto</label>
+                            <select name="year" id="year"
+                                    @change="if($el.value !== '') datePreset = 'custom'"
+                                    class="w-full rounded-xl bg-gray-950 border-2 border-gray-700 py-2.5 px-3 text-sm text-white font-semibold focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
+                                <option value="">Todos los años</option>
+                                @foreach($availableYears as $yr)
+                                    <option value="{{ $yr }}" {{ (string)$year === (string)$yr ? 'selected' : '' }}>{{ $yr }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="from_date" class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1.5">Desde la fecha</label>
+                            <input type="date" name="from_date" id="from_date" value="{{ $fromDate }}"
+                                   @change="if($el.value !== '') datePreset = 'custom'"
+                                   class="w-full rounded-xl bg-gray-950 border-2 border-gray-700 py-2.5 px-3 text-sm text-white font-semibold focus:border-amber-500 focus:ring-1 focus:ring-amber-500" style="color-scheme: dark;">
+                        </div>
+
+                        <div>
+                            <label for="to_date" class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1.5">Hasta la fecha</label>
+                            <input type="date" name="to_date" id="to_date" value="{{ $toDate }}"
+                                   @change="if($el.value !== '') datePreset = 'custom'"
+                                   class="w-full rounded-xl bg-gray-950 border-2 border-gray-700 py-2.5 px-3 text-sm text-white font-semibold focus:border-amber-500 focus:ring-1 focus:ring-amber-500" style="color-scheme: dark;">
+                        </div>
                     </div>
                 </div>
             </form>

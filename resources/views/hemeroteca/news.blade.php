@@ -98,9 +98,13 @@
             </div>
         </div>
 
-        <!-- Filtros y Búsqueda -->
-        <div class="glass-panel p-5 rounded-2xl mb-10 shadow-xl" x-data="{ searchTarget: 'hemeroteca' }">
-            <form method="GET" :action="searchTarget === 'hemeroteca' ? '{{ route('hemeroteca.news') }}' : '{{ route('search.index') }}'" class="space-y-4">
+        <!-- Filtros y Búsqueda Amigable en Hemeroteca -->
+        <div class="glass-panel p-5 sm:p-7 rounded-3xl mb-10 shadow-2xl border-2 border-amber-500/30 bg-gradient-to-b from-gray-900/95 to-gray-950/95"
+             x-data="{
+                 searchTarget: 'hemeroteca',
+                 showDateFilters: {{ request()->anyFilled(['year', 'from_date', 'to_date']) ? 'true' : 'false' }}
+             }">
+            <form method="GET" :action="searchTarget === 'hemeroteca' ? '{{ route('hemeroteca.news') }}' : '{{ route('search.index') }}'" class="space-y-5">
                 <template x-if="searchTarget === 'web_all'">
                     <input type="hidden" name="scope" value="web">
                 </template>
@@ -108,43 +112,75 @@
                     <input type="hidden" name="scope" value="internet">
                 </template>
 
-                <!-- Selector de Ámbito de Búsqueda -->
-                <div class="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-gray-800/80">
-                    <div class="flex flex-wrap items-center gap-2">
-                        <span class="text-xs font-bold uppercase tracking-wider text-amber-400 mr-1">Ámbito de búsqueda:</span>
-                        <button type="button" @click="searchTarget = 'hemeroteca'"
-                                :class="searchTarget === 'hemeroteca' ? 'bg-amber-500 text-black font-extrabold shadow' : 'bg-gray-900 text-gray-300 hover:text-amber-400 border border-gray-800'"
-                                class="px-3 py-1.5 rounded-lg text-xs transition-all">
-                            📰 Noticias de la Web (Por defecto)
-                        </button>
-                        <button type="button" @click="searchTarget = 'web_all'"
-                                :class="searchTarget === 'web_all' ? 'bg-amber-500 text-black font-extrabold shadow' : 'bg-gray-900 text-gray-300 hover:text-amber-400 border border-gray-800'"
-                                class="px-3 py-1.5 rounded-lg text-xs transition-all">
-                            🏠 Toda la Web (Noticias, Eventos, Música, Fotos, Historia)
-                        </button>
-                        <button type="button" @click="searchTarget = 'internet'"
-                                :class="searchTarget === 'internet' ? 'bg-blue-600 text-white font-extrabold shadow' : 'bg-gray-900 text-gray-300 hover:text-blue-400 border border-gray-800'"
-                                class="px-3 py-1.5 rounded-lg text-xs transition-all">
-                            🌍 En toda Internet (Externo)
+                <!-- PROTAGONISTA: Campo de búsqueda grande y muy visible -->
+                <div>
+                    <label for="q" class="block text-sm sm:text-base font-bold text-amber-400 mb-2 flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                        <span>Buscador de la Hemeroteca, Web e Internet</span>
+                    </label>
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <div class="relative flex-1">
+                            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 sm:pl-5">
+                                <svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                </svg>
+                            </div>
+                            <input type="text" name="q" id="q" value="{{ request('q') }}"
+                                   placeholder="Escribe aquí qué buscas: concierto de Santa Cecilia, pasodoble, certamen..."
+                                   class="w-full rounded-2xl bg-white text-gray-950 font-semibold placeholder-gray-400 border-2 border-amber-400 py-3.5 sm:py-4 pl-12 sm:pl-14 pr-10 text-base sm:text-lg shadow-[0_0_25px_rgba(245,158,11,0.2)] focus:border-amber-500 focus:outline-none focus:ring-4 focus:ring-amber-500/30 transition-all">
+                        </div>
+
+                        <button type="submit" class="rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 py-3.5 sm:py-4 px-7 text-base font-extrabold text-black transition-all shadow-xl shadow-amber-500/25 flex items-center justify-center gap-2 shrink-0">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                            <span>Buscar</span>
                         </button>
                     </div>
-                    <span class="text-[11px] text-gray-400">Por defecto las fechas están abiertas para mostrarlo todo.</span>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4 items-end">
-                    <!-- Buscador de texto -->
-                    <div class="sm:col-span-2 lg:col-span-4">
-                        <label for="q" class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">Búsqueda por Título o Contenido</label>
-                        <div class="relative">
-                            <input type="text" name="q" id="q" value="{{ request('q') }}" placeholder="Ej: concierto de santa cecilia, certamen..." class="w-full rounded-xl bg-gray-950 border border-gray-800 py-2.5 pl-10 pr-4 text-sm text-white placeholder-gray-500 focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
-                            <svg class="w-4 h-4 text-gray-500 absolute left-3.5 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                        </div>
+                <!-- Selector amigable de dónde buscar y filtros de fecha -->
+                <div class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-gray-800/80">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <span class="text-xs font-bold uppercase tracking-wider text-amber-400 mr-1">¿Dónde buscar?</span>
+                        <button type="button" @click="searchTarget = 'hemeroteca'"
+                                :class="searchTarget === 'hemeroteca' ? 'bg-amber-500 text-black font-extrabold border-amber-400 shadow' : 'bg-gray-950 text-gray-300 hover:text-amber-400 border-gray-800'"
+                                class="px-3.5 py-2 rounded-xl text-xs sm:text-sm border transition-all">
+                            📰 Noticias (Por defecto)
+                        </button>
+                        <button type="button" @click="searchTarget = 'web_all'"
+                                :class="searchTarget === 'web_all' ? 'bg-amber-500 text-black font-extrabold border-amber-400 shadow' : 'bg-gray-950 text-gray-300 hover:text-amber-400 border-gray-800'"
+                                class="px-3.5 py-2 rounded-xl text-xs sm:text-sm border transition-all">
+                            🏠 Toda la Web (Eventos, Música, Fotos, Historia)
+                        </button>
+                        <button type="button" @click="searchTarget = 'internet'"
+                                :class="searchTarget === 'internet' ? 'bg-blue-600 text-white font-extrabold border-blue-400 shadow' : 'bg-gray-950 text-gray-300 hover:text-blue-400 border-gray-800'"
+                                class="px-3.5 py-2 rounded-xl text-xs sm:text-sm border transition-all">
+                            🌍 En toda Internet
+                        </button>
                     </div>
 
-                    <!-- Selector de Año -->
-                    <div class="lg:col-span-2">
-                        <label for="year" class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">Por Año (Todo por defecto)</label>
-                        <select name="year" id="year" class="w-full rounded-xl bg-gray-950 border border-gray-800 py-2.5 px-3 text-sm text-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button type="button"
+                                @click="showDateFilters = !showDateFilters"
+                                :class="showDateFilters ? 'bg-amber-500/20 text-amber-300 border-amber-500/50 font-bold' : 'bg-gray-950 text-gray-300 border-gray-800 hover:text-amber-400'"
+                                class="px-3.5 py-2 rounded-xl text-xs sm:text-sm border transition-all flex items-center gap-1.5">
+                            <span>📅 Fechas: {{ request()->anyFilled(['year', 'from_date', 'to_date']) ? 'Filtro activo' : 'Todas (Por defecto)' }}</span>
+                            <svg class="w-3.5 h-3.5 transition-transform" :class="{ 'rotate-180': showDateFilters }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                        </button>
+
+                        @if(request()->anyFilled(['q', 'year', 'from_date', 'to_date']))
+                            <a href="{{ route('hemeroteca.news') }}" class="rounded-xl bg-rose-500/10 border border-rose-500/20 hover:bg-rose-500/20 py-2 px-3 text-xs font-bold text-rose-400 transition-colors flex items-center gap-1" title="Limpiar filtros">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                <span>Limpiar</span>
+                            </a>
+                        @endif
+                    </div>
+                </div>
+
+                <!-- Filtros de Fecha Desplegables (Por defecto lo cogen todo) -->
+                <div x-show="showDateFilters" x-transition class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-3 border-t border-gray-800/80">
+                    <div>
+                        <label for="year" class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1.5">Año (Todo por defecto)</label>
+                        <select name="year" id="year" class="w-full rounded-xl bg-gray-950 border-2 border-gray-700 py-2.5 px-3 text-sm text-white font-semibold focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
                             <option value="">Todos los años</option>
                             @foreach($availableYears as $yr)
                                 <option value="{{ $yr }}" {{ request('year') == $yr ? 'selected' : '' }}>{{ $yr }}</option>
@@ -152,29 +188,14 @@
                         </select>
                     </div>
 
-                    <!-- Fecha Desde -->
-                    <div class="lg:col-span-2">
-                        <label for="from_date" class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">Desde Fecha</label>
-                        <input type="date" name="from_date" id="from_date" value="{{ request('from_date') }}" class="w-full rounded-xl bg-gray-950 border border-gray-800 py-2.5 px-3 text-sm text-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500" style="color-scheme: dark;">
+                    <div>
+                        <label for="from_date" class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1.5">Desde Fecha</label>
+                        <input type="date" name="from_date" id="from_date" value="{{ request('from_date') }}" class="w-full rounded-xl bg-gray-950 border-2 border-gray-700 py-2.5 px-3 text-sm text-white font-semibold focus:border-amber-500 focus:ring-1 focus:ring-amber-500" style="color-scheme: dark;">
                     </div>
 
-                    <!-- Fecha Hasta -->
-                    <div class="lg:col-span-2">
-                        <label for="to_date" class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">Hasta Fecha</label>
-                        <input type="date" name="to_date" id="to_date" value="{{ request('to_date') }}" class="w-full rounded-xl bg-gray-950 border border-gray-800 py-2.5 px-3 text-sm text-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500" style="color-scheme: dark;">
-                    </div>
-
-                    <!-- Botones Acción -->
-                    <div class="sm:col-span-2 lg:col-span-2 flex gap-2">
-                        <button type="submit" class="flex-1 rounded-xl bg-amber-600 hover:bg-amber-500 py-2.5 px-4 text-sm font-semibold text-white transition-all shadow-md hover:shadow-amber-500/20 flex items-center justify-center gap-1.5">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                            <span x-text="searchTarget === 'hemeroteca' ? 'Buscar / Filtrar' : 'Ir al Buscador'">Buscar / Filtrar</span>
-                        </button>
-                        @if(request()->anyFilled(['q', 'year', 'from_date', 'to_date']))
-                            <a href="{{ route('hemeroteca.news') }}" class="rounded-xl bg-gray-800 hover:bg-gray-700 py-2.5 px-3 text-sm font-semibold text-gray-300 transition-colors flex items-center justify-center" title="Limpiar filtros">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                            </a>
-                        @endif
+                    <div>
+                        <label for="to_date" class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1.5">Hasta Fecha</label>
+                        <input type="date" name="to_date" id="to_date" value="{{ request('to_date') }}" class="w-full rounded-xl bg-gray-950 border-2 border-gray-700 py-2.5 px-3 text-sm text-white font-semibold focus:border-amber-500 focus:ring-1 focus:ring-amber-500" style="color-scheme: dark;">
                     </div>
                 </div>
             </form>

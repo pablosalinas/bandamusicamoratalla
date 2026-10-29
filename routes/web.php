@@ -177,7 +177,10 @@ Route::get('/', function () {
     return view('welcome', compact('news', 'band_history', 'bandHistoryImages', 'visit_count', 'carouselMedia', 'carouselSpeed', 'newsSpeed', 'historySpeed', 'waitVideosFinish', 'mediaArchives', 'availableYears'));
 });
 
-Route::get('/buscar', [\App\Http\Controllers\SearchController::class, 'index'])->name('search.index');
+Route::get('/hemeroteca/buscar', [\App\Http\Controllers\SearchController::class, 'index'])->name('search.index');
+Route::get('/buscar', function (\Illuminate\Http\Request $request) {
+    return redirect()->route('search.index', $request->query());
+});
 
 Route::get('/hemeroteca/noticias', [\App\Http\Controllers\HemerotecaController::class, 'news'])->name('hemeroteca.news');
 Route::get('/hemeroteca/multimedia', [\App\Http\Controllers\HemerotecaController::class, 'media'])->name('hemeroteca.media');
