@@ -217,57 +217,146 @@
 
             <!-- TEXTOS Y DOCUMENTOS -->
             <div x-show="tab === 'textos'" x-cloak>
-                <h3 class="text-2xl font-semibold text-white mb-6">Textos y Documentos</h3>
-                <form action="{{ route('admin.settings.update') }}" method="POST" enctype="multipart/form-data" class="bg-gray-900 shadow-sm ring-1 ring-gray-800 sm:rounded-xl">
+                <div class="mb-6">
+                    <h3 class="text-2xl font-semibold text-white">Textos y Documentos</h3>
+                    <p class="text-sm text-gray-400 mt-1">Gestiona los textos institucionales y modelos de documentos descargables. Cada sección cuenta con su propio botón de guardado independiente.</p>
+                </div>
+
+                <!-- 1. ESTATUTOS -->
+                <form action="{{ route('admin.settings.update') }}" method="POST" onsubmit="if(window.CKEDITOR && CKEDITOR.instances.statutes) CKEDITOR.instances.statutes.updateElement();" class="bg-gray-900 shadow-sm ring-1 ring-gray-800 sm:rounded-xl mb-8">
                     @csrf
-                    <!-- Preserve hidden required fields so validation doesn't fail -->
-                    <input type="hidden" name="band_name" value="{{ $settings['band_name'] }}">
-                    <input type="hidden" name="session_timeout" value="{{ $settings['session_timeout'] }}">
-                    <input type="hidden" name="carousel_speed" value="{{ $settings['carousel_speed'] ?? 4 }}">
+                    <input type="hidden" name="settings_section" value="textos">
+                    <input type="hidden" name="text_type" value="statutes">
                     
                     <div class="px-4 py-6 sm:p-8">
-                        <div class="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
-                            <div class="sm:col-span-6">
-                                <label for="statutes" class="block text-sm font-medium leading-6 text-white">Estatutos</label>
-                                <p class="text-sm text-gray-400 mb-2">Texto de los estatutos. Los usuarios podrán leerlos y descargarlos en PDF.</p>
-                                <div class="mt-2 text-black">
-                                    <textarea id="statutes" name="statutes" rows="10">{{ old('statutes', $settings['statutes'] ?? '') }}</textarea>
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <h4 class="text-xl font-bold text-white">Estatutos de la Banda</h4>
+                                    <span class="inline-flex items-center rounded-md bg-amber-400/10 px-2 py-0.5 text-xs font-medium text-amber-400 ring-1 ring-inset ring-amber-400/30">Público y Descargable</span>
                                 </div>
+                                <p class="text-sm text-gray-400 mt-1">Texto oficial de los estatutos. Los usuarios podrán leerlos en la web y descargarlos en PDF maquetado.</p>
                             </div>
-                            <div class="sm:col-span-6">
-                                <label for="band_history" class="block text-sm font-medium leading-6 text-white">Historia de la Banda</label>
-                                <p class="text-sm text-gray-400 mb-2">Descripción de la historia de la banda de música que se mostrará en la página principal.</p>
-                                <div class="mt-2 text-black">
-                                    <textarea id="band_history" name="band_history" rows="10">{{ old('band_history', $settings['band_history'] ?? '') }}</textarea>
-                                </div>
+                            <div class="flex items-center gap-2 shrink-0">
+                                <a href="{{ route('estatutos') }}" target="_blank" class="inline-flex items-center gap-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 px-3 py-1.5 text-xs font-medium text-gray-200 border border-gray-700 transition-colors">
+                                    <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                                    Ver en Web
+                                </a>
+                                <a href="{{ route('estatutos.pdf') }}" target="_blank" class="inline-flex items-center gap-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 px-3 py-1.5 text-xs font-medium text-gray-200 border border-gray-700 transition-colors">
+                                    <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                    Ver PDF
+                                </a>
                             </div>
-                            <div class="sm:col-span-6 border-t border-gray-800 pt-6 mt-2">
-                                <h3 class="text-lg font-bold leading-tight tracking-tight text-white mb-2">Modelo de Justificante Parental</h3>
-                                <p class="text-sm text-gray-400 mb-4">Los músicos menores de edad podrán descargar este modelo desde su panel. Puedes subir un PDF directamente, o redactarlo aquí con texto enriquecido. Si redactas texto, tendrá prioridad.</p>
-                                
-                                <div class="mb-4">
-                                    <label for="parental_consent_pdf" class="block text-sm font-medium leading-6 text-white">Subir Archivo PDF (Opcional si usas el editor abajo)</label>
-                                    <input type="file" name="parental_consent_pdf" id="parental_consent_pdf" accept="application/pdf" class="mt-2 block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-gray-800 file:text-amber-500 hover:file:bg-gray-700">
-                                    @if(isset($settings['parental_consent_pdf']) && $settings['parental_consent_pdf'])
-                                        <p class="mt-2 text-sm text-green-400">📄 Hay un PDF subido actualmente.</p>
-                                    @endif
-                                </div>
+                        </div>
 
-                                <label for="parental_consent_template" class="block text-sm font-medium leading-6 text-white">Editor de Texto Enriquecido (Prioridad sobre PDF)</label>
-                                <div class="mt-2 text-black">
-                                    <textarea id="parental_consent_template" name="parental_consent_template" rows="10">{{ old('parental_consent_template', $settings['parental_consent_template'] ?? '') }}</textarea>
+                        <div class="mt-4 text-black">
+                            <textarea id="statutes" name="statutes" rows="12">{{ old('statutes', $settings['statutes'] ?? '') }}</textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between px-4 py-4 sm:px-8 border-t border-gray-800 bg-gray-900/60 rounded-b-xl">
+                        <span class="text-xs text-gray-400">Guarda únicamente los cambios realizados en los Estatutos.</span>
+                        <button type="submit" class="inline-flex items-center gap-2 rounded-md bg-amber-600 px-6 py-2 text-sm font-semibold text-white shadow-sm hover:bg-amber-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber-600 transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
+                            Guardar Estatutos
+                        </button>
+                    </div>
+                </form>
+
+                <!-- 2. HISTORIA DE LA BANDA -->
+                <form action="{{ route('admin.settings.update') }}" method="POST" onsubmit="if(window.CKEDITOR && CKEDITOR.instances.band_history) CKEDITOR.instances.band_history.updateElement();" class="bg-gray-900 shadow-sm ring-1 ring-gray-800 sm:rounded-xl mb-8">
+                    @csrf
+                    <input type="hidden" name="settings_section" value="textos">
+                    <input type="hidden" name="text_type" value="band_history">
+                    
+                    <div class="px-4 py-6 sm:p-8">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <h4 class="text-xl font-bold text-white">Historia de la Banda</h4>
+                                    <span class="inline-flex items-center rounded-md bg-blue-400/10 px-2 py-0.5 text-xs font-medium text-blue-400 ring-1 ring-inset ring-blue-400/30">Portada y Sección Historia</span>
                                 </div>
-                                <div class="mt-4 flex gap-4">
-                                    <a href="{{ route('admin.settings.parental-consent.download') }}" target="_blank" class="rounded-md bg-gray-700 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-600 ring-1 ring-inset ring-gray-600">
-                                        Descargar / Imprimir Prueba de PDF
-                                    </a>
+                                <p class="text-sm text-gray-400 mt-1">Descripción y trayectoria histórica de la banda de música que se mostrará en la página principal.</p>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 text-black">
+                            <textarea id="band_history" name="band_history" rows="12">{{ old('band_history', $settings['band_history'] ?? '') }}</textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between px-4 py-4 sm:px-8 border-t border-gray-800 bg-gray-900/60 rounded-b-xl">
+                        <span class="text-xs text-gray-400">Guarda únicamente los cambios realizados en la Historia de la Banda.</span>
+                        <button type="submit" class="inline-flex items-center gap-2 rounded-md bg-amber-600 px-6 py-2 text-sm font-semibold text-white shadow-sm hover:bg-amber-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber-600 transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
+                            Guardar Historia
+                        </button>
+                    </div>
+                </form>
+
+                <!-- 3. MODELO DE JUSTIFICANTE PARENTAL -->
+                <form action="{{ route('admin.settings.update') }}" method="POST" enctype="multipart/form-data" onsubmit="if(window.CKEDITOR && CKEDITOR.instances.parental_consent_template) CKEDITOR.instances.parental_consent_template.updateElement();" class="bg-gray-900 shadow-sm ring-1 ring-gray-800 sm:rounded-xl">
+                    @csrf
+                    <input type="hidden" name="settings_section" value="textos">
+                    <input type="hidden" name="text_type" value="parental_consent">
+                    
+                    <div class="px-4 py-6 sm:p-8">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <h4 class="text-xl font-bold text-white">Modelo de Justificante Parental</h4>
+                                    <span class="inline-flex items-center rounded-md bg-purple-400/10 px-2 py-0.5 text-xs font-medium text-purple-400 ring-1 ring-inset ring-purple-400/30">Músicos Menores</span>
                                 </div>
+                                <p class="text-sm text-gray-400 mt-1">Los músicos menores de edad podrán descargar este documento para autorizaciones de eventos. Puedes redactarlo con texto enriquecido o adjuntar un PDF.</p>
+                            </div>
+                            <div class="flex items-center gap-2 shrink-0">
+                                <a href="{{ route('admin.settings.parental-consent.download') }}" target="_blank" class="inline-flex items-center gap-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 px-3 py-1.5 text-xs font-medium text-gray-200 border border-gray-700 transition-colors">
+                                    <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                    Descargar / Imprimir Prueba
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Subida de PDF -->
+                        <div class="p-4 rounded-xl bg-gray-950/60 border border-gray-800 mb-6">
+                            <label for="parental_consent_pdf" class="block text-sm font-semibold text-white">Archivo PDF del Justificante (Opcional)</label>
+                            <p class="text-xs text-gray-400 mt-0.5 mb-3">Si subes un PDF y el editor de texto inferior está vacío, los músicos descargarán este archivo directamente.</p>
+                            
+                            <input type="file" name="parental_consent_pdf" id="parental_consent_pdf" accept="application/pdf" class="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-gray-800 file:text-amber-500 hover:file:bg-gray-700 cursor-pointer">
+                            
+                            @if(isset($settings['parental_consent_pdf']) && $settings['parental_consent_pdf'])
+                                <div class="mt-3 flex items-center justify-between p-3 rounded-lg bg-gray-900 border border-gray-800">
+                                    <div class="flex items-center gap-2">
+                                        <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                        <span class="text-xs text-green-400 font-medium">Hay un archivo PDF guardado actualmente</span>
+                                        <a href="{{ asset('storage/' . $settings['parental_consent_pdf']) }}" target="_blank" class="text-xs text-amber-500 hover:underline ml-2">Ver PDF actual</a>
+                                    </div>
+                                    <label class="inline-flex items-center gap-2 text-xs text-red-400 hover:text-red-300 cursor-pointer">
+                                        <input type="checkbox" name="remove_parental_consent_pdf" value="1" class="rounded border-gray-700 bg-gray-800 text-red-600 focus:ring-red-500">
+                                        Eliminar PDF actual
+                                    </label>
+                                </div>
+                            @endif
+                        </div>
+
+                        <!-- Editor de texto enriquecido -->
+                        <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <label for="parental_consent_template" class="block text-sm font-semibold text-white">Editor de Texto Enriquecido (Prioridad sobre PDF)</label>
+                                <span class="text-xs text-amber-400/90 font-mono">Variables: &lt;nombre&gt;, &lt;evento&gt;, &lt;fecha&gt;</span>
+                            </div>
+                            <p class="text-xs text-gray-400 mb-3">Si redactas contenido en este editor, se generará dinámicamente un PDF con los datos del menor y del evento.</p>
+                            <div class="text-black">
+                                <textarea id="parental_consent_template" name="parental_consent_template" rows="12">{{ old('parental_consent_template', $settings['parental_consent_template'] ?? '') }}</textarea>
                             </div>
                         </div>
                     </div>
-                    <div class="flex items-center justify-end px-4 py-4 sm:px-8 border-t border-gray-800">
-                        <button type="submit" class="rounded-md bg-amber-600 px-6 py-2 text-sm font-semibold text-white shadow-sm hover:bg-amber-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber-600">
-                            Guardar Textos
+                    
+                    <div class="flex items-center justify-between px-4 py-4 sm:px-8 border-t border-gray-800 bg-gray-900/60 rounded-b-xl">
+                        <span class="text-xs text-gray-400">Guarda únicamente los cambios del Modelo de Justificante Parental.</span>
+                        <button type="submit" class="inline-flex items-center gap-2 rounded-md bg-amber-600 px-6 py-2 text-sm font-semibold text-white shadow-sm hover:bg-amber-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber-600 transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
+                            Guardar Justificante Parental
                         </button>
                     </div>
                 </form>
@@ -727,6 +816,19 @@
             allowedContent: true,
             versionCheck: false,
             filebrowserImageUploadUrl: '/admin/editor/image-upload?_token={{ csrf_token() }}'
+        });
+
+        // Asegurar sincronización de todos los editores con sus textareas en cualquier envío de formulario
+        document.querySelectorAll('form').forEach(function(form) {
+            form.addEventListener('submit', function() {
+                if (window.CKEDITOR && CKEDITOR.instances) {
+                    for (var instance in CKEDITOR.instances) {
+                        if (CKEDITOR.instances[instance]) {
+                            CKEDITOR.instances[instance].updateElement();
+                        }
+                    }
+                }
+            });
         });
     </script>
 </x-admin-layout>

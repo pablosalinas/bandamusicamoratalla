@@ -131,11 +131,12 @@ class SettingsController extends Controller
             }
         } elseif ($section === 'textos') {
             $rules = [
-                'band_name' => 'nullable|string|max:255',
+
                 'statutes' => 'nullable|string',
                 'band_history' => 'nullable|string',
                 'parental_consent_template' => 'nullable|string',
                 'parental_consent_pdf' => 'nullable|file|mimes:pdf|max:10240',
+                'remove_parental_consent_pdf' => 'nullable|boolean',
             ];
         } elseif ($section === 'apariencia') {
             $rules = [
@@ -183,7 +184,7 @@ class SettingsController extends Controller
         }
 
         foreach ($validated as $key => $value) {
-            if ($key === 'allow_musician_registration' || $key === 'allow_musician_instruments') {
+            if ($key === 'allow_musician_registration' || $key === 'allow_musician_instruments' || $key === 'remove_parental_consent_pdf') {
                 continue;
             }
             if ($key === 'band_iban') {
@@ -213,7 +214,22 @@ class SettingsController extends Controller
             );
         }
 
+        if ($request->boolean('remove_parental_consent_pdf')) {
+            $oldPath = \App\Models\SiteSetting::getSetting('parental_consent_pdf');
+            if ($oldPath && \Illuminate\Support\Facades\Storage::disk('public')->exists($oldPath)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($oldPath);
+            }
+            \App\Models\SiteSetting::updateOrCreate(
+                ['key' => 'parental_consent_pdf'],
+                ['value' => null, 'type' => 'text']
+            );
+        }
+
         if ($request->hasFile('parental_consent_pdf')) {
+            $oldPath = \App\Models\SiteSetting::getSetting('parental_consent_pdf');
+            if ($oldPath && \Illuminate\Support\Facades\Storage::disk('public')->exists($oldPath)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($oldPath);
+            }
             $path = $request->file('parental_consent_pdf')->store('settings', 'public');
             \App\Models\SiteSetting::updateOrCreate(
                 ['key' => 'parental_consent_pdf'],
@@ -222,7 +238,21 @@ class SettingsController extends Controller
         }
 
         $tab = $request->input('settings_section', $request->input('tab', 'general'));
-        return redirect()->route('admin.settings.index', ['tab' => $tab])->with('success', 'Configuración actualizada correctamente.');
+
+        $message = 'Configuración actualizada correctamente.';
+        if ($section === 'textos') {
+            $textType = $request->input('text_type');
+            if ($textType === 'statutes' || $request->has('statutes')) {
+                $message = 'Estatutos guardados correctamente.';
+            } elseif ($textType === 'band_history' || $request->has('band_history')) {
+                $message = 'Historia de la Banda guardada correctamente.';
+            } elseif ($textType === 'parental_consent' || $request->has('parental_consent_template') || $request->hasFile('parental_consent_pdf') || $request->has('remove_parental_consent_pdf')) {
+                $message = 'Modelo de Justificante Parental guardado correctamente.';
+            } else {
+                $message = 'Textos guardados correctamente.';
+            }
+        }
+        return redirect()->route('admin.settings.index', ['tab' => $tab])->with('success', $message);
     }
 
     public function storeCarouselMedia(Request $request)
