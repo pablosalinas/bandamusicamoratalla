@@ -8,7 +8,7 @@
     <title>{{ $sheetMusic->title }} - Atril Digital e Intérprete Musical</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <script src="{{ asset('js/music-interpreter.js') }}"></script>
+    <script src="{{ asset('js/music-interpreter.js') }}?v={{ @filemtime(public_path('js/music-interpreter.js')) ?: time() }}"></script>
     @if(in_array($extension, ['pdf']))
         <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
         <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
@@ -210,7 +210,7 @@
         }
         
         @if(in_array($extension, ['pdf']))
-        // Renderizar PDF de forma continua
+        // Renderizar PDF de forma continua y ordenada
         const url = "{!! $downloadRoute !!}";
         const container = document.getElementById('render-container');
         let pdfDoc = null;
@@ -224,37 +224,51 @@
                 const pixelRatio = window.devicePixelRatio || 1;
                 const scale = (window.innerWidth / unscaledViewport.width) * pixelRatio;
                 
-                let pagesLoaded = 0;
-                let interpreterReady = false;
-                for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-                    renderPage(pageNum, scale, function() {
-                        pagesLoaded++;
-                        if (!interpreterReady && pagesLoaded === 1) {
-                            interpreterReady = true;
+                // Pre-crear los canvas en orden exacto de página
+                const pageCanvases = {};
+                for (let p = 1; p <= pdf.numPages; p++) {
+                    const c = document.createElement('canvas');
+                    c.style.width = '100%';
+                    c.dataset.pageNum = p;
+                    container.appendChild(c);
+                    pageCanvases[p] = c;
+                }
+
+                let currentPageToRender = 1;
+                let scanDebounce = null;
+
+                function renderNextInQueue() {
+                    if (currentPageToRender > pdf.numPages) return;
+                    const pageNum = currentPageToRender++;
+                    renderPage(pageNum, scale, pageCanvases[pageNum], function() {
+                        if (pageNum === 1) {
                             setupInterpreter();
-                        } else if (interpreterReady && window.interpreter) {
-                            window.interpreter.scanCurrentScore();
+                            if (window.interpreter) {
+                                window.interpreter.scanCurrentScore();
+                            }
+                        } else if (window.interpreter) {
+                            clearTimeout(scanDebounce);
+                            scanDebounce = setTimeout(function() {
+                                window.interpreter.scanCurrentScore();
+                            }, 250);
                         }
+                        renderNextInQueue();
                     });
                 }
+
+                renderNextInQueue();
             });
         }).catch(function(err) {
             console.error('Error al cargar PDF:', err);
             document.getElementById('loading').innerHTML = 'Error al cargar el PDF. Puede estar dañado o no disponible.';
         });
 
-        function renderPage(num, scale, onComplete) {
+        function renderPage(num, scale, canvas, onComplete) {
             pdfDoc.getPage(num).then(function(page) {
                 const viewport = page.getViewport({scale: scale});
-                
-                const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
                 canvas.height = viewport.height;
                 canvas.width = viewport.width;
-                canvas.style.width = '100%';
-                canvas.dataset.pageNum = num;
-                
-                container.appendChild(canvas);
                 
                 const renderContext = {
                     canvasContext: ctx,
@@ -262,13 +276,21 @@
                 };
                 
                 page.render(renderContext).promise.then(function() {
-                    page.getTextContent().then(function(textContent) {
-                        canvas._textContent = textContent;
+                    Promise.all([
+                        page.getTextContent({ disableCombineTextItems: true }).catch(function() {
+                            return page.getTextContent();
+                        }),
+                        page.getOperatorList().catch(function() {
+                            return null;
+                        })
+                    ]).then(function(results) {
+                        canvas._textContent = results[0];
+                        canvas._opList = results[1];
                         canvas._viewport = viewport;
                         canvas._page = page;
                         if (onComplete) onComplete();
                     }).catch(function(e) {
-                        console.warn('TextContent extraction error page', num, e);
+                        console.warn('Extraction error page', num, e);
                         if (onComplete) onComplete();
                     });
                 }).catch(function(e) {

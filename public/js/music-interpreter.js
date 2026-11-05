@@ -293,36 +293,36 @@
         const n = name.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
         if (n.includes('FLAUTIN') || n.includes('PICCOLO')) return 'piccolo';
-        if (n.includes('FLAUTA')) return 'flute';
+        if (n.includes('FLAUTA') || n.includes('FLUTE')) return 'flute';
         if (n.includes('OBOE')) return 'oboe';
-        if (n.includes('CORNO INGLES')) return 'corno_ingles';
+        if (n.includes('CORNO INGLES') || n.includes('ENGLISH HORN')) return 'corno_ingles';
         if (n.includes('FAGOT') || n.includes('BASSOON')) return 'bassoon';
-        if (n.includes('REQUINTO')) return 'requinto';
-        if (n.includes('CLARINETE BAJO')) return 'bass_clarinet';
-        if (n.includes('CLARINETE')) return 'clarinet';
+        if (n.includes('REQUINTO') || n.includes('EB CLARINET') || n.includes('CLARINET IN EB')) return 'requinto';
+        if (n.includes('CLARINETE BAJO') || n.includes('BASS CLARINET')) return 'bass_clarinet';
+        if (n.includes('CLARINETE') || n.includes('CLARINET')) return 'clarinet';
 
         if (n.includes('SAX') || n.includes('SAXOFON')) {
             if (n.includes('ALTO')) return 'alto_sax';
             if (n.includes('TENOR')) return 'tenor_sax';
-            if (n.includes('BARITONO')) return 'baritone_sax';
+            if (n.includes('BARITONO') || n.includes('BARITONE')) return 'baritone_sax';
             if (n.includes('SOPRANO')) return 'soprano_sax';
             return 'alto_sax';
         }
 
         if (n.includes('FLISCORNO') || n.includes('FLUGEL')) return 'flugelhorn';
-        if (n.includes('TROMPETA') || n.includes('CORNETA')) return 'trumpet';
-        if (n.includes('TROMPA') || n.includes('CORNO')) return 'french_horn';
-        if (n.includes('TROMBON BAJO')) return 'bass_trombone';
-        if (n.includes('TROMBON')) return 'trombone';
-        if (n.includes('BOMBARDINO') || n.includes('EUPHONIUM')) return 'euphonium';
-        if (n.includes('TUBA') || n.includes('SOUSAFON')) return 'tuba';
+        if (n.includes('TROMPETA') || n.includes('CORNETA') || n.includes('TRUMPET') || n.includes('CORNET')) return 'trumpet';
+        if (n.includes('TROMPA') || n.includes('HORN IN F') || n.includes('FRENCH HORN') || n.includes('CORNO')) return 'french_horn';
+        if (n.includes('TROMBON BAJO') || n.includes('BASS TROMBONE')) return 'bass_trombone';
+        if (n.includes('TROMBON') || n.includes('TROMBONE')) return 'trombone';
+        if (n.includes('BOMBARDINO') || n.includes('EUPHONIUM') || n.includes('BARITONE')) return 'euphonium';
+        if (n.includes('TUBA') || n.includes('SOUSAFON') || n.includes('BASSES')) return 'tuba';
 
         if (n.includes('VIOLONCHELO') || n.includes('CELLO')) return 'cello';
-        if (n.includes('CONTRABAJO')) return 'contrabass';
+        if (n.includes('CONTRABAJO') || n.includes('DOUBLE BASS') || n.includes('STRING BASS')) return 'contrabass';
 
-        if (n.includes('TIMBAL')) return 'timpani';
-        if (n.includes('XILOFONO') || n.includes('MARIMBA') || n.includes('LIRA') || n.includes('GLOCKENSPIEL') || n.includes('CAMPANAS') || n.includes('VIBRAFONO')) return 'mallets';
-        if (n.includes('CAJA') || n.includes('BATERIA') || n.includes('BOMBO') || n.includes('PLATOS') || n.includes('PERCUSION')) return 'percussion';
+        if (n.includes('TIMBAL') || n.includes('TIMPANI')) return 'timpani';
+        if (n.includes('XILOFONO') || n.includes('MARIMBA') || n.includes('LIRA') || n.includes('GLOCKENSPIEL') || n.includes('CAMPANAS') || n.includes('VIBRAFONO') || n.includes('MALLET')) return 'mallets';
+        if (n.includes('CAJA') || n.includes('BATERIA') || n.includes('BOMBO') || n.includes('PLATOS') || n.includes('PERCUSION') || n.includes('PERCUSSION') || n.includes('DRUM')) return 'percussion';
         if (n.includes('PIANO')) return 'piano';
 
         return 'ensemble';
@@ -890,13 +890,28 @@
 
         // Procesa el canvas de la partitura
         scanCanvas(canvas, pageNum = 1, instrumentKey = 'clarinet', canvasOffsetTop = 0) {
+            if (!canvas || canvas.width === 0 || canvas.height === 0) return [];
+
+            // Si es un canvas PDF que aún no ha terminado de renderizar en la cola, esperar
+            if (canvas.dataset && canvas.dataset.pageNum && !canvas._viewport) {
+                return [];
+            }
+
+            // Devolver caché si ya fue escaneado con los mismos parámetros
+            if (canvas._scannedNotes && canvas._scannedNotes.length > 0 && canvas._scannedInstrument === instrumentKey) {
+                canvas._scannedNotes.forEach(n => { n.canvasOffsetTop = canvasOffsetTop; });
+                return canvas._scannedNotes;
+            }
+
             const prof = INSTRUMENT_PROFILES[instrumentKey] || INSTRUMENT_PROFILES['clarinet'];
             this.clef = prof.clef || 'treble';
 
-            // 1. MOTOR VECTORIAL NATIVO DE MÁXIMA PRECISIÓN (PDFs con fuentes musicales Maestro/Opus/etc.)
-            if (canvas._textContent && canvas._viewport) {
+            // 1. MOTOR VECTORIAL NATIVO DE MÁXIMA PRECISIÓN (PDFs con fuentes musicales Maestro/Opus/Petrucci/Engraver y gráficos vectoriales)
+            if ((canvas._textContent || canvas._opList) && canvas._viewport) {
                 const vectorNotes = this.extractNotesFromPdfText(canvas, pageNum, instrumentKey, canvasOffsetTop);
                 if (vectorNotes && vectorNotes.length > 0) {
+                    canvas._scannedNotes = vectorNotes;
+                    canvas._scannedInstrument = instrumentKey;
                     this.notes = vectorNotes;
                     return vectorNotes;
                 }
@@ -946,243 +961,722 @@
                 detectedNotes.push(...this.generateDemoScore(prof));
             }
 
+            canvas._scannedNotes = detectedNotes;
+            canvas._scannedInstrument = instrumentKey;
             this.notes = detectedNotes;
             return detectedNotes;
         }
 
-        // Extractor Vectorial Nativo de Notas desde PDF.js
-        extractNotesFromPdfText(canvas, pageNum = 1, instrumentKey = 'clarinet', canvasOffsetTop = 0) {
-            const textContent = canvas._textContent;
-            const viewport = canvas._viewport;
-            if (!textContent || !viewport || !textContent.items || textContent.items.length === 0) {
-                return null;
+        // Clasifica glifos musicales soportando Unicode/MacRoman, TrueType post-shifted ('±'/'‰'/'«'/'∞'), WinAnsi ('Ï'/'ú') y ratio de anchura PDF
+        classifyMusicGlyph(c, widthRatio = 0) {
+            const code = c ? c.charCodeAt(0) : 0;
+
+            // 1. Cabeza de blanca (Half notehead: '˙' MacRoman 250, '‰' post-table 220 con width 328, 'ú' WinAnsi 250)
+            if (c === '˙' || c === 'ú' || c === '\uF0FA' || code === 0xF0FA ||
+                (c === '‰' && widthRatio >= 0.318) ||
+                (widthRatio >= 0.324 && widthRatio <= 0.336)) {
+                return { dur: 2.0, type: 'note', head: 'half', symbol: '𝅗𝅥', figName: 'Blanca', isRest: false };
             }
 
+            // 2. Cabeza de negra / corchea / semicorchea (Black notehead: 'œ' MacRoman 207, '±' post-table 177 con width 319, 'Ï' WinAnsi 207)
+            if (c === 'œ' || c === '±' || c === 'Ï' || c === '\uF0CF' || code === 0xF0CF ||
+                (widthRatio >= 0.312 && widthRatio < 0.324)) {
+                return { dur: 1.0, type: 'note', head: 'black', symbol: '♩', figName: 'Negra', isRest: false };
+            }
+
+            // 3. Redonda (Whole note: 'w', 'W')
+            if (c === 'w' || c === 'W' || c === '\uF077' || code === 0xF077) {
+                return { dur: 4.0, type: 'note', head: 'whole', symbol: '𝅝', figName: 'Redonda', isRest: false };
+            }
+
+            // 4. Silencio de corchea (Eighth rest: '‰' MacRoman 228 con width 304, '«' post-table 198, 'ä' WinAnsi 228)
+            if (c === '«' || c === 'ä' || c === '\uF0E4' || code === 0xF0E4 ||
+                (c === '‰' && widthRatio < 0.318) ||
+                (widthRatio >= 0.296 && widthRatio <= 0.310)) {
+                return { dur: 0.5, type: 'rest', head: 'rest8', symbol: '𝄾', figName: 'Silencio de corchea', isRest: true };
+            }
+
+            // 5. Silencio de negra (Quarter rest: 'Œ' MacRoman 206, '∞' post-table 176, 'Î' WinAnsi 206)
+            if (c === 'Œ' || c === '∞' || c === 'Î' || c === '\uF0CE' || code === 0xF0CE ||
+                (widthRatio >= 0.280 && widthRatio <= 0.295)) {
+                return { dur: 1.0, type: 'rest', head: 'rest4', symbol: '𝄽', figName: 'Silencio de negra', isRest: true };
+            }
+
+            // 6. Silencio de blanca / compás (Half/Whole rest: '∑', 'Ó', '”')
+            if (c === '∑' || c === 'Ó' || c === '”' || c === '\uF0EE' || c === '\uF0D3') {
+                return { dur: 2.0, type: 'rest', head: 'rest2', symbol: '𝄼', figName: 'Silencio de blanca', isRest: true };
+            }
+
+            // 7. Silencio de semicorchea ('≈', '®')
+            if (c === '≈' || c === '®' || c === 'Å' || c === '\uF0C5') {
+                return { dur: 0.25, type: 'rest', head: 'rest16', symbol: '𝄿', figName: 'Silencio de semicorchea', isRest: true };
+            }
+
+            return null;
+        }
+
+        // Extrae gráficos vectoriales exactos desde PDF.js OperatorList (Pentagramas de 5 líneas, Barras de compás, Beams rítmicos y Curvas Bézier de ligaduras)
+        extractVectorGraphicsFromOpList(opList, viewport, canvasWidth) {
+            const result = { staves: [], beams: [], barlines: [], curves: [] };
+            if (!opList || !opList.fnArray || !opList.argsArray || !viewport) return result;
+
+            const fnArray = opList.fnArray;
+            const argsArray = opList.argsArray;
+            const scale = viewport.scale || 1;
+
+            const multiply = (m1, m2) => [
+                m1[0] * m2[0] + m1[2] * m2[1],
+                m1[1] * m2[0] + m1[3] * m2[1],
+                m1[0] * m2[2] + m1[2] * m2[3],
+                m1[1] * m2[2] + m1[3] * m2[3],
+                m1[0] * m2[4] + m1[2] * m2[5] + m1[4],
+                m1[1] * m2[4] + m1[3] * m2[5] + m1[5]
+            ];
+
+            let ctm = [1, 0, 0, 1, 0, 0];
+            const stack = [];
+            let pendingSubpaths = [];
+
+            const toCanvasPt = (x, y) => {
+                const ux = ctm[0] * x + ctm[2] * y + ctm[4];
+                const uy = ctm[1] * x + ctm[3] * y + ctm[5];
+                return viewport.convertToViewportPoint(ux, uy);
+            };
+
+            const rawHorizLines = [];
+            const rawVertLines = [];
+
+            for (let i = 0; i < fnArray.length; i++) {
+                const fn = fnArray[i];
+                const args = argsArray[i];
+
+                if (fn === 10) { // OPS.save
+                    stack.push([...ctm]);
+                } else if (fn === 11) { // OPS.restore
+                    if (stack.length > 0) ctm = stack.pop();
+                } else if (fn === 12 && args && args.length >= 6) { // OPS.transform
+                    ctm = multiply(ctm, args);
+                } else if (fn === 91 && args && args.length >= 2) { // OPS.constructPath
+                    const ops = args[0];
+                    const coords = args[1];
+                    let k = 0;
+                    let currSub = null;
+
+                    for (let j = 0; j < ops.length; j++) {
+                        const op = ops[j];
+                        if (op === 13) { // moveTo
+                            if (currSub && currSub.pts.length > 1) pendingSubpaths.push(currSub);
+                            currSub = { pts: [toCanvasPt(coords[k++], coords[k++])], hasCurve: false };
+                        } else if (op === 14) { // lineTo
+                            const pt = toCanvasPt(coords[k++], coords[k++]);
+                            if (!currSub) currSub = { pts: [pt], hasCurve: false };
+                            else currSub.pts.push(pt);
+                        } else if (op === 15) { // curveTo
+                            const p1 = toCanvasPt(coords[k++], coords[k++]);
+                            const p2 = toCanvasPt(coords[k++], coords[k++]);
+                            const p3 = toCanvasPt(coords[k++], coords[k++]);
+                            if (!currSub) currSub = { pts: [p1, p2, p3], hasCurve: true };
+                            else {
+                                currSub.hasCurve = true;
+                                currSub.pts.push(p1, p2, p3);
+                            }
+                        } else if (op === 16 || op === 17) { // curveTo2 / curveTo3
+                            const p1 = toCanvasPt(coords[k++], coords[k++]);
+                            const p2 = toCanvasPt(coords[k++], coords[k++]);
+                            if (!currSub) currSub = { pts: [p1, p2], hasCurve: true };
+                            else {
+                                currSub.hasCurve = true;
+                                currSub.pts.push(p1, p2);
+                            }
+                        } else if (op === 19) { // rectangle
+                            if (currSub && currSub.pts.length > 1) pendingSubpaths.push(currSub);
+                            const rx = coords[k++], ry = coords[k++], rw = coords[k++], rh = coords[k++];
+                            const pA = toCanvasPt(rx, ry);
+                            const pB = toCanvasPt(rx + rw, ry);
+                            const pC = toCanvasPt(rx + rw, ry + rh);
+                            const pD = toCanvasPt(rx, ry + rh);
+                            pendingSubpaths.push({ pts: [pA, pB, pC, pD], hasCurve: false });
+                            currSub = null;
+                        }
+                    }
+                    if (currSub && currSub.pts.length > 1) pendingSubpaths.push(currSub);
+                } else if (fn === 20 || fn === 21 || fn === 22 || fn === 23 || fn === 24 || fn === 25) {
+                    const isStroke = (fn === 20 || fn === 21 || fn === 24 || fn === 25);
+                    const isFill = (fn === 22 || fn === 23 || fn === 24 || fn === 25);
+
+                    for (const sub of pendingSubpaths) {
+                        const pts = sub.pts;
+                        if (pts.length < 2) continue;
+                        let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+                        for (const p of pts) {
+                            if (p[0] < x0) x0 = p[0];
+                            if (p[0] > x1) x1 = p[0];
+                            if (p[1] < y0) y0 = p[1];
+                            if (p[1] > y1) y1 = p[1];
+                        }
+                        const w = x1 - x0;
+                        const h = y1 - y0;
+
+                        if (sub.hasCurve) {
+                            // Curva Bézier de ligadura (Tie / Slur)
+                            if (w >= 4.0 * scale && w <= 260 * scale && h >= 1.2 * scale && h <= 45 * scale) {
+                                result.curves.push({ x0, x1, y0, y1, w, h });
+                            }
+                        } else if (isStroke && pts.length === 2) {
+                            if (w > canvasWidth * 0.25 && h < 3.0 * scale) {
+                                rawHorizLines.push({ x0, x1, y: (y0 + y1) * 0.5 });
+                            } else if (w < 2.8 * scale && h >= 12 * scale && h <= 30 * scale) {
+                                rawVertLines.push({ x: (x0 + x1) * 0.5, y0, y1, h });
+                            }
+                        } else if (isFill && !sub.hasCurve && pts.length >= 4 && pts.length <= 6) {
+                            // Barras de corchea / semicorchea (Beams: paralelogramos rellenos)
+                            if (w >= 2.5 * scale && w <= 240 * scale && h >= 1.1 * scale && h <= 10.5 * scale) {
+                                result.beams.push({ x0, x1, y0, y1, ym: (y0 + y1) * 0.5, w, h });
+                            }
+                        }
+                    }
+                    pendingSubpaths = [];
+                } else if (fn === 26) { // OPS.endPath
+                    pendingSubpaths = [];
+                }
+            }
+
+            // Agrupar líneas horizontales en pentagramas de 5 líneas
+            rawHorizLines.sort((a, b) => a.y - b.y);
+            const uniqueLines = [];
+            for (const hl of rawHorizLines) {
+                if (uniqueLines.length === 0 || Math.abs(hl.y - uniqueLines[uniqueLines.length - 1].y) > 1.5 * scale) {
+                    uniqueLines.push(hl);
+                }
+            }
+
+            let group = [];
+            for (const hl of uniqueLines) {
+                if (group.length === 0) {
+                    group.push(hl);
+                } else {
+                    const dy = hl.y - group[group.length - 1].y;
+                    if (dy >= 2.5 * scale && dy <= 8.0 * scale) {
+                        group.push(hl);
+                        if (group.length === 5) {
+                            const ys = group.map(g => g.y);
+                            const sp = (ys[4] - ys[0]) / 4.0;
+                            result.staves.push({
+                                lines: ys, // [line5 (top), line4, line3, line2, line1 (bottom)]
+                                top: ys[0],
+                                bottom: ys[4],
+                                sp: sp,
+                                x0: group[0].x0,
+                                x1: group[0].x1
+                            });
+                            group = [];
+                        }
+                    } else {
+                        group = [hl];
+                    }
+                }
+            }
+
+            // Deduplicar curvas de ligadura (borde superior e inferior del mismo arco Bézier)
+            result.curves.sort((a, b) => a.x0 - b.x0);
+            const dedupCurves = [];
+            for (const c of result.curves) {
+                const dup = dedupCurves.some( u =>
+                    Math.abs(c.x0 - u.x0) < 3.5 * scale &&
+                    Math.abs(c.x1 - u.x1) < 3.5 * scale &&
+                    Math.abs(c.y0 - u.y0) < 4.5 * scale
+                );
+                if (!dup) dedupCurves.push(c);
+            }
+            result.curves = dedupCurves;
+            result.barlines = rawVertLines;
+
+            return result;
+        }
+
+        // Extrae glifos individuales directamente de OPS.showText (44) + OPS.setTextMatrix (42) si están disponibles
+        extractTextGlyphsFromOpList(opList, viewport) {
+            if (!opList || !opList.fnArray || !opList.argsArray || !viewport) return [];
+            const fnArray = opList.fnArray;
+            const argsArray = opList.argsArray;
+
+            const multiply = (m1, m2) => [
+                m1[0] * m2[0] + m1[2] * m2[1],
+                m1[1] * m2[0] + m1[3] * m2[1],
+                m1[0] * m2[2] + m1[2] * m2[3],
+                m1[1] * m2[2] + m1[3] * m2[3],
+                m1[0] * m2[4] + m1[2] * m2[5] + m1[4],
+                m1[1] * m2[4] + m1[3] * m2[5] + m1[5]
+            ];
+
+            let ctm = [1, 0, 0, 1, 0, 0];
+            const stack = [];
+            let tm = [1, 0, 0, 1, 0, 0];
+            let tlm = [1, 0, 0, 1, 0, 0];
+            let fontSize = 1;
+            const items = [];
+
+            for (let i = 0; i < fnArray.length; i++) {
+                const fn = fnArray[i];
+                const args = argsArray[i];
+                if (fn === 10) {
+                    stack.push([...ctm]);
+                } else if (fn === 11) {
+                    if (stack.length > 0) ctm = stack.pop();
+                } else if (fn === 12 && args && args.length >= 6) {
+                    ctm = multiply(ctm, args);
+                } else if (fn === 31) { // OPS.beginText
+                    tm = [1, 0, 0, 1, 0, 0];
+                    tlm = [1, 0, 0, 1, 0, 0];
+                } else if (fn === 37 && args && args.length >= 2) { // OPS.setFont
+                    fontSize = args[1] || 1;
+                } else if (fn === 40 && args && args.length >= 2) { // OPS.moveText
+                    tlm = multiply(tlm, [1, 0, 0, 1, args[0], args[1]]);
+                    tm = [...tlm];
+                } else if (fn === 42 && args && args.length >= 6) { // OPS.setTextMatrix
+                    tm = [...args];
+                    tlm = [...args];
+                } else if (fn === 44 && args && args[0]) { // OPS.showText
+                    const glyphs = args[0];
+                    const fullM = multiply(ctm, tm);
+                    const scaleSize = Math.hypot(fullM[0], fullM[1]) * Math.abs(fontSize || 1);
+                    let offsetEm = 0;
+
+                    for (let gIdx = 0; gIdx < glyphs.length; gIdx++) {
+                        const g = glyphs[gIdx];
+                        if (typeof g === 'number') {
+                            offsetEm -= g / 1000.0;
+                            continue;
+                        }
+                        if (!g) continue;
+                        const ch = g.unicode || g.fontChar || '';
+                        const wEm = (typeof g.width === 'number') ? (g.width / 1000.0) : 0;
+
+                        if (ch && ch !== ' ') {
+                            const gx = fullM[4] + offsetEm * scaleSize;
+                            const gy = fullM[5];
+                            const pt = viewport.convertToViewportPoint(gx, gy);
+                            const gInfo = this.classifyMusicGlyph(ch, wEm);
+
+                            items.push({
+                                char: ch,
+                                tx: gx,
+                                ty: gy,
+                                canvasX: pt[0],
+                                canvasY: pt[1],
+                                widthRatio: wEm,
+                                isMusicGlyph: !!gInfo,
+                                glyphInfo: gInfo
+                            });
+                        }
+                        offsetEm += wEm;
+                    }
+                }
+            }
+
+            return items;
+        }
+
+        // Extractor Vectorial Nativo de Notas, Ritmos, Ligaduras y Alteraciones desde PDF.js
+        extractNotesFromPdfText(canvas, pageNum = 1, instrumentKey = 'clarinet', canvasOffsetTop = 0) {
+            const textContent = canvas._textContent;
+            const opList = canvas._opList;
+            const viewport = canvas._viewport;
+            if (!viewport) return null;
+
+            const scale = viewport.scale || 1;
             const prof = INSTRUMENT_PROFILES[instrumentKey] || INSTRUMENT_PROFILES['clarinet'];
             const defaultClef = prof.clef || 'treble';
 
-            const musicGlyphs = {
-                'œ': { dur: 1.0, type: 'note', head: 'black', symbol: '♩' },
-                '˙': { dur: 2.0, type: 'note', head: 'half', symbol: '𝅗𝅥' },
-                'w': { dur: 4.0, type: 'note', head: 'whole', symbol: '𝅝' },
-                'W': { dur: 4.0, type: 'note', head: 'whole', symbol: '𝅝' },
-                '‰': { dur: 0.5, type: 'rest', symbol: '𝄾', isRest: true },
-                'Œ': { dur: 1.0, type: 'rest', symbol: '𝄽', isRest: true },
-                '∑': { dur: 2.0, type: 'rest', symbol: '𝄼', isRest: true },
-                'Ó': { dur: 2.0, type: 'rest', symbol: '𝄼', isRest: true },
-                '≈': { dur: 0.25, type: 'rest', symbol: '𝄿', isRest: true }
-            };
+            // 1. Extraer pentagramas de 5 líneas, barras de compás, beams y ligaduras Bézier desde opList
+            const vec = this.extractVectorGraphicsFromOpList(opList, viewport, canvas.width);
 
-            const rawItems = [];
+            // 2. Extraer glifos musicales desagrupados
+            let rawItems = [];
+            if (textContent && textContent.items && textContent.items.length > 0) {
+                for (let i = 0; i < textContent.items.length; i++) {
+                    const item = textContent.items[i];
+                    const str = item.str || '';
+                    if (!str || !item.transform) continue;
 
-            for (let i = 0; i < textContent.items.length; i++) {
-                const item = textContent.items[i];
-                const str = item.str || '';
-                if (!str || !item.transform) continue;
+                    const tx = item.transform[4];
+                    const ty = item.transform[5];
+                    const fontSize = Math.hypot(item.transform[0], item.transform[1]) || 17.0;
+                    const itemW = item.width || 0;
 
-                const tx = item.transform[4];
-                const ty = item.transform[5];
-                const itemW = item.width || 0;
+                    for (let chIdx = 0; chIdx < str.length; chIdx++) {
+                        const c = str[chIdx];
+                        if (c === ' ' || c === '\t' || c === '\n') continue;
 
-                for (let chIdx = 0; chIdx < str.length; chIdx++) {
-                    const c = str[chIdx];
-                    if (c === ' ' || c === '\t' || c === '\n') continue;
+                        const chTx = str.length > 1 ? tx + (chIdx / str.length) * itemW : tx;
+                        const charWidthRatio = (itemW / Math.max(1, str.length)) / fontSize;
+                        const pt = viewport.convertToViewportPoint(chTx, ty);
+                        const gInfo = this.classifyMusicGlyph(c, charWidthRatio);
 
-                    const chTx = str.length > 1 ? tx + (chIdx / str.length) * itemW : tx;
-                    const pt = viewport.convertToViewportPoint(chTx, ty);
-
-                    rawItems.push({
-                        char: c,
-                        tx: chTx,
-                        ty: ty,
-                        canvasX: pt[0],
-                        canvasY: pt[1],
-                        fontName: item.fontName || '',
-                        isMusicGlyph: !!musicGlyphs[c],
-                        glyphInfo: musicGlyphs[c] || null
-                    });
+                        rawItems.push({
+                            char: c,
+                            tx: chTx,
+                            ty: ty,
+                            canvasX: pt[0],
+                            canvasY: pt[1],
+                            widthRatio: charWidthRatio,
+                            fontName: item.fontName || '',
+                            isMusicGlyph: !!gInfo,
+                            glyphInfo: gInfo
+                        });
+                    }
                 }
+            }
+
+            // Si textContent combinó glifos o faltan notas, usar extracción directa de OPS.showText (44)
+            const opGlyphs = this.extractTextGlyphsFromOpList(opList, viewport);
+            const tcMusicCount = rawItems.filter(it => it.isMusicGlyph).length;
+            const opMusicCount = opGlyphs.filter(it => it.isMusicGlyph).length;
+            if (opMusicCount > tcMusicCount) {
+                rawItems = opGlyphs;
             }
 
             const noteAndRestItems = rawItems.filter(it => it.isMusicGlyph);
-            if (noteAndRestItems.length < 3) {
+            if (noteAndRestItems.length < 2) {
                 return null;
             }
 
-            // Agrupación vertical por pentagramas (Staff rows)
-            const staffRowThreshold = (viewport.scale || 1) * 22;
-            const staffRows = [];
-            const sortedByY = [...noteAndRestItems].sort((a, b) => a.canvasY - b.canvasY);
-
-            for (const item of sortedByY) {
-                let matchedRow = null;
-                for (const row of staffRows) {
-                    if (Math.abs(item.canvasY - row.meanY) <= staffRowThreshold) {
-                        matchedRow = row;
-                        break;
-                    }
-                }
-
-                if (matchedRow) {
-                    matchedRow.items.push(item);
-                    const sumY = matchedRow.items.reduce((acc, curr) => acc + curr.canvasY, 0);
-                    matchedRow.meanY = sumY / matchedRow.items.length;
-                } else {
-                    staffRows.push({
-                        meanY: item.canvasY,
-                        items: [item]
-                    });
+            // 3. Detectar metadatos en la cabecera de la página (Tempo BPM e Instrumento de la particella)
+            const firstStaffTopY = vec.staves.length > 0 ? vec.staves[0].top : ( canvas.height * 0.25 );
+            const headerChars = rawItems
+                .filter(it => it.canvasY < firstStaffTopY - 6 * scale && !it.isMusicGlyph)
+                .sort((a, b) => (Math.abs(a.canvasY - b.canvasY) < 5 * scale ? a.canvasX - b.canvasX : a.canvasY - b.canvasY));
+            const headerText = headerChars.map(it => it.char).join('');
+            const bpmMatch = headerText.match(/=\s*(\d{2,3})/);
+            if (bpmMatch) {
+                const parsedBpm = parseInt(bpmMatch[1], 10);
+                if (parsedBpm >= 40 && parsedBpm <= 220) {
+                    canvas._detectedBpm = parsedBpm;
                 }
             }
 
-            // Orden estricto de pentagramas de arriba hacia abajo
-            staffRows.sort((a, b) => a.meanY - b.meanY);
+            // 4. Determinar sistemas de pentagramas (usar pentagramas exactos de 5 líneas de opList, o agrupar por Y si no hay opList)
+            let staffSystems = vec.staves;
+            if (!staffSystems || staffSystems.length === 0) {
+                const staffRowThreshold = scale * 22;
+                const staffRows = [];
+                const sortedByY = [...noteAndRestItems].sort((a, b) => a.canvasY - b.canvasY);
 
-            const staffLineSpacing = (viewport.scale || 1) * 4.25;
-            const diatonicStepPx = staffLineSpacing / 2;
+                for (const item of sortedByY) {
+                    let matchedRow = null;
+                    for (const row of staffRows) {
+                        if (Math.abs(item.canvasY - row.meanY) <= staffRowThreshold) {
+                            matchedRow = row;
+                            break;
+                        }
+                    }
+                    if (matchedRow) {
+                        matchedRow.items.push(item);
+                        matchedRow.meanY = matchedRow.items.reduce((acc, curr) => acc + curr.canvasY, 0) / matchedRow.items.length;
+                    } else {
+                        staffRows.push({ meanY: item.canvasY, items: [item] });
+                    }
+                }
+                staffRows.sort((a, b) => a.meanY - b.meanY);
+                const sp = scale * 4.25;
+                staffSystems = staffRows.map(r => {
+                    const l3 = r.meanY;
+                    return {
+                        lines: [l3 - 2 * sp, l3 - sp, l3, l3 + sp, l3 + 2 * sp],
+                        top: l3 - 2 * sp,
+                        bottom: l3 + 2 * sp,
+                        sp: sp,
+                        x0: canvas.width * 0.05,
+                        x1: canvas.width * 0.95
+                    };
+                });
+            }
 
             const finalNotes = [];
             let globalNoteIndex = 0;
 
-            staffRows.forEach((row, staffIdx) => {
-                const rowTop = row.meanY - staffRowThreshold * 1.5;
-                const rowBottom = row.meanY + staffRowThreshold * 1.5;
+            staffSystems.forEach((staff, staffIdx) => {
+                const sp = staff.sp || (scale * 4.25);
+                const diatonicStepPx = sp / 2.0;
+                const rowTop = staff.top - 5.0 * sp;
+                const rowBottom = staff.bottom + 5.0 * sp;
 
                 const rowAllItems = rawItems.filter(it => it.canvasY >= rowTop && it.canvasY <= rowBottom);
                 rowAllItems.sort((a, b) => a.canvasX - b.canvasX);
 
+                const staffBeams = vec.beams.filter(b => b.ym >= staff.top - 6.0 * sp && b.ym <= staff.bottom + 6.0 * sp);
+                const staffBarlines = vec.barlines
+                    .filter(bl => Math.abs(bl.y0 - staff.top) < 1.8 * sp && Math.abs(bl.y1 - staff.bottom) < 1.8 * sp)
+                    .map(bl => bl.x)
+                    .sort((a, b) => a - b);
+
+                // Detectar clave del pentagrama ('&' = Sol en 2ª línea, '?' = Fa en 4ª línea)
                 let rowClef = defaultClef;
-                let referenceLine2Y = null;
-
-                const clefItem = rowAllItems.find(it => it.char === '&' || it.char === '?');
+                const clefItem = rowAllItems.find(it => (it.char === '&' || it.char === '?') && it.canvasX < staff.x0 + 12 * sp);
                 if (clefItem) {
-                    if (clefItem.char === '&') {
-                        rowClef = 'treble';
-                        referenceLine2Y = clefItem.canvasY;
-                    } else if (clefItem.char === '?') {
-                        rowClef = 'bass';
-                        referenceLine2Y = clefItem.canvasY;
-                    }
+                    rowClef = (clefItem.char === '?') ? 'bass' : 'treble';
                 }
 
-                if (referenceLine2Y === null) {
-                    referenceLine2Y = row.meanY + diatonicStepPx;
-                }
+                // Línea de referencia exacta desde las 5 líneas del pentagrama:
+                // En clave de Sol: 2ª línea empezando por abajo = staff.lines[3] (Sol4 / G4)
+                // En clave de Fa: 4ª línea empezando por abajo = staff.lines[1] (Fa3 / F3)
+                const referenceLineY = (rowClef === 'bass') ? staff.lines[1] : staff.lines[3];
 
                 const notesInRow = rowAllItems.filter(it => it.isMusicGlyph);
                 if (notesInRow.length === 0) return;
 
                 const firstNoteX = notesInRow[0].canvasX;
-                const keySigFlats = rowAllItems.filter(it => it.char === 'b' && it.canvasX < firstNoteX).length;
-                const keySigSharps = rowAllItems.filter(it => it.char === '#' && it.canvasX < firstNoteX).length;
+
+                // Armadura: contar bemoles ('b'), sostenidos ('#') y becuadros de cancelación ('n') antes de la primera nota
+                const rawFlats = rowAllItems.filter(it => it.char === 'b' && it.canvasX < firstNoteX - 1.2 * sp).length;
+                const rawSharps = rowAllItems.filter(it => it.char === '#' && it.canvasX < firstNoteX - 1.2 * sp).length;
+                const rawNaturals = rowAllItems.filter(it => it.char === 'n' && it.canvasX < firstNoteX - 1.2 * sp).length;
+
+                const keySigFlats = Math.max(0, rawFlats - rawNaturals);
+                const keySigSharps = Math.max(0, rawSharps - rawNaturals);
+
+                // Seguimiento de alteraciones accidentales dentro de cada compás
+                let currentBarIdx = 0;
+                let measureAccidentals = {};
 
                 notesInRow.forEach((noteItem, nIdx) => {
-                    const nextNote = notesInRow[nIdx + 1];
-                    const prevNote = notesInRow[nIdx - 1];
+                    const prevNote = nIdx > 0 ? notesInRow[nIdx - 1] : null;
 
-                    // Alteración inmediatamente anterior
-                    const maxAccidentalDist = staffLineSpacing * 5;
-                    const accidentalItem = rowAllItems.find(it => 
+                    // Si hemos cruzado una línea divisoria de compás, reiniciar las alteraciones accidentales del compás
+                    while (currentBarIdx < staffBarlines.length && staffBarlines[currentBarIdx] < noteItem.canvasX) {
+                        if (!prevNote || prevNote.canvasX < staffBarlines[currentBarIdx]) {
+                            measureAccidentals = {};
+                        }
+                        currentBarIdx++;
+                    }
+
+                    const isRest = !!noteItem.glyphInfo.isRest;
+                    const stepsFromRef = Math.round((referenceLineY - noteItem.canvasY) / diatonicStepPx);
+
+                    // Alteración explícita inmediatamente anterior a esta nota (sin atravesar la nota previa ni la barra de compás)
+                    const prevNoteX = prevNote ? prevNote.canvasX : (firstNoteX - 1.2 * sp);
+                    const lastBarX = currentBarIdx > 0 ? staffBarlines[currentBarIdx - 1] : 0;
+                    const minAccX = Math.max(firstNoteX - 1.2 * sp, prevNoteX + 0.2 * sp, lastBarX);
+
+                    const accidentalItem = rowAllItems.find(it =>
                         (it.char === 'b' || it.char === '#' || it.char === 'n') &&
-                        it.canvasX >= firstNoteX &&
+                        it.canvasX >= minAccX &&
                         it.canvasX < noteItem.canvasX &&
-                        (noteItem.canvasX - it.canvasX) <= maxAccidentalDist &&
-                        Math.abs(it.canvasY - noteItem.canvasY) <= staffLineSpacing * 2.5
+                        (noteItem.canvasX - it.canvasX) <= 3.5 * sp &&
+                        Math.abs(it.canvasY - noteItem.canvasY) <= 0.65 * sp
                     );
-                    const accidental = accidentalItem ? accidentalItem.char : null;
 
-                    // Puntillo posterior
-                    const maxDotDist = staffLineSpacing * 3.5;
-                    const hasDot = rowAllItems.some(it => 
+                    if (!isRest && accidentalItem) {
+                        measureAccidentals[stepsFromRef] = accidentalItem.char;
+                    }
+                    const activeAccidental = !isRest ? (measureAccidentals[stepsFromRef] || null) : null;
+
+                    // Distinguir puntillo de prolongación (a la derecha de la cabeza) de punto de staccato (encima/debajo de la cabeza)
+                    const hasAugmentationDot = rowAllItems.some(it =>
                         it.char === '.' &&
-                        it.canvasX > noteItem.canvasX &&
-                        (it.canvasX - noteItem.canvasX) <= maxDotDist &&
-                        Math.abs(it.canvasY - noteItem.canvasY) <= staffLineSpacing * 2
+                        (it.canvasX - noteItem.canvasX) >= 0.95 * sp &&
+                        (it.canvasX - noteItem.canvasX) <= 2.6 * sp &&
+                        Math.abs(it.canvasY - noteItem.canvasY) <= 0.68 * sp
                     );
 
+                    const hasStaccato = !isRest && rowAllItems.some(it =>
+                        it.char === '.' &&
+                        (it.canvasX - noteItem.canvasX) >= -0.35 * sp &&
+                        (it.canvasX - noteItem.canvasX) <= 0.9 * sp &&
+                        Math.abs(it.canvasY - noteItem.canvasY) > 0.68 * sp &&
+                        Math.abs(it.canvasY - noteItem.canvasY) <= 3.2 * sp
+                    );
+
+                    const hasAccent = !isRest && rowAllItems.some(it =>
+                        it.char === '>' &&
+                        Math.abs(it.canvasX - noteItem.canvasX) <= 1.2 * sp &&
+                        Math.abs(it.canvasY - noteItem.canvasY) <= 4.0 * sp
+                    );
+
+                    // Calcular altura tonal MIDI exacta
                     let midi = 67;
                     let noteName = 'Sol4';
-                    const isRest = !!noteItem.glyphInfo.isRest;
-
                     if (!isRest) {
-                        const stepsFromLine2 = Math.round((referenceLine2Y - noteItem.canvasY) / diatonicStepPx);
-                        const pitchInfo = this.diatonicToMidi(stepsFromLine2, keySigFlats, keySigSharps, accidental, rowClef);
+                        const pitchInfo = this.diatonicToMidi(stepsFromRef, keySigFlats, keySigSharps, activeAccidental, rowClef);
                         midi = pitchInfo.midi;
                         noteName = pitchInfo.name;
                     } else {
                         noteName = 'Silencio';
                     }
 
+                    // Calcular duración rítmica exacta usando barras vectoriales (beams), corchetes (flags 'J'/'j'/'R'/'r'), puntillos y tresillos/seisillos
                     let duration = noteItem.glyphInfo.dur;
+                    let figureName = noteItem.glyphInfo.figName || 'Negra';
+                    let figureSymbol = noteItem.glyphInfo.symbol || '♩';
 
-                    if (noteItem.char === 'œ') {
-                        if (nextNote && (nextNote.canvasX - noteItem.canvasX) < staffLineSpacing * 3.2) {
-                            duration = 0.5; // Corchea agrupada
-                        } else if (prevNote && (noteItem.canvasX - prevNote.canvasX) < staffLineSpacing * 3.2) {
-                            duration = 0.5; // Corchea agrupada
+                    if (!isRest && noteItem.glyphInfo.head === 'black') {
+                        // Plica hacia abajo en X = note.x, plica hacia arriba en X = note.x + 1.2 * sp
+                        const overlappingBeams = staffBeams.filter(b =>
+                            b.x0 <= noteItem.canvasX + 1.45 * sp &&
+                            b.x1 >= noteItem.canvasX - 0.35 * sp
+                        );
+                        const beamCount = overlappingBeams.length;
+
+                        if (beamCount >= 3) {
+                            duration = 0.125;
+                            figureName = 'Fusa';
+                            figureSymbol = '𝅘𝅥𝅰';
+                        } else if (beamCount === 2) {
+                            duration = 0.25;
+                            figureName = 'Semicorchea';
+                            figureSymbol = '𝅘𝅥𝅯';
+                        } else if (beamCount === 1) {
+                            duration = 0.5;
+                            figureName = 'Corchea';
+                            figureSymbol = '♪';
                         } else {
-                            duration = 1.0; // Negra
+                            // Comprobar corchete suelto (Flag: 'J'/'j' = corchea, 'R'/'r' = semicorchea)
+                            const flagItem = rowAllItems.find(it =>
+                                (it.char === 'J' || it.char === 'j' || it.char === 'R' || it.char === 'r' || it.char === 'K' || it.char === 'k') &&
+                                (it.canvasX - noteItem.canvasX) >= -0.5 * sp &&
+                                (it.canvasX - noteItem.canvasX) <= 1.65 * sp &&
+                                Math.abs(it.canvasY - noteItem.canvasY) <= 4.6 * sp
+                            );
+                            if (flagItem) {
+                                if (flagItem.char === 'R' || flagItem.char === 'r') {
+                                    duration = 0.25;
+                                    figureName = 'Semicorchea';
+                                    figureSymbol = '𝅘𝅥𝅯';
+                                } else if (flagItem.char === 'K' || flagItem.char === 'k') {
+                                    duration = 0.125;
+                                    figureName = 'Fusa';
+                                    figureSymbol = '𝅘𝅥𝅰';
+                                } else {
+                                    duration = 0.5;
+                                    figureName = 'Corchea';
+                                    figureSymbol = '♪';
+                                }
+                            } else {
+                                duration = 1.0;
+                                figureName = 'Negra';
+                                figureSymbol = '♩';
+                            }
+                        }
+
+                        // Tresillos ('3'), Cinquillos ('5'), Seisillos ('6') sobre grupos con barras
+                        if (overlappingBeams.length > 0) {
+                            const grpX0 = Math.min(...overlappingBeams.map(b => b.x0));
+                            const grpX1 = Math.max(...overlappingBeams.map(b => b.x1));
+                            const tupletItem = rowAllItems.find(it =>
+                                (it.char === '3' || it.char === '5' || it.char === '6') &&
+                                it.canvasX >= grpX0 - 0.8 * sp &&
+                                it.canvasX <= grpX1 + 0.8 * sp &&
+                                Math.abs(it.canvasY - noteItem.canvasY) <= 6.2 * sp
+                            );
+                            if (tupletItem) {
+                                if (tupletItem.char === '3') {
+                                    duration *= (2.0 / 3.0);
+                                    figureName += ' (tresillo)';
+                                } else if (tupletItem.char === '6') {
+                                    duration *= (4.0 / 6.0);
+                                    figureName += ' (seisillo)';
+                                } else if (tupletItem.char === '5') {
+                                    duration *= (4.0 / 5.0);
+                                    figureName += ' (cinquillo)';
+                                }
+                            }
                         }
                     }
 
-                    if (hasDot) {
+                    if (hasAugmentationDot) {
                         duration *= 1.5;
+                        figureName += ' con puntillo';
+                        figureSymbol += '.';
                     }
 
-                    // Ligaduras '~'
-                    const hasTie = rowAllItems.some(it =>
-                        it.char === '~' &&
-                        Math.abs(it.canvasX - noteItem.canvasX) <= staffLineSpacing * 4
-                    );
-
-                    const noteObj = {
+                    finalNotes.push({
                         id: `vnote_${pageNum}_${staffIdx}_${nIdx}`,
                         page: pageNum,
+                        pageNum: pageNum,
                         staffIndex: staffIdx,
-                        measureIndex: 0,
+                        measure: currentBarIdx + 1,
+                        measureIndex: currentBarIdx,
                         noteIndex: globalNoteIndex++,
                         canvas: canvas,
                         x: Math.round(noteItem.canvasX),
                         y: Math.round(noteItem.canvasY),
-                        w: Math.round(staffLineSpacing * 2.5),
-                        h: Math.round(staffLineSpacing * 2.2),
+                        w: Math.round(sp * 2.2),
+                        h: Math.round(sp * 2.0),
                         canvasOffsetTop: canvasOffsetTop,
                         pitch: midi,
                         midi: midi,
                         frequency: 442 * Math.pow(2, (midi - 69) / 12),
                         name: noteName,
-                        duration: duration,
-                        type: isRest ? 'rest' : (duration >= 2.0 ? 'half' : (duration >= 1.0 ? 'quarter' : 'eighth')),
-                        symbol: hasDot ? `${noteItem.glyphInfo.symbol}.` : noteItem.glyphInfo.symbol,
-                        hasDot: hasDot,
+                        figure: figureName,
+                        duration: Math.round(duration * 1000) / 1000,
+                        type: isRest ? 'rest' : (duration >= 2.0 ? 'half' : (duration >= 1.0 ? 'quarter' : (duration >= 0.5 ? 'eighth' : '16th'))),
+                        symbol: figureSymbol,
+                        hasDot: hasAugmentationDot,
+                        staccato: hasStaccato,
+                        accent: hasAccent,
                         tiedToNext: false,
                         tiedFromPrev: false,
-                        legato: hasTie,
+                        legato: false,
                         isRest: isRest,
-                        accidental: accidental ? (accidental === 'b' ? '♭' : accidental === '#' ? '♯' : '♮') : null,
+                        accidental: activeAccidental ? (activeAccidental === 'b' ? '♭' : activeAccidental === '#' ? '♯' : '♮') : null,
                         clef: rowClef
-                    };
-
-                    finalNotes.push(noteObj);
+                    });
                 });
             });
 
-            // Conectar ligaduras entre notas consecutivas
-            for (let i = 0; i < finalNotes.length - 1; i++) {
-                const cur = finalNotes[i];
-                const next = finalNotes[i + 1];
-                if (cur.legato && cur.pitch === next.pitch && !cur.isRest && !next.isRest) {
-                    cur.tiedToNext = true;
-                    next.tiedFromPrev = true;
-                }
+            // 5. Asociar curvas Bézier vectoriales a Ligaduras de Prolongación (Ties) y Ligaduras de Expresión (Slurs)
+            if (vec.curves && vec.curves.length > 0 && staffSystems.length > 0) {
+                staffSystems.forEach((staff, sIdx) => {
+                    const sp = staff.sp || (scale * 4.25);
+                    const staffCurves = vec.curves.filter(c => c.y0 >= staff.top - 5.5 * sp && c.y1 <= staff.bottom + 5.5 * sp);
+                    const staffPlayableNotes = finalNotes.filter(n => n.staffIndex === sIdx && !n.isRest);
+
+                    if (staffPlayableNotes.length === 0) return;
+
+                    for (const c of staffCurves) {
+                        const covered = staffPlayableNotes.filter(n =>
+                            n.x >= c.x0 - 1.8 * sp &&
+                            n.x <= c.x1 + 1.8 * sp &&
+                            Math.abs(n.y - (c.y0 + c.y1) * 0.5) <= 4.2 * sp
+                        );
+
+                        if (covered.length === 2 && covered[0].pitch === covered[1].pitch) {
+                            // Verificar que sean notas consecutivas
+                            const idx0 = finalNotes.indexOf(covered[0]);
+                            const idx1 = finalNotes.indexOf(covered[1]);
+                            if (idx1 === idx0 + 1) {
+                                covered[0].tiedToNext = true;
+                                covered[1].tiedFromPrev = true;
+                            } else {
+                                covered[0].legato = true;
+                                covered[1].legato = true;
+                            }
+                        } else if (covered.length === 1) {
+                            // Ligadura que sale por el extremo derecho del pentagrama hacia el primer compás del siguiente pentagrama
+                            const lastStaffNote = staffPlayableNotes[staffPlayableNotes.length - 1];
+                            if (covered[0] === lastStaffNote && c.x1 > lastStaffNote.x + 1.4 * sp) {
+                                const nextStaffNotes = finalNotes.filter(n => n.staffIndex === sIdx + 1 && !n.isRest);
+                                if (nextStaffNotes.length > 0 && nextStaffNotes[0].pitch === lastStaffNote.pitch) {
+                                    lastStaffNote.tiedToNext = true;
+                                    nextStaffNotes[0].tiedFromPrev = true;
+                                }
+                            }
+                        } else if (covered.length >= 2) {
+                            for (let k = 0; k < covered.length - 1; k++) {
+                                covered[k].legato = true;
+                            }
+                        }
+                    }
+                });
             }
 
             return finalNotes;
         }
 
         // Conversión diatónica a MIDI con armadura y alteraciones
-        diatonicToMidi(stepsFromLine2, keySigFlats = 0, keySigSharps = 0, accidental = null, clef = 'treble') {
-            const baseDiatonic = (clef === 'bass') ? (stepsFromLine2 - 4) : (stepsFromLine2 + 4);
+        diatonicToMidi(stepsFromRef, keySigFlats = 0, keySigSharps = 0, accidental = null, clef = 'treble') {
+            // En clave de Sol: ref es Sol4 (G4, +4 pasos desde Do4). En clave de Fa: ref es Fa3 (F3, -4 pasos desde Do4).
+            const baseDiatonic = (clef === 'bass') ? (stepsFromRef - 4) : (stepsFromRef + 4);
 
             const octave = Math.floor(baseDiatonic / 7) + 4;
             const noteInOct = ((baseDiatonic % 7) + 7) % 7;
@@ -1196,8 +1690,8 @@
             else if (accidental === '#') alt = 1;
             else if (accidental === 'n') alt = 0;
             else {
-                const flatOrder = [6, 2, 5, 1, 4, 0, 3];
-                const sharpOrder = [3, 0, 4, 1, 5, 2, 6];
+                const flatOrder = [6, 2, 5, 1, 4, 0, 3]; // Si Mi La Re Sol Do Fa
+                const sharpOrder = [3, 0, 4, 1, 5, 2, 6]; // Fa Do Sol Re La Mi Si
 
                 if (keySigFlats > 0 && flatOrder.slice(0, keySigFlats).includes(noteInOct)) {
                     alt = -1;
@@ -2088,15 +2582,23 @@
         }
 
         // Escanear partitura actual en el visor
-        scanCurrentScore() {
-            if (!this.currentContainer) return;
+        scanCurrentScore(forceRescan = false) {
+            if (!this.currentContainer) return [];
             const canvases = this.currentContainer.querySelectorAll('canvas:not(#music-interpreter-overlay)');
             let allNotes = [];
+            let detectedScoreBpm = null;
 
             if (canvases.length > 0) {
                 canvases.forEach((c, idx) => {
+                    if (forceRescan) {
+                        delete c._scannedNotes;
+                    }
                     const offsetTop = c.offsetTop || 0;
-                    const notes = this.reader.scanCanvas(c, idx + 1, this.selectedInstrument, offsetTop);
+                    const pageNumber = parseInt(c.dataset?.pageNum || (idx + 1), 10);
+                    const notes = this.reader.scanCanvas(c, pageNumber, this.selectedInstrument, offsetTop);
+                    if (c._detectedBpm && !detectedScoreBpm) {
+                        detectedScoreBpm = c._detectedBpm;
+                    }
                     allNotes.push(...notes);
                 });
             } else {
@@ -2109,6 +2611,14 @@
                     offCtx.drawImage(img, 0, 0);
                     allNotes = this.reader.scanCanvas(offCanvas, 1, this.selectedInstrument, img.offsetTop || 0);
                 }
+            }
+
+            if (detectedScoreBpm && !this._userChangedBpm) {
+                this.bpm = detectedScoreBpm;
+                const inputBpm = document.getElementById('mi-input-bpm');
+                const sliderBpm = document.getElementById('mi-slider-bpm');
+                if (inputBpm) inputBpm.value = detectedScoreBpm;
+                if (sliderBpm) sliderBpm.value = detectedScoreBpm;
             }
 
             this.reader.notes = allNotes;
@@ -2167,6 +2677,22 @@
                 return;
             }
 
+            // Si el usuario ha hecho scroll hacia una página/particella específica y pulsa Play desde el inicio, comenzar desde el primer pentagrama visible en pantalla
+            if (!this.isPaused && this.currentIndex === 0 && window.scrollY > window.innerHeight * 0.45) {
+                const scrollTargetY = window.scrollY;
+                const firstVisibleIdx = this.reader.notes.findIndex(n => {
+                    const c = n.canvas;
+                    if (!c) return false;
+                    const displayH = c.clientHeight || c.offsetHeight || c.height || 1;
+                    const scaleY = displayH / (c.height || 1);
+                    const notePageY = (c.offsetTop || 0) + (n.y * scaleY);
+                    return notePageY >= scrollTargetY - 40;
+                });
+                if (firstVisibleIdx > 0) {
+                    this.currentIndex = firstVisibleIdx;
+                }
+            }
+
             this.isPlaying = true;
             this.isPaused = false;
             this.updatePlayButtonUI(true);
@@ -2204,12 +2730,30 @@
 
             // Si la nota NO está ligada desde la anterior y NO es silencio, emitir sonido
             if (!note.tiedFromPrev && !note.isRest) {
+                // Si tiene ligadura de prolongación (tiedToNext), sumar la duración de toda la cadena de notas ligadas para sostener el sonido continuamente
+                let totalTiedBeats = note.duration || 1.0;
+                let lookIdx = this.currentIndex;
+                while (this.reader.notes[lookIdx] && this.reader.notes[lookIdx].tiedToNext && this.reader.notes[lookIdx + 1]) {
+                    lookIdx++;
+                    totalTiedBeats += (this.reader.notes[lookIdx].duration || 1.0);
+                }
+
+                let soundDurSeconds = totalTiedBeats * secondsPerBeat;
+                if (note.staccato && !note.tiedToNext && !note.legato) {
+                    soundDurSeconds = Math.max(0.06, soundDurSeconds * 0.44);
+                } else if (!note.tiedToNext && !note.legato) {
+                    soundDurSeconds = Math.max(0.06, soundDurSeconds * 0.92);
+                }
+
+                const velocity = note.accent ? 0.95 : 0.82;
+
                 this.synth.playNote(
                     note.pitch,
-                    noteDurSeconds,
+                    soundDurSeconds,
                     this.selectedInstrument,
                     this.applyTransposition,
-                    note.legato || false
+                    note.legato || note.tiedToNext || false,
+                    velocity
                 );
             }
 
@@ -2235,12 +2779,14 @@
             const color = prof.color || '#f59e0b';
             const c = note.canvas || this.currentContainer.querySelector('canvas:not(#music-interpreter-overlay)');
 
-            let left = note.x - 8;
-            let top = (note.canvasOffsetTop || 0) + note.y - 14;
-            let width = (note.w || 24) + 16;
-            let height = (note.h || 20) + 26;
+            const boxW = Math.max(20, note.w || 22);
+            const boxH = Math.max(24, (note.h || 20) * 1.45);
+            let left = note.x - boxW * 0.35;
+            let top = (note.canvasOffsetTop || 0) + note.y - boxH * 0.55;
+            let width = boxW;
+            let height = boxH;
 
-            if (c) {
+            if (c && c.width > 0 && c.height > 0) {
                 const displayW = c.clientWidth || c.offsetWidth || c.width;
                 const displayH = c.clientHeight || c.offsetHeight || c.height;
                 const scaleX = displayW / c.width;
@@ -2249,10 +2795,10 @@
                 const canvasLeft = c.offsetLeft || 0;
                 const canvasTop = c.offsetTop || 0;
 
-                left = canvasLeft + (note.x * scaleX) - (8 * scaleX);
-                top = canvasTop + (note.y * scaleY) - (14 * scaleY);
-                width = Math.max(16, ((note.w || 24) + 16) * scaleX);
-                height = Math.max(18, ((note.h || 20) + 24) * scaleY);
+                width = Math.max(16, boxW * scaleX);
+                height = Math.max(20, boxH * scaleY);
+                left = canvasLeft + (note.x * scaleX) - (width * 0.35);
+                top = canvasTop + (note.y * scaleY) - (height * 0.55);
             }
 
             this.cursorElement.style.top = `${Math.round(top)}px`;
@@ -2443,7 +2989,7 @@
             btnStop.addEventListener('click', () => this.stop());
 
             btnScan.addEventListener('click', () => {
-                const notes = this.scanCurrentScore();
+                const notes = this.scanCurrentScore(true);
                 alert(`¡Lectura completada! Se han reconocido ${notes.length} notas con figuras y ligaduras en la partitura.`);
             });
 
@@ -2455,6 +3001,7 @@
             const updateBpm = (val) => {
                 const bpmVal = Math.max(40, Math.min(220, parseInt(val) || 100));
                 this.bpm = bpmVal;
+                this._userChangedBpm = true;
                 inputBpm.value = bpmVal;
                 sliderBpm.value = bpmVal;
             };
@@ -2538,7 +3085,8 @@
 
         renderInspectorList() {
             const list = document.getElementById('mi-inspector-list');
-            if (!list) return;
+            const drawer = document.getElementById('mi-drawer-inspector');
+            if (!list || (drawer && drawer.classList.contains('hidden'))) return;
 
             list.innerHTML = '';
             if (this.reader.notes.length === 0) {
@@ -2546,7 +3094,11 @@
                 return;
             }
 
-            this.reader.notes.forEach((note, idx) => {
+            const startIdx = Math.max(0, this.currentIndex - 20);
+            const endIdx = Math.min(this.reader.notes.length, startIdx + 300);
+
+            for (let idx = startIdx; idx < endIdx; idx++) {
+                const note = this.reader.notes[idx];
                 const chip = document.createElement('button');
                 chip.className = `px-2 py-1 rounded text-[11px] font-mono border transition flex items-center gap-1 ${
                     note.tiedFromPrev 
@@ -2559,18 +3111,20 @@
                 chip.innerHTML = `
                     <span class="text-sm font-bold">${note.symbol || '♩'}</span>
                     <span>${note.name || 'Nota'}</span>
-                    <span class="text-[9px] text-gray-400">(${note.duration}t)</span>
+                    <span class="text-[9px] text-gray-400">(${Math.round(note.duration * 100) / 100}t)</span>
                 `;
 
                 chip.addEventListener('click', () => {
                     this.currentIndex = idx;
-                    this.synth.playNote(note.pitch, (note.duration || 1) * (60 / this.bpm), this.selectedInstrument, this.applyTransposition);
+                    if (!note.isRest) {
+                        this.synth.playNote(note.pitch, (note.duration || 1) * (60 / this.bpm), this.selectedInstrument, this.applyTransposition);
+                    }
                     this.positionCursor(note);
                     this.updateCurrentNoteUI(note);
                 });
 
                 list.appendChild(chip);
-            });
+            }
         }
 
         updatePlayButtonUI(isPlaying) {
