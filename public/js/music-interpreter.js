@@ -967,48 +967,55 @@
             return detectedNotes;
         }
 
-        // Clasifica glifos musicales soportando Unicode/MacRoman, TrueType post-shifted ('±'/'‰'/'«'/'∞'), WinAnsi ('Ï'/'ú') y ratio de anchura PDF
-        classifyMusicGlyph(c, widthRatio = 0) {
-            const code = c ? c.charCodeAt(0) : 0;
+        // Clasifica glifos musicales estrictamente por código de carácter Maestro/Sonata (NUNCA por widthRatio para evitar confundir sostenidos '#', corchetes 'J'/'j' o silencios '‰'/'Œ' con cabezas de nota)
+        classifyMusicGlyph(c) {
+            if (!c) return null;
+            const code = c.charCodeAt(0);
 
-            // 1. Cabeza de blanca (Half notehead: '˙' MacRoman 250, '‰' post-table 220 con width 328, 'ú' WinAnsi 250)
-            if (c === '˙' || c === 'ú' || c === '\uF0FA' || code === 0xF0FA ||
-                (c === '‰' && widthRatio >= 0.318) ||
-                (widthRatio >= 0.324 && widthRatio <= 0.336)) {
+            // Descartar explícitamente alteraciones ('#', 'b', 'n'), claves ('&', '?', 'ã'), corchetes ('J','j','R','r','K','k'), articulaciones, dinámicas y números de compás
+            if (
+                c === '#' || c === 'b' || c === 'n' ||
+                c === '&' || c === '?' || c === 'ã' || c === 'B' ||
+                c === 'J' || c === 'j' || c === 'R' || c === 'r' || c === 'K' || c === 'k' ||
+                c === '.' || c === '-' || c === '>' || c === '~' || c === 'U' || c === 'Ÿ' ||
+                c === 'f' || c === 'p' || c === 'F' || c === 'P' || c === 'ƒ' || c === 'Í' || c === 'â' ||
+                (code >= 48 && code <= 57)
+            ) {
+                return null;
+            }
+
+            // 1. Cabeza de blanca (Half notehead: '˙' MacRoman 250 / U+02D9, 'ú' WinAnsi 250, PUA U+F0FA)
+            if (c === '˙' || c === 'ú' || c === '\uF0FA' || code === 0xF0FA) {
                 return { dur: 2.0, type: 'note', head: 'half', symbol: '𝅗𝅥', figName: 'Blanca', isRest: false };
             }
 
-            // 2. Cabeza de negra / corchea / semicorchea (Black notehead: 'œ' MacRoman 207, '±' post-table 177 con width 319, 'Ï' WinAnsi 207)
-            if (c === 'œ' || c === '±' || c === 'Ï' || c === '\uF0CF' || code === 0xF0CF ||
-                (widthRatio >= 0.312 && widthRatio < 0.324)) {
+            // 2. Cabeza de negra / corchea / semicorchea (Black notehead: 'œ' MacRoman 207 / U+0153, 'Ï' WinAnsi 207, PUA U+F0CF)
+            if (c === 'œ' || c === 'Ï' || c === '\uF0CF' || code === 0xF0CF) {
                 return { dur: 1.0, type: 'note', head: 'black', symbol: '♩', figName: 'Negra', isRest: false };
             }
 
-            // 3. Redonda (Whole note: 'w', 'W')
+            // 3. Redonda (Whole note: 'w', 'W', PUA U+F077)
             if (c === 'w' || c === 'W' || c === '\uF077' || code === 0xF077) {
                 return { dur: 4.0, type: 'note', head: 'whole', symbol: '𝅝', figName: 'Redonda', isRest: false };
             }
 
-            // 4. Silencio de corchea (Eighth rest: '‰' MacRoman 228 con width 304, '«' post-table 198, 'ä' WinAnsi 228)
-            if (c === '«' || c === 'ä' || c === '\uF0E4' || code === 0xF0E4 ||
-                (c === '‰' && widthRatio < 0.318) ||
-                (widthRatio >= 0.296 && widthRatio <= 0.310)) {
+            // 4. Silencio de corchea (Eighth rest: '‰' MacRoman 228 / U+2030, PUA U+F0E4)
+            if (c === '‰' || c === '\uF0E4' || code === 0xF0E4) {
                 return { dur: 0.5, type: 'rest', head: 'rest8', symbol: '𝄾', figName: 'Silencio de corchea', isRest: true };
             }
 
-            // 5. Silencio de negra (Quarter rest: 'Œ' MacRoman 206, '∞' post-table 176, 'Î' WinAnsi 206)
-            if (c === 'Œ' || c === '∞' || c === 'Î' || c === '\uF0CE' || code === 0xF0CE ||
-                (widthRatio >= 0.280 && widthRatio <= 0.295)) {
+            // 5. Silencio de negra (Quarter rest: 'Œ' MacRoman 206 / U+0152, 'Î' WinAnsi 206, PUA U+F0CE)
+            if (c === 'Œ' || c === 'Î' || c === '\uF0CE' || code === 0xF0CE) {
                 return { dur: 1.0, type: 'rest', head: 'rest4', symbol: '𝄽', figName: 'Silencio de negra', isRest: true };
             }
 
-            // 6. Silencio de blanca / compás (Half/Whole rest: '∑', 'Ó', '”')
-            if (c === '∑' || c === 'Ó' || c === '”' || c === '\uF0EE' || c === '\uF0D3') {
+            // 6. Silencio de blanca / compás (Half/Whole rest: '∑' U+2211, 'Ó' MacRoman 238, '”' MacRoman 211, PUA U+F0EE / U+F0D3)
+            if (c === '∑' || c === 'Ó' || c === '”' || c === '\uF0EE' || c === '\uF0D3' || code === 0xF0EE || code === 0xF0D3) {
                 return { dur: 2.0, type: 'rest', head: 'rest2', symbol: '𝄼', figName: 'Silencio de blanca', isRest: true };
             }
 
-            // 7. Silencio de semicorchea ('≈', '®')
-            if (c === '≈' || c === '®' || c === 'Å' || c === '\uF0C5') {
+            // 7. Silencio de semicorchea ('≈' MacRoman 197 / U+2248, 'Å' WinAnsi 197, PUA U+F0C5)
+            if (c === '≈' || c === 'Å' || c === '\uF0C5' || code === 0xF0C5) {
                 return { dur: 0.25, type: 'rest', head: 'rest16', symbol: '𝄿', figName: 'Silencio de semicorchea', isRest: true };
             }
 
@@ -1194,11 +1201,22 @@
             return result;
         }
 
-        // Extrae glifos individuales directamente de OPS.showText (44) + OPS.setTextMatrix (42) si están disponibles
+        // Extrae glifos individuales directamente de OPS.showText + OPS.setTextMatrix si están disponibles
         extractTextGlyphsFromOpList(opList, viewport) {
             if (!opList || !opList.fnArray || !opList.argsArray || !viewport) return [];
             const fnArray = opList.fnArray;
             const argsArray = opList.argsArray;
+            const OPS = (window.pdfjsLib && window.pdfjsLib.OPS) ? window.pdfjsLib.OPS : {};
+            const OP_SAVE = OPS.save || 10;
+            const OP_RESTORE = OPS.restore || 11;
+            const OP_TRANSFORM = OPS.transform || 12;
+            const OP_BEGIN_TEXT = OPS.beginText || 31;
+            const OP_SET_FONT = OPS.setFont || 37;
+            const OP_MOVE_TEXT = OPS.moveText || 40;
+            const OP_SET_LEADING_MOVE_TEXT = OPS.setLeadingMoveText || 41;
+            const OP_SET_TEXT_MATRIX = OPS.setTextMatrix || 42;
+            const OP_SHOW_TEXT = OPS.showText || 44;
+            const OP_SHOW_SPACED_TEXT = OPS.showSpacedText || 45;
 
             const multiply = (m1, m2) => [
                 m1[0] * m2[0] + m1[2] * m2[1],
@@ -1219,24 +1237,24 @@
             for (let i = 0; i < fnArray.length; i++) {
                 const fn = fnArray[i];
                 const args = argsArray[i];
-                if (fn === 10) {
+                if (fn === OP_SAVE) {
                     stack.push([...ctm]);
-                } else if (fn === 11) {
+                } else if (fn === OP_RESTORE) {
                     if (stack.length > 0) ctm = stack.pop();
-                } else if (fn === 12 && args && args.length >= 6) {
+                } else if (fn === OP_TRANSFORM && args && args.length >= 6) {
                     ctm = multiply(ctm, args);
-                } else if (fn === 31) { // OPS.beginText
+                } else if (fn === OP_BEGIN_TEXT) {
                     tm = [1, 0, 0, 1, 0, 0];
                     tlm = [1, 0, 0, 1, 0, 0];
-                } else if (fn === 37 && args && args.length >= 2) { // OPS.setFont
+                } else if (fn === OP_SET_FONT && args && args.length >= 2) {
                     fontSize = args[1] || 1;
-                } else if (fn === 40 && args && args.length >= 2) { // OPS.moveText
+                } else if ((fn === OP_MOVE_TEXT || fn === OP_SET_LEADING_MOVE_TEXT) && args && args.length >= 2) {
                     tlm = multiply(tlm, [1, 0, 0, 1, args[0], args[1]]);
                     tm = [...tlm];
-                } else if (fn === 42 && args && args.length >= 6) { // OPS.setTextMatrix
+                } else if (fn === OP_SET_TEXT_MATRIX && args && args.length >= 6) {
                     tm = [...args];
                     tlm = [...args];
-                } else if (fn === 44 && args && args[0]) { // OPS.showText
+                } else if ((fn === OP_SHOW_TEXT || fn === OP_SHOW_SPACED_TEXT) && args && args[0]) {
                     const glyphs = args[0];
                     const fullM = multiply(ctm, tm);
                     const scaleSize = Math.hypot(fullM[0], fullM[1]) * Math.abs(fontSize || 1);
@@ -1256,7 +1274,7 @@
                             const gx = fullM[4] + offsetEm * scaleSize;
                             const gy = fullM[5];
                             const pt = viewport.convertToViewportPoint(gx, gy);
-                            const gInfo = this.classifyMusicGlyph(ch, wEm);
+                            const gInfo = this.classifyMusicGlyph(ch);
 
                             items.push({
                                 char: ch,
@@ -1311,7 +1329,7 @@
                         const chTx = str.length > 1 ? tx + (chIdx / str.length) * itemW : tx;
                         const charWidthRatio = (itemW / Math.max(1, str.length)) / fontSize;
                         const pt = viewport.convertToViewportPoint(chTx, ty);
-                        const gInfo = this.classifyMusicGlyph(c, charWidthRatio);
+                        const gInfo = this.classifyMusicGlyph(c);
 
                         rawItems.push({
                             char: c,
@@ -1328,11 +1346,10 @@
                 }
             }
 
-            // Si textContent combinó glifos o faltan notas, usar extracción directa de OPS.showText (44)
+            // Priorizar siempre opGlyphs (extraídos directamente de OPS.showText + OPS.setTextMatrix) porque conservan la coordenada Tm individual exacta de cada glifo sin fusiones de textContent
             const opGlyphs = this.extractTextGlyphsFromOpList(opList, viewport);
-            const tcMusicCount = rawItems.filter(it => it.isMusicGlyph).length;
             const opMusicCount = opGlyphs.filter(it => it.isMusicGlyph).length;
-            if (opMusicCount > tcMusicCount) {
+            if (opMusicCount >= 2) {
                 rawItems = opGlyphs;
             }
 
@@ -1426,11 +1443,12 @@
                 if (notesInRow.length === 0) return;
 
                 const firstNoteX = notesInRow[0].canvasX;
+                const keySigMaxX = Math.min(firstNoteX - 1.35 * sp, staff.x0 + 18 * sp);
 
-                // Armadura: contar bemoles ('b'), sostenidos ('#') y becuadros de cancelación ('n') antes de la primera nota
-                const rawFlats = rowAllItems.filter(it => it.char === 'b' && it.canvasX < firstNoteX - 1.2 * sp).length;
-                const rawSharps = rowAllItems.filter(it => it.char === '#' && it.canvasX < firstNoteX - 1.2 * sp).length;
-                const rawNaturals = rowAllItems.filter(it => it.char === 'n' && it.canvasX < firstNoteX - 1.2 * sp).length;
+                // Armadura: contar bemoles ('b'), sostenidos ('#') y becuadros de cancelación ('n') al inicio del pentagrama antes de la primera nota
+                const rawFlats = rowAllItems.filter(it => it.char === 'b' && it.canvasX < keySigMaxX).length;
+                const rawSharps = rowAllItems.filter(it => it.char === '#' && it.canvasX < keySigMaxX).length;
+                const rawNaturals = rowAllItems.filter(it => it.char === 'n' && it.canvasX < keySigMaxX).length;
 
                 const keySigFlats = Math.max(0, rawFlats - rawNaturals);
                 const keySigSharps = Math.max(0, rawSharps - rawNaturals);
@@ -1453,18 +1471,19 @@
                     const isRest = !!noteItem.glyphInfo.isRest;
                     const stepsFromRef = Math.round((referenceLineY - noteItem.canvasY) / diatonicStepPx);
 
-                    // Alteración explícita inmediatamente anterior a esta nota (sin atravesar la nota previa ni la barra de compás)
-                    const prevNoteX = prevNote ? prevNote.canvasX : (firstNoteX - 1.2 * sp);
+                    // Alteración explícita inmediatamente anterior a esta nota (sin atravesar la armadura inicial, la nota previa ni la barra de compás)
+                    const prevNoteX = prevNote ? prevNote.canvasX : keySigMaxX;
                     const lastBarX = currentBarIdx > 0 ? staffBarlines[currentBarIdx - 1] : 0;
-                    const minAccX = Math.max(firstNoteX - 1.2 * sp, prevNoteX + 0.2 * sp, lastBarX);
+                    const minAccX = Math.max(keySigMaxX, prevNoteX + 0.2 * sp, lastBarX);
 
-                    const accidentalItem = rowAllItems.find(it =>
+                    const accidentalItem = !isRest ? rowAllItems.find(it =>
                         (it.char === 'b' || it.char === '#' || it.char === 'n') &&
                         it.canvasX >= minAccX &&
                         it.canvasX < noteItem.canvasX &&
-                        (noteItem.canvasX - it.canvasX) <= 3.5 * sp &&
+                        (noteItem.canvasX - it.canvasX) >= 0.3 * sp &&
+                        (noteItem.canvasX - it.canvasX) <= 3.2 * sp &&
                         Math.abs(it.canvasY - noteItem.canvasY) <= 0.65 * sp
-                    );
+                    ) : null;
 
                     if (!isRest && accidentalItem) {
                         measureAccidentals[stepsFromRef] = accidentalItem.char;
@@ -1655,10 +1674,10 @@
                             // Ligadura que sale por el extremo derecho del pentagrama hacia el primer compás del siguiente pentagrama
                             const lastStaffNote = staffPlayableNotes[staffPlayableNotes.length - 1];
                             if (covered[0] === lastStaffNote && c.x1 > lastStaffNote.x + 1.4 * sp) {
-                                const nextStaffNotes = finalNotes.filter(n => n.staffIndex === sIdx + 1 && !n.isRest);
-                                if (nextStaffNotes.length > 0 && nextStaffNotes[0].pitch === lastStaffNote.pitch) {
+                                const nextStaffAll = finalNotes.filter(n => n.staffIndex === sIdx + 1);
+                                if (nextStaffAll.length > 0 && !nextStaffAll[0].isRest && nextStaffAll[0].pitch === lastStaffNote.pitch) {
                                     lastStaffNote.tiedToNext = true;
-                                    nextStaffNotes[0].tiedFromPrev = true;
+                                    nextStaffAll[0].tiedFromPrev = true;
                                 }
                             }
                         } else if (covered.length >= 2) {
@@ -1807,7 +1826,8 @@
 
             let lastX = -100;
 
-            for (let x = staff.xStart + Math.floor(sp * 3); x < staff.xEnd; x += xStep) {
+            // Saltar clave y armadura al inicio del pentagrama (sp * 9) para no confundir sostenidos/bemoles con notas en escaneo raster
+            for (let x = staff.xStart + Math.floor(sp * 9); x < staff.xEnd; x += xStep) {
                 let bestY = -1;
                 let maxDarkness = 0;
 
@@ -2801,20 +2821,22 @@
                 top = canvasTop + (note.y * scaleY) - (height * 0.55);
             }
 
+            const cursorColor = note.isRest ? '#94a3b8' : color;
             this.cursorElement.style.top = `${Math.round(top)}px`;
             this.cursorElement.style.left = `${Math.round(left)}px`;
             this.cursorElement.style.width = `${Math.round(width)}px`;
             this.cursorElement.style.height = `${Math.round(height)}px`;
-            this.cursorElement.style.borderColor = color;
-            this.cursorElement.style.boxShadow = `0 0 16px ${color}99`;
-            this.cursorElement.style.backgroundColor = `${color}33`;
+            this.cursorElement.style.borderColor = cursorColor;
+            this.cursorElement.style.borderStyle = note.isRest ? 'dashed' : 'solid';
+            this.cursorElement.style.boxShadow = note.isRest ? 'none' : `0 0 16px ${cursorColor}99`;
+            this.cursorElement.style.backgroundColor = note.isRest ? 'rgba(148, 163, 184, 0.18)' : `${cursorColor}33`;
             this.cursorElement.style.display = 'block';
 
             const badge = document.getElementById('music-cursor-badge');
             if (badge) {
-                badge.innerText = `${note.symbol || '♩'} ${note.name || ''}`;
-                badge.style.color = color;
-                badge.style.borderColor = color;
+                badge.innerText = note.isRest ? `${note.symbol || '𝄽'} Silencio` : `${note.symbol || '♩'} ${note.name || ''}`;
+                badge.style.color = cursorColor;
+                badge.style.borderColor = cursorColor;
             }
 
             // Auto-scroll suave
