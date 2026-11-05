@@ -22,12 +22,17 @@
             width: 100%;
             position: relative;
         }
-        canvas, img {
+        .page-container canvas, .page-container img {
             max-width: 100%;
             height: auto;
             display: block;
             margin-bottom: 2px;
             background-color: white;
+        }
+        #music-interpreter-overlay {
+            display: none !important;
+            background: transparent !important;
+            background-color: transparent !important;
         }
         .hud {
             position: fixed;
