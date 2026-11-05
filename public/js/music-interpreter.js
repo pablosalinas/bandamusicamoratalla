@@ -2898,16 +2898,16 @@
                     </div>
 
                     <!-- Fila Inferior Informativa -->
-                    <div class="mt-2 pt-2 border-t border-gray-800 flex items-center justify-between text-[11px] text-gray-400">
+                    <div class="mt-2 pt-2 border-t border-gray-800 flex flex-wrap items-center justify-between gap-2 text-[11px] text-gray-400">
                         <div class="flex items-center gap-2">
-                            <span id="mi-badge-status" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 font-medium">
-                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                                Intérprete Listo
+                            <span id="mi-badge-status" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30 font-medium" title="Esta funcionalidad está en desarrollo experimental">
+                                <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+                                Intérprete (Experimental / En desarrollo)
                             </span>
                             <span id="mi-badge-notes" class="text-gray-300 font-mono font-semibold">0 notas leídas</span>
                         </div>
                         <div id="mi-current-note" class="font-mono text-amber-400 font-bold truncate max-w-[260px]">
-                            Partitura lista para reproducir
+                            Partitura lista para reproducir (Experimental)
                         </div>
                     </div>
 

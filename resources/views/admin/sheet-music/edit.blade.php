@@ -109,7 +109,7 @@
                                     </a>
                                     <a href="{{ route('admin.sheet-music.view', $sheetMusic) }}?interpreter=1" target="_blank" class="text-xs bg-amber-600 hover:bg-amber-500 text-white px-2.5 py-1 rounded inline-flex items-center gap-1 font-semibold shadow-sm">
                                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/></svg>
-                                        🎵 Interpretar con Sonido
+                                        🎵 Interpretar con Sonido (Experimental / En desarrollo)
                                     </a>
                                 </div>
                             </div>
@@ -254,7 +254,7 @@
                                                             </a>
                                                             <a href="{{ route('admin.sheet-music.view-part', $pivotHdr->id) }}?interpreter=1" @click.stop class="inline-flex items-center gap-1 rounded-md bg-amber-500/20 px-2 py-0.5 text-xs font-semibold text-amber-300 ring-1 ring-inset ring-amber-500/40 hover:bg-amber-500/40 transition" title="Interpretar particella con sonido">
                                                                 <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/></svg>
-                                                                Interpretar
+                                                                Interpretar (Experimental)
                                                             </a>
                                                         @else
                                                             <span class="inline-flex items-center rounded-md bg-blue-400/10 px-2 py-0.5 text-xs font-medium text-blue-400 ring-1 ring-inset ring-blue-400/30">{{ $type }}</span>

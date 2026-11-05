@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>{{ $sheetMusic->title }} - Atril Digital e Intérprete Musical</title>
+    <title>{{ $sheetMusic->title }} - Atril Digital e Intérprete Musical (Experimental)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="{{ asset('js/music-interpreter.js') }}?v={{ @filemtime(public_path('js/music-interpreter.js')) ?: time() }}"></script>
@@ -78,12 +78,12 @@
             <!-- Botón Intérprete Musical -->
             <button @click="toggleInterpreter" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition shadow-sm"
                     :class="showInterpreter ? 'bg-amber-600 text-white font-bold ring-2 ring-amber-400 shadow-amber-600/30' : 'bg-gray-700 text-amber-300 hover:bg-gray-600'"
-                    title="Mostrar / Ocultar Intérprete Musical">
+                    title="Mostrar / Ocultar Intérprete Musical (Experimental / En desarrollo)">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
                 </svg>
-                <span class="hidden md:inline" x-text="showInterpreter ? 'Intérprete: ON' : 'Intérprete: OFF'"></span>
-                <span class="md:hidden text-xs font-bold">🎵 Intérprete</span>
+                <span class="hidden md:inline" x-text="showInterpreter ? 'Intérprete (Experimental): ON' : 'Intérprete (Experimental): OFF'"></span>
+                <span class="md:hidden text-xs font-bold">🎵 Intérprete (Exp.)</span>
             </button>
 
             <button @click="toggleHalfPage" class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition"

@@ -169,7 +169,7 @@
                                                 </a>
                                                 <a href="{{ route('admin.sheet-music.view', $sheet) }}?interpreter=1" class="text-amber-400 hover:text-amber-300 inline-flex items-center text-xs font-semibold" title="Abrir partitura con el Intérprete Musical">
                                                     <svg class="mr-1 h-3 w-3" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" /></svg>
-                                                    Interpretar
+                                                    Interpretar (Experimental)
                                                 </a>
                                                 <a href="{{ route('admin.sheet-music.download', $sheet) }}" class="text-blue-500 hover:text-blue-400 inline-flex items-center text-xs">
                                                     <svg class="mr-1 h-3 w-3" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
