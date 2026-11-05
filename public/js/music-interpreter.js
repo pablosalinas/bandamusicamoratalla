@@ -890,6 +890,19 @@
 
         // Procesa el canvas de la partitura
         scanCanvas(canvas, pageNum = 1, instrumentKey = 'clarinet', canvasOffsetTop = 0) {
+            const prof = INSTRUMENT_PROFILES[instrumentKey] || INSTRUMENT_PROFILES['clarinet'];
+            this.clef = prof.clef || 'treble';
+
+            // 1. MOTOR VECTORIAL NATIVO DE MÁXIMA PRECISIÓN (PDFs con fuentes musicales Maestro/Opus/etc.)
+            if (canvas._textContent && canvas._viewport) {
+                const vectorNotes = this.extractNotesFromPdfText(canvas, pageNum, instrumentKey, canvasOffsetTop);
+                if (vectorNotes && vectorNotes.length > 0) {
+                    this.notes = vectorNotes;
+                    return vectorNotes;
+                }
+            }
+
+            // 2. MOTOR OMR RASTER (para imágenes escaneadas o partituras bitmap)
             const ctx = canvas.getContext('2d');
             const width = canvas.width;
             const height = canvas.height;
@@ -899,17 +912,15 @@
             const imageData = ctx.getImageData(0, 0, width, height);
             const data = imageData.data;
 
-            // 1. Detección de pentagramas
+            // Detección de pentagramas
             const staffSystems = this.detectStaves(data, width, height, canvasOffsetTop);
             this.staves = staffSystems;
 
-            const prof = INSTRUMENT_PROFILES[instrumentKey] || INSTRUMENT_PROFILES['clarinet'];
-            this.clef = prof.clef || 'treble';
-
             const detectedNotes = [];
 
-            // 2. Escaneo detallado de cada pentagrama
+            // Escaneo detallado de cada pentagrama
             staffSystems.forEach((staff, staffIdx) => {
+                staff.canvas = canvas;
                 // a) Detectar líneas divisorias de compás (Barlines)
                 const barlines = this.detectBarlines(data, width, height, staff);
                 
@@ -937,6 +948,269 @@
 
             this.notes = detectedNotes;
             return detectedNotes;
+        }
+
+        // Extractor Vectorial Nativo de Notas desde PDF.js
+        extractNotesFromPdfText(canvas, pageNum = 1, instrumentKey = 'clarinet', canvasOffsetTop = 0) {
+            const textContent = canvas._textContent;
+            const viewport = canvas._viewport;
+            if (!textContent || !viewport || !textContent.items || textContent.items.length === 0) {
+                return null;
+            }
+
+            const prof = INSTRUMENT_PROFILES[instrumentKey] || INSTRUMENT_PROFILES['clarinet'];
+            const defaultClef = prof.clef || 'treble';
+
+            const musicGlyphs = {
+                'œ': { dur: 1.0, type: 'note', head: 'black', symbol: '♩' },
+                '˙': { dur: 2.0, type: 'note', head: 'half', symbol: '𝅗𝅥' },
+                'w': { dur: 4.0, type: 'note', head: 'whole', symbol: '𝅝' },
+                'W': { dur: 4.0, type: 'note', head: 'whole', symbol: '𝅝' },
+                '‰': { dur: 0.5, type: 'rest', symbol: '𝄾', isRest: true },
+                'Œ': { dur: 1.0, type: 'rest', symbol: '𝄽', isRest: true },
+                '∑': { dur: 2.0, type: 'rest', symbol: '𝄼', isRest: true },
+                'Ó': { dur: 2.0, type: 'rest', symbol: '𝄼', isRest: true },
+                '≈': { dur: 0.25, type: 'rest', symbol: '𝄿', isRest: true }
+            };
+
+            const rawItems = [];
+
+            for (let i = 0; i < textContent.items.length; i++) {
+                const item = textContent.items[i];
+                const str = item.str || '';
+                if (!str || !item.transform) continue;
+
+                const tx = item.transform[4];
+                const ty = item.transform[5];
+                const itemW = item.width || 0;
+
+                for (let chIdx = 0; chIdx < str.length; chIdx++) {
+                    const c = str[chIdx];
+                    if (c === ' ' || c === '\t' || c === '\n') continue;
+
+                    const chTx = str.length > 1 ? tx + (chIdx / str.length) * itemW : tx;
+                    const pt = viewport.convertToViewportPoint(chTx, ty);
+
+                    rawItems.push({
+                        char: c,
+                        tx: chTx,
+                        ty: ty,
+                        canvasX: pt[0],
+                        canvasY: pt[1],
+                        fontName: item.fontName || '',
+                        isMusicGlyph: !!musicGlyphs[c],
+                        glyphInfo: musicGlyphs[c] || null
+                    });
+                }
+            }
+
+            const noteAndRestItems = rawItems.filter(it => it.isMusicGlyph);
+            if (noteAndRestItems.length < 3) {
+                return null;
+            }
+
+            // Agrupación vertical por pentagramas (Staff rows)
+            const staffRowThreshold = (viewport.scale || 1) * 22;
+            const staffRows = [];
+            const sortedByY = [...noteAndRestItems].sort((a, b) => a.canvasY - b.canvasY);
+
+            for (const item of sortedByY) {
+                let matchedRow = null;
+                for (const row of staffRows) {
+                    if (Math.abs(item.canvasY - row.meanY) <= staffRowThreshold) {
+                        matchedRow = row;
+                        break;
+                    }
+                }
+
+                if (matchedRow) {
+                    matchedRow.items.push(item);
+                    const sumY = matchedRow.items.reduce((acc, curr) => acc + curr.canvasY, 0);
+                    matchedRow.meanY = sumY / matchedRow.items.length;
+                } else {
+                    staffRows.push({
+                        meanY: item.canvasY,
+                        items: [item]
+                    });
+                }
+            }
+
+            // Orden estricto de pentagramas de arriba hacia abajo
+            staffRows.sort((a, b) => a.meanY - b.meanY);
+
+            const staffLineSpacing = (viewport.scale || 1) * 4.25;
+            const diatonicStepPx = staffLineSpacing / 2;
+
+            const finalNotes = [];
+            let globalNoteIndex = 0;
+
+            staffRows.forEach((row, staffIdx) => {
+                const rowTop = row.meanY - staffRowThreshold * 1.5;
+                const rowBottom = row.meanY + staffRowThreshold * 1.5;
+
+                const rowAllItems = rawItems.filter(it => it.canvasY >= rowTop && it.canvasY <= rowBottom);
+                rowAllItems.sort((a, b) => a.canvasX - b.canvasX);
+
+                let rowClef = defaultClef;
+                let referenceLine2Y = null;
+
+                const clefItem = rowAllItems.find(it => it.char === '&' || it.char === '?');
+                if (clefItem) {
+                    if (clefItem.char === '&') {
+                        rowClef = 'treble';
+                        referenceLine2Y = clefItem.canvasY;
+                    } else if (clefItem.char === '?') {
+                        rowClef = 'bass';
+                        referenceLine2Y = clefItem.canvasY;
+                    }
+                }
+
+                if (referenceLine2Y === null) {
+                    referenceLine2Y = row.meanY + diatonicStepPx;
+                }
+
+                const notesInRow = rowAllItems.filter(it => it.isMusicGlyph);
+                if (notesInRow.length === 0) return;
+
+                const firstNoteX = notesInRow[0].canvasX;
+                const keySigFlats = rowAllItems.filter(it => it.char === 'b' && it.canvasX < firstNoteX).length;
+                const keySigSharps = rowAllItems.filter(it => it.char === '#' && it.canvasX < firstNoteX).length;
+
+                notesInRow.forEach((noteItem, nIdx) => {
+                    const nextNote = notesInRow[nIdx + 1];
+                    const prevNote = notesInRow[nIdx - 1];
+
+                    // Alteración inmediatamente anterior
+                    const maxAccidentalDist = staffLineSpacing * 5;
+                    const accidentalItem = rowAllItems.find(it => 
+                        (it.char === 'b' || it.char === '#' || it.char === 'n') &&
+                        it.canvasX >= firstNoteX &&
+                        it.canvasX < noteItem.canvasX &&
+                        (noteItem.canvasX - it.canvasX) <= maxAccidentalDist &&
+                        Math.abs(it.canvasY - noteItem.canvasY) <= staffLineSpacing * 2.5
+                    );
+                    const accidental = accidentalItem ? accidentalItem.char : null;
+
+                    // Puntillo posterior
+                    const maxDotDist = staffLineSpacing * 3.5;
+                    const hasDot = rowAllItems.some(it => 
+                        it.char === '.' &&
+                        it.canvasX > noteItem.canvasX &&
+                        (it.canvasX - noteItem.canvasX) <= maxDotDist &&
+                        Math.abs(it.canvasY - noteItem.canvasY) <= staffLineSpacing * 2
+                    );
+
+                    let midi = 67;
+                    let noteName = 'Sol4';
+                    const isRest = !!noteItem.glyphInfo.isRest;
+
+                    if (!isRest) {
+                        const stepsFromLine2 = Math.round((referenceLine2Y - noteItem.canvasY) / diatonicStepPx);
+                        const pitchInfo = this.diatonicToMidi(stepsFromLine2, keySigFlats, keySigSharps, accidental, rowClef);
+                        midi = pitchInfo.midi;
+                        noteName = pitchInfo.name;
+                    } else {
+                        noteName = 'Silencio';
+                    }
+
+                    let duration = noteItem.glyphInfo.dur;
+
+                    if (noteItem.char === 'œ') {
+                        if (nextNote && (nextNote.canvasX - noteItem.canvasX) < staffLineSpacing * 3.2) {
+                            duration = 0.5; // Corchea agrupada
+                        } else if (prevNote && (noteItem.canvasX - prevNote.canvasX) < staffLineSpacing * 3.2) {
+                            duration = 0.5; // Corchea agrupada
+                        } else {
+                            duration = 1.0; // Negra
+                        }
+                    }
+
+                    if (hasDot) {
+                        duration *= 1.5;
+                    }
+
+                    // Ligaduras '~'
+                    const hasTie = rowAllItems.some(it =>
+                        it.char === '~' &&
+                        Math.abs(it.canvasX - noteItem.canvasX) <= staffLineSpacing * 4
+                    );
+
+                    const noteObj = {
+                        id: `vnote_${pageNum}_${staffIdx}_${nIdx}`,
+                        page: pageNum,
+                        staffIndex: staffIdx,
+                        measureIndex: 0,
+                        noteIndex: globalNoteIndex++,
+                        canvas: canvas,
+                        x: Math.round(noteItem.canvasX),
+                        y: Math.round(noteItem.canvasY),
+                        w: Math.round(staffLineSpacing * 2.5),
+                        h: Math.round(staffLineSpacing * 2.2),
+                        canvasOffsetTop: canvasOffsetTop,
+                        pitch: midi,
+                        midi: midi,
+                        frequency: 442 * Math.pow(2, (midi - 69) / 12),
+                        name: noteName,
+                        duration: duration,
+                        type: isRest ? 'rest' : (duration >= 2.0 ? 'half' : (duration >= 1.0 ? 'quarter' : 'eighth')),
+                        symbol: hasDot ? `${noteItem.glyphInfo.symbol}.` : noteItem.glyphInfo.symbol,
+                        hasDot: hasDot,
+                        tiedToNext: false,
+                        tiedFromPrev: false,
+                        legato: hasTie,
+                        isRest: isRest,
+                        accidental: accidental ? (accidental === 'b' ? '♭' : accidental === '#' ? '♯' : '♮') : null,
+                        clef: rowClef
+                    };
+
+                    finalNotes.push(noteObj);
+                });
+            });
+
+            // Conectar ligaduras entre notas consecutivas
+            for (let i = 0; i < finalNotes.length - 1; i++) {
+                const cur = finalNotes[i];
+                const next = finalNotes[i + 1];
+                if (cur.legato && cur.pitch === next.pitch && !cur.isRest && !next.isRest) {
+                    cur.tiedToNext = true;
+                    next.tiedFromPrev = true;
+                }
+            }
+
+            return finalNotes;
+        }
+
+        // Conversión diatónica a MIDI con armadura y alteraciones
+        diatonicToMidi(stepsFromLine2, keySigFlats = 0, keySigSharps = 0, accidental = null, clef = 'treble') {
+            const baseDiatonic = (clef === 'bass') ? (stepsFromLine2 - 4) : (stepsFromLine2 + 4);
+
+            const octave = Math.floor(baseDiatonic / 7) + 4;
+            const noteInOct = ((baseDiatonic % 7) + 7) % 7;
+            const diatonicToSemitones = [0, 2, 4, 5, 7, 9, 11]; // C D E F G A B
+            const noteNames = ['Do', 'Re', 'Mi', 'Fa', 'Sol', 'La', 'Si'];
+
+            let semitone = diatonicToSemitones[noteInOct];
+            let alt = 0;
+
+            if (accidental === 'b') alt = -1;
+            else if (accidental === '#') alt = 1;
+            else if (accidental === 'n') alt = 0;
+            else {
+                const flatOrder = [6, 2, 5, 1, 4, 0, 3];
+                const sharpOrder = [3, 0, 4, 1, 5, 2, 6];
+
+                if (keySigFlats > 0 && flatOrder.slice(0, keySigFlats).includes(noteInOct)) {
+                    alt = -1;
+                } else if (keySigSharps > 0 && sharpOrder.slice(0, keySigSharps).includes(noteInOct)) {
+                    alt = 1;
+                }
+            }
+
+            const midi = (octave + 1) * 12 + semitone + alt;
+            const accStr = alt === -1 ? '♭' : alt === 1 ? '♯' : '';
+            const name = `${noteNames[noteInOct]}${accStr}${octave}`;
+
+            return { midi, name };
         }
 
         // Detección de pentagramas mediante histograma de proyección horizontal
@@ -1035,7 +1309,7 @@
             const yTop = staff.yTop - sp * 2.8;
             const yBottom = staff.yBottom + sp * 2.8;
             const noteRadius = Math.max(3, Math.round(sp * 0.46));
-            const xStep = Math.max(4, Math.round(sp * 0.65));
+            const xStep = Math.max(2, Math.round(sp * 0.35));
 
             let lastX = -100;
 
@@ -1063,7 +1337,7 @@
                     }
                 }
 
-                if (bestY > 0 && (x - lastX) > sp * 1.15) {
+                if (bestY > 0 && (x - lastX) >= Math.round(sp * 0.7)) {
                     // 1. Detección de hueco vs sólido (Blanca / Redonda vs Negra / Corchea)
                     const isHollow = this.checkIfHollowNotehead(data, width, height, x, bestY, noteRadius);
 
@@ -1122,6 +1396,7 @@
                     if (pitchInfo) {
                         notes.push({
                             pitch: pitchInfo.midi,
+                            midi: pitchInfo.midi,
                             name: pitchInfo.name,
                             figure: figureName,
                             symbol: figureSymbol,
@@ -1135,6 +1410,7 @@
                             h: Math.round(sp * 1.1),
                             staffIndex: staffIdx,
                             pageNum: pageNum,
+                            canvas: staff.canvas,
                             canvasOffsetTop: staff.canvasOffsetTop || 0,
                             tiedToNext: false,
                             tiedFromPrev: false,
@@ -1835,6 +2111,8 @@
                 }
             }
 
+            this.reader.notes = allNotes;
+            this.notes = allNotes;
             this.updateNotesBadge();
             this.renderInspectorList();
             return allNotes;
@@ -1955,17 +2233,32 @@
 
             const prof = INSTRUMENT_PROFILES[this.selectedInstrument] || INSTRUMENT_PROFILES['clarinet'];
             const color = prof.color || '#f59e0b';
+            const c = note.canvas || this.currentContainer.querySelector('canvas:not(#music-interpreter-overlay)');
 
-            // Coordenadas absolutas dentro del contenedor
-            const top = (note.canvasOffsetTop || 0) + note.y - 14;
-            const left = note.x - 8;
-            const width = (note.w || 24) + 16;
-            const height = (note.h || 20) + 26;
+            let left = note.x - 8;
+            let top = (note.canvasOffsetTop || 0) + note.y - 14;
+            let width = (note.w || 24) + 16;
+            let height = (note.h || 20) + 26;
 
-            this.cursorElement.style.top = `${top}px`;
-            this.cursorElement.style.left = `${left}px`;
-            this.cursorElement.style.width = `${width}px`;
-            this.cursorElement.style.height = `${height}px`;
+            if (c) {
+                const displayW = c.clientWidth || c.offsetWidth || c.width;
+                const displayH = c.clientHeight || c.offsetHeight || c.height;
+                const scaleX = displayW / c.width;
+                const scaleY = displayH / c.height;
+
+                const canvasLeft = c.offsetLeft || 0;
+                const canvasTop = c.offsetTop || 0;
+
+                left = canvasLeft + (note.x * scaleX) - (8 * scaleX);
+                top = canvasTop + (note.y * scaleY) - (14 * scaleY);
+                width = Math.max(16, ((note.w || 24) + 16) * scaleX);
+                height = Math.max(18, ((note.h || 20) + 24) * scaleY);
+            }
+
+            this.cursorElement.style.top = `${Math.round(top)}px`;
+            this.cursorElement.style.left = `${Math.round(left)}px`;
+            this.cursorElement.style.width = `${Math.round(width)}px`;
+            this.cursorElement.style.height = `${Math.round(height)}px`;
             this.cursorElement.style.borderColor = color;
             this.cursorElement.style.boxShadow = `0 0 16px ${color}99`;
             this.cursorElement.style.backgroundColor = `${color}33`;
@@ -1980,7 +2273,7 @@
 
             // Auto-scroll suave
             const viewportH = window.innerHeight;
-            if (top < window.scrollY + 120 || top > window.scrollY + viewportH - 220) {
+            if (top < window.scrollY + 100 || top > window.scrollY + viewportH - 200) {
                 window.scrollTo({
                     top: Math.max(0, top - viewportH * 0.35),
                     behavior: 'smooth'

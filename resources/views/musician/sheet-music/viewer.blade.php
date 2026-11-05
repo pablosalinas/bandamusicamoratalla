@@ -191,18 +191,20 @@
             const instrumentName = "{{ addslashes($instrument->name ?? 'General') }}";
             
             if (window.MusicInterpreter) {
-                window.interpreter = window.MusicInterpreter.createInstance(container, instrumentName);
+                if (!window.interpreter) {
+                    window.interpreter = window.MusicInterpreter.createInstance(container, instrumentName);
+                }
                 
                 const urlParams = new URLSearchParams(window.location.search);
                 if (urlParams.get('interpreter') === '1' || urlParams.get('autoplay') === '1') {
                     setTimeout(() => {
                         if (window.interpreter) {
                             window.interpreter.scanCurrentScore();
-                            if (urlParams.get('autoplay') === '1') {
+                            if (urlParams.get('autoplay') === '1' && !window.interpreter.isPlaying) {
                                 window.interpreter.play();
                             }
                         }
-                    }, 500);
+                    }, 300);
                 }
             }
         }
@@ -223,11 +225,15 @@
                 const scale = (window.innerWidth / unscaledViewport.width) * pixelRatio;
                 
                 let pagesLoaded = 0;
+                let interpreterReady = false;
                 for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
                     renderPage(pageNum, scale, function() {
                         pagesLoaded++;
-                        if (pagesLoaded === pdf.numPages) {
+                        if (!interpreterReady && pagesLoaded === 1) {
+                            interpreterReady = true;
                             setupInterpreter();
+                        } else if (interpreterReady && window.interpreter) {
+                            window.interpreter.scanCurrentScore();
                         }
                     });
                 }
@@ -246,6 +252,7 @@
                 canvas.height = viewport.height;
                 canvas.width = viewport.width;
                 canvas.style.width = '100%';
+                canvas.dataset.pageNum = num;
                 
                 container.appendChild(canvas);
                 
@@ -255,6 +262,17 @@
                 };
                 
                 page.render(renderContext).promise.then(function() {
+                    page.getTextContent().then(function(textContent) {
+                        canvas._textContent = textContent;
+                        canvas._viewport = viewport;
+                        canvas._page = page;
+                        if (onComplete) onComplete();
+                    }).catch(function(e) {
+                        console.warn('TextContent extraction error page', num, e);
+                        if (onComplete) onComplete();
+                    });
+                }).catch(function(e) {
+                    console.error('Render error page', num, e);
                     if (onComplete) onComplete();
                 });
             });
