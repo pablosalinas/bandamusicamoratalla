@@ -95,13 +95,23 @@
                         <label for="pdf_file" class="block text-sm font-medium leading-6 text-white">Reemplazar Archivo PDF (Guión General / Partitura Completa)</label>
                         
                         @if($sheetMusic->pdf_file_path)
-                            <div class="mt-2 mb-3 flex items-center justify-between">
+                            <div class="mt-2 mb-3 flex flex-wrap items-center justify-between gap-2">
                                 <span class="inline-flex items-center gap-x-1.5 rounded-md bg-blue-400/10 px-2 py-1 text-sm font-medium text-blue-400">
                                     <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                                         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" />
                                     </svg>
                                     Archivo actual subido
                                 </span>
+                                <div class="flex items-center gap-2">
+                                    <a href="{{ route('admin.sheet-music.view', $sheetMusic) }}" target="_blank" class="text-xs bg-indigo-600/80 hover:bg-indigo-500 text-white px-2.5 py-1 rounded inline-flex items-center gap-1 font-semibold">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                                        Ver Atril
+                                    </a>
+                                    <a href="{{ route('admin.sheet-music.view', $sheetMusic) }}?interpreter=1" target="_blank" class="text-xs bg-amber-600 hover:bg-amber-500 text-white px-2.5 py-1 rounded inline-flex items-center gap-1 font-semibold shadow-sm">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/></svg>
+                                        🎵 Interpretar con Sonido
+                                    </a>
+                                </div>
                             </div>
                         @endif
 
@@ -241,6 +251,10 @@
                                                             <a href="{{ route('admin.sheet-music.view-part', $pivotHdr->id) }}" @click.stop class="inline-flex items-center gap-1 rounded-md bg-indigo-500/20 px-2 py-0.5 text-xs font-medium text-indigo-300 ring-1 ring-inset ring-indigo-500/40 hover:bg-indigo-500/40 transition" title="Ver Atril">
                                                                 <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                                                                 {{ $type }}
+                                                            </a>
+                                                            <a href="{{ route('admin.sheet-music.view-part', $pivotHdr->id) }}?interpreter=1" @click.stop class="inline-flex items-center gap-1 rounded-md bg-amber-500/20 px-2 py-0.5 text-xs font-semibold text-amber-300 ring-1 ring-inset ring-amber-500/40 hover:bg-amber-500/40 transition" title="Interpretar particella con sonido">
+                                                                <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/></svg>
+                                                                Interpretar
                                                             </a>
                                                         @else
                                                             <span class="inline-flex items-center rounded-md bg-blue-400/10 px-2 py-0.5 text-xs font-medium text-blue-400 ring-1 ring-inset ring-blue-400/30">{{ $type }}</span>
