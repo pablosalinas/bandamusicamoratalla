@@ -336,8 +336,39 @@
     }
 
     // -------------------------------------------------------------
-    // 2. MOTOR DE SÍNTESIS ACÚSTICA INSTRUMENTAL (WEB AUDIO API)
+    // 2. MOTOR HÍBRIDO DE SONIDO REAL (SOUNDFONT MUESTRAS) Y SÍNTESIS MIDI (WEB AUDIO API)
     // -------------------------------------------------------------
+    const SOUNDFONT_INSTRUMENT_MAP = {
+        piccolo: 'piccolo',
+        flute: 'flute',
+        oboe: 'oboe',
+        corno_ingles: 'english_horn',
+        bassoon: 'bassoon',
+        requinto: 'clarinet',
+        clarinet: 'clarinet',
+        bass_clarinet: 'clarinet',
+        soprano_sax: 'soprano_sax',
+        alto_sax: 'alto_sax',
+        tenor_sax: 'tenor_sax',
+        baritone_sax: 'baritone_sax',
+        trumpet: 'trumpet',
+        flugelhorn: 'french_horn',
+        french_horn: 'french_horn',
+        trombone: 'trombone',
+        bass_trombone: 'trombone',
+        euphonium: 'trombone',
+        tuba: 'tuba',
+        violoncello: 'cello',
+        contrabass: 'contrabass',
+        mallets: 'xylophone',
+        timpani: 'timpani',
+        percussion: 'synth_drum',
+        piano: 'acoustic_grand_piano',
+        ensemble: 'clarinet'
+    };
+
+    const MIDI_PITCH_NAMES = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
+
     class InstrumentSynth {
         constructor() {
             this.ctx = null;
@@ -346,6 +377,11 @@
             this.volume = 0.85;
             this.concertPitchA4 = 442; // Banda afinada a 442 Hz
             this.activeNodes = [];
+            // Modo de sonido seleccionable: 'real' (Muestras Reales SoundFont HQ) o 'midi' (Sintetizador MIDI WebAudio)
+            this.soundEngine = 'real';
+            this.soundfontData = {};      // sfName -> { 'C4': 'data:audio/mp3;base64,...' }
+            this.soundfontLoading = {};   // sfName -> Promise<boolean>
+            this.sampleBufferCache = {};  // `${sfName}_${noteKey}` -> AudioBuffer
         }
 
         initContext() {
@@ -360,6 +396,158 @@
             if (this.ctx.state === 'suspended') {
                 this.ctx.resume();
             }
+        }
+
+        setSoundEngine(mode) {
+            this.soundEngine = (mode === 'midi') ? 'midi' : 'real';
+        }
+
+        midiToNoteKey(midi) {
+            const clamped = Math.max(21, Math.min(108, Math.round(midi)));
+            const octave = Math.floor(clamped / 12) - 1;
+            const name = MIDI_PITCH_NAMES[((clamped % 12) + 12) % 12];
+            return `${name}${octave}`;
+        }
+
+        // Pre-carga muestras reales grabadas (MusyngKite SoundFont HQ) para el instrumento elegido
+        async preloadSoundfont(instrumentKey = 'clarinet') {
+            const sfName = SOUNDFONT_INSTRUMENT_MAP[instrumentKey] || 'clarinet';
+            if (this.soundfontData[sfName]) return true;
+            if (this.soundfontLoading[sfName]) return this.soundfontLoading[sfName];
+
+            const url = `https://gleitz.github.io/midi-js-soundfonts/MusyngKite/${sfName}-mp3.js`;
+            this.soundfontLoading[sfName] = (async () => {
+                try {
+                    const resp = await fetch(url, { mode: 'cors' });
+                    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+                    const jsText = await resp.text();
+                    const firstBrace = jsText.indexOf('{');
+                    const lastBrace = jsText.lastIndexOf('}');
+                    if (firstBrace !== -1 && lastBrace > firstBrace) {
+                        const jsonCandidate = jsText.slice(firstBrace, lastBrace + 1).replace(/,\s*}/g, '}');
+                        const parsed = JSON.parse(jsonCandidate);
+                        this.soundfontData[sfName] = parsed;
+                        this.predecodeCommonNotes(sfName);
+                        return true;
+                    }
+                } catch (err) {
+                    // Fallback mediante etiqueta <script> por si fetch encuentra políticas de red
+                    try {
+                        await new Promise((resolve, reject) => {
+                            window.MIDI = window.MIDI || {};
+                            window.MIDI.Soundfont = window.MIDI.Soundfont || {};
+                            const script = document.createElement('script');
+                            script.src = url;
+                            script.async = true;
+                            script.onload = () => resolve();
+                            script.onerror = (e) => reject(e);
+                            document.head.appendChild(script);
+                        });
+                        if (window.MIDI && window.MIDI.Soundfont && window.MIDI.Soundfont[sfName]) {
+                            this.soundfontData[sfName] = window.MIDI.Soundfont[sfName];
+                            this.predecodeCommonNotes(sfName);
+                            return true;
+                        }
+                    } catch (scriptErr) {
+                        console.warn(`No se pudo cargar el banco de sonido real (${sfName}), usando motor MIDI de respaldo.`, scriptErr);
+                    }
+                }
+                return false;
+            })();
+
+            return this.soundfontLoading[sfName];
+        }
+
+        async decodeSampleBuffer(sfName, noteKey) {
+            const cacheKey = `${sfName}_${noteKey}`;
+            if (this.sampleBufferCache[cacheKey]) return this.sampleBufferCache[cacheKey];
+            const sf = this.soundfontData[sfName];
+            if (!sf || !sf[noteKey]) return null;
+
+            this.initContext();
+            const dataUri = sf[noteKey];
+            const base64Idx = dataUri.indexOf(',');
+            if (base64Idx === -1) return null;
+
+            try {
+                const b64 = dataUri.slice(base64Idx + 1);
+                const binStr = atob(b64);
+                const len = binStr.length;
+                const bytes = new Uint8Array(len);
+                for (let i = 0; i < len; i++) {
+                    bytes[i] = binStr.charCodeAt(i);
+                }
+                const audioBuffer = await this.ctx.decodeAudioData(bytes.buffer.slice(0));
+                this.sampleBufferCache[cacheKey] = audioBuffer;
+                return audioBuffer;
+            } catch (e) {
+                return null;
+            }
+        }
+
+        predecodeCommonNotes(sfName) {
+            setTimeout(async () => {
+                // Pre-decodificar registro habitual de banda (Mi3=52 a Do6=84) en segundo plano
+                for (let m = 48; m <= 86; m++) {
+                    const key = this.midiToNoteKey(m);
+                    if (this.soundfontData[sfName] && this.soundfontData[sfName][key]) {
+                        await this.decodeSampleBuffer(sfName, key);
+                    }
+                }
+            }, 30);
+        }
+
+        playRealSample(finalMidi, t, dur, vel, instrumentKey, legato, options = {}) {
+            const sfName = SOUNDFONT_INSTRUMENT_MAP[instrumentKey] || 'clarinet';
+            const noteKey = this.midiToNoteKey(finalMidi);
+            const cacheKey = `${sfName}_${noteKey}`;
+            const buffer = this.sampleBufferCache[cacheKey];
+
+            if (!buffer) {
+                // Iniciar carga asíncrona para las siguientes notas y usar síntesis inmediatamente sin latencia
+                if (!this.soundfontData[sfName]) {
+                    this.preloadSoundfont(instrumentKey);
+                } else {
+                    this.decodeSampleBuffer(sfName, noteKey);
+                }
+                return false;
+            }
+
+            const src = this.ctx.createBufferSource();
+            src.buffer = buffer;
+
+            // Ajustar afinación a 442 Hz (estándar de banda sinfónica)
+            const pitchRatio = this.concertPitchA4 / 440.0;
+            src.playbackRate.setValueAtTime(pitchRatio, t);
+
+            const envGain = this.ctx.createGain();
+            const attack = legato ? 0.012 : 0.025;
+            const release = legato ? 0.14 : 0.095;
+            const startV = (options.hairpin && typeof options.hairpin.startVel === 'number')
+                ? options.hairpin.startVel
+                : vel;
+            const endV = (options.hairpin && typeof options.hairpin.endVel === 'number')
+                ? options.hairpin.endVel
+                : startV;
+
+            envGain.gain.setValueAtTime(0.001, t);
+            envGain.gain.linearRampToValueAtTime(Math.min(1.0, startV * 0.95), t + attack);
+            if (Math.abs(endV - startV) > 0.03) {
+                envGain.gain.linearRampToValueAtTime(Math.min(1.0, endV * 0.95), t + Math.max(attack + 0.02, dur * 0.92));
+            } else {
+                envGain.gain.setValueAtTime(Math.min(1.0, startV * 0.90), t + Math.max(attack, dur - 0.03));
+            }
+            envGain.gain.exponentialRampToValueAtTime(0.0008, t + dur + release);
+
+            src.connect(envGain);
+            envGain.connect(this.masterGain);
+            if (this.reverbNode) {
+                envGain.connect(this.reverbNode);
+            }
+
+            src.start(t);
+            src.stop(t + dur + release + 0.02);
+            return true;
         }
 
         createAuditoriumReverb() {
@@ -418,7 +606,7 @@
             osc.stop(t + 0.04);
         }
 
-        // Tocar una nota musical (soporta offset temporal exacto para mordentes/adornos y curva dinámica de reguladores crescendo/disminuyendo)
+        // Tocar una nota musical (soporta Sonido Real por muestras SoundFont HQ o Sintetizador MIDI WebAudio, mordentes y reguladores crescendo/disminuyendo)
         playNote(midiNote, duration = 0.5, instrumentKey = 'clarinet', applyTransposition = false, legato = false, velocity = 0.8, options = {}) {
             this.initContext();
             const prof = INSTRUMENT_PROFILES[instrumentKey] || INSTRUMENT_PROFILES['clarinet'];
@@ -437,9 +625,16 @@
             const dur = Math.max(0.045, duration);
 
             // Modelar regulador crescendo (<) o disminuyendo (>) sobre notas sostenidas
-            if (this.masterGain) {
+            if (this.masterGain && options.hairpin) {
                 const baseVol = this.volume || 0.85;
-                if (options.hairpin === 'cresc') {
+                if (typeof options.hairpin === 'object' && typeof options.hairpin.startVel === 'number') {
+                    const ratioStart = Math.max(0.4, Math.min(1.25, options.hairpin.startVel / Math.max(0.25, velocity)));
+                    const ratioEnd = Math.max(0.35, Math.min(1.3, options.hairpin.endVel / Math.max(0.25, velocity)));
+                    this.masterGain.gain.cancelScheduledValues(now);
+                    this.masterGain.gain.setValueAtTime(baseVol * ratioStart, now);
+                    this.masterGain.gain.linearRampToValueAtTime(baseVol * ratioEnd, now + dur * 0.92);
+                    this.masterGain.gain.linearRampToValueAtTime(baseVol, now + dur);
+                } else if (options.hairpin === 'cresc') {
                     this.masterGain.gain.cancelScheduledValues(now);
                     this.masterGain.gain.setValueAtTime(baseVol * 0.72, now);
                     this.masterGain.gain.linearRampToValueAtTime(baseVol * 1.18, now + dur * 0.9);
@@ -452,6 +647,13 @@
                 }
             }
 
+            // 1. Si está activo el motor de Sonido Real (Muestras SoundFont HQ), reproducir muestra acústica real grabada
+            if (this.soundEngine === 'real' && instrumentKey !== 'percussion') {
+                const playedReal = this.playRealSample(finalNote, now, dur, velocity, instrumentKey, legato, options);
+                if (playedReal) return;
+            }
+
+            // 2. Motor Sintetizador MIDI (Web Audio API) o fallback instantáneo mientras se descarga el banco real
             switch (instrumentKey) {
                 case 'flute':
                 case 'piccolo':
@@ -912,12 +1114,44 @@
             this.meter = { num: 4, den: 4, beatDuration: 1.0 }; // Compás 4/4 por defecto
         }
 
+        // Calcula un umbral adaptativo de luminancia (Otsu / percentil de tinta) para partituras escaneadas o de baja resolución
+        computeAdaptiveInkThreshold(data, width, height) {
+            const hist = new Int32Array(256);
+            let totalSamples = 0;
+            const stepX = Math.max(2, Math.floor(width / 250));
+            const stepY = Math.max(2, Math.floor(height / 250));
+
+            for (let y = Math.floor(height * 0.05); y < Math.floor(height * 0.95); y += stepY) {
+                const rowStart = y * width * 4;
+                for (let x = Math.floor(width * 0.05); x < Math.floor(width * 0.95); x += stepX) {
+                    const idx = rowStart + x * 4;
+                    if (data[idx + 3] < 50) continue;
+                    const lum = Math.round(0.299 * data[idx] + 0.587 * data[idx + 1] + 0.114 * data[idx + 2]);
+                    hist[Math.max(0, Math.min(255, lum))]++;
+                    totalSamples++;
+                }
+            }
+            if (totalSamples < 100) return 175;
+
+            // Estimar luminancia del papel (percentil 75) y ajustar corte de tinta
+            let acc = 0;
+            let bgLum = 240;
+            for (let i = 255; i >= 0; i--) {
+                acc += hist[i];
+                if (acc >= totalSamples * 0.25) {
+                    bgLum = i;
+                    break;
+                }
+            }
+            return Math.max(125, Math.min(205, Math.round(bgLum - 42)));
+        }
+
         // Procesa el canvas de la partitura
         scanCanvas(canvas, pageNum = 1, instrumentKey = 'clarinet', canvasOffsetTop = 0) {
             if (!canvas || canvas.width === 0 || canvas.height === 0) return [];
 
-            // Si es un canvas PDF que aún no ha terminado de renderizar en la cola, esperar
-            if (canvas.dataset && canvas.dataset.pageNum && !canvas._viewport) {
+            // Si es un canvas PDF que aún no ha terminado de renderizar en la cola, NO escanear ni cachear falso positivo
+            if ((canvas._isPdfCanvas && !canvas._isRendered) || (canvas.dataset && canvas.dataset.pageNum && !canvas._viewport)) {
                 return [];
             }
 
@@ -941,25 +1175,41 @@
                 }
             }
 
-            // 2. MOTOR OMR RASTER (para imágenes escaneadas o partituras bitmap)
-            const ctx = canvas.getContext('2d');
-            const width = canvas.width;
-            const height = canvas.height;
+            // 2. MOTOR OMR RASTER CON SUPER-MUESTREO ADAPTATIVO (para partituras escaneadas o de baja resolución)
+            let workCanvas = canvas;
+            let omrScale = 1.0;
+            if (canvas.width > 0 && canvas.width < 1350 && typeof document !== 'undefined') {
+                omrScale = Math.min(2.5, Math.max(1.6, 1700 / canvas.width));
+                const upCanvas = document.createElement('canvas');
+                upCanvas.width = Math.round(canvas.width * omrScale);
+                upCanvas.height = Math.round(canvas.height * omrScale);
+                const upCtx = upCanvas.getContext('2d');
+                upCtx.imageSmoothingEnabled = true;
+                upCtx.imageSmoothingQuality = 'high';
+                upCtx.drawImage(canvas, 0, 0, upCanvas.width, upCanvas.height);
+                workCanvas = upCanvas;
+            }
+
+            const ctx = workCanvas.getContext('2d');
+            const width = workCanvas.width;
+            const height = workCanvas.height;
 
             if (width === 0 || height === 0) return [];
 
             const imageData = ctx.getImageData(0, 0, width, height);
             const data = imageData.data;
+            const inkThreshold = this.computeAdaptiveInkThreshold(data, width, height);
 
-            // Detección de pentagramas
-            const staffSystems = this.detectStaves(data, width, height, canvasOffsetTop);
+            // Detección de pentagramas con umbral adaptativo
+            const staffSystems = this.detectStaves(data, width, height, canvasOffsetTop, inkThreshold);
             this.staves = staffSystems;
 
             const detectedNotes = [];
 
-            // Escaneo detallado de cada pentagrama
+            // Escaneo detallado de cada pentagrama en estricto orden vertical y horizontal
             staffSystems.forEach((staff, staffIdx) => {
                 staff.canvas = canvas;
+                staff.inkThreshold = inkThreshold;
                 // a) Detectar líneas divisorias de compás (Barlines)
                 const barlines = this.detectBarlines(data, width, height, staff);
                 
@@ -972,54 +1222,50 @@
                 // d) Normalización métrica por compases
                 this.normalizeMeasuresAndRhythms(notesInStaff, barlines, staff);
 
+                // Si se hizo super-muestreo para baja resolución, reescalar coordenadas X/Y al canvas original y asegurar orden secuencial X
+                if (omrScale !== 1.0) {
+                    notesInStaff.forEach(n => {
+                        n.x = Math.round(n.x / omrScale);
+                        n.y = Math.round(n.y / omrScale);
+                        n.w = Math.max(14, Math.round((n.w || 20) / omrScale));
+                        n.h = Math.max(16, Math.round((n.h || 20) / omrScale));
+                    });
+                }
+                notesInStaff.sort((a, b) => (a.x || 0) - (b.x || 0));
+
                 detectedNotes.push(...notesInStaff);
             });
 
-            // Fallback inteligente si la página tiene poco contraste o es texto
-            let usedSyntheticFallback = false;
-            if (detectedNotes.length === 0 && staffSystems.length > 0) {
-                usedSyntheticFallback = true;
-                staffSystems.forEach((staff, staffIdx) => {
-                    const fallback = this.generateCoherentMelodyForStaff(staff, staffIdx, pageNum, width, prof);
-                    detectedNotes.push(...fallback);
-                });
-            } else if (detectedNotes.length === 0) {
-                usedSyntheticFallback = true;
-                detectedNotes.push(...this.generateDemoScore(prof));
+            // Re-indexar secuencialmente todas las notas detectadas en la página
+            detectedNotes.forEach((n, idx) => { n.noteIndex = idx; });
+
+            const warningsList = [
+                `Pág. ${pageNum}: Partitura sin fuente musical vectorial; procesada mediante visión artificial OMR con realce de resolución (${omrScale > 1 ? omrScale.toFixed(1) + 'x' : '1x'}).`
+            ];
+            if (detectedNotes.length === 0) {
+                warningsList.push(`Pág. ${pageNum}: Baja nitidez o página de portada/texto sin cabezas de nota detectables.`);
             }
 
             canvas._scanDiagnostics = {
                 page: pageNum,
-                engine: 'raster_omr',
-                confidence: usedSyntheticFallback ? 25 : 58,
-                stavesCount: staffSystems.length,
-                notesCount: detectedNotes.length,
-                chordsCount: detectedNotes.filter(n => n.isChord).length,
-                multiRestsCount: detectedNotes.filter(n => n.isMultiRest).length,
-                graceNotesCount: detectedNotes.reduce((acc, n) => acc + (n.graceNotes ? n.graceNotes.length : 0), 0),
-                hairpinsCount: 0,
-                difficulties: [
-                    {
-                        level: 'high',
-                        code: 'raster_fallback',
-                        page: pageNum,
-                        title: 'Partitura sin capa vectorial de texto musical (Modo Imagen / Escaneo)',
-                        detail: `La página ${pageNum} no contiene glifos vectoriales de fuente musical (Maestro/Sonata/Opus) y se ha leído por visión artificial de píxeles (OMR Raster). La precisión en alteraciones, silencios multicompás y mordentes puede verse reducida.`
-                    }
-                ]
+                engine: 'raster-omr',
+                confidence: detectedNotes.length > 0 ? 68 : 35,
+                stats: {
+                    staves: staffSystems.length,
+                    notes: detectedNotes.length,
+                    chords: detectedNotes.filter(n => n.isChord).length,
+                    multiRests: detectedNotes.filter(n => n.isMultiRest).length,
+                    graceAndOrnaments: detectedNotes.reduce((acc, n) => acc + (n.graceNotes ? n.graceNotes.length : 0), 0),
+                    tiesAndSlurs: detectedNotes.filter(n => n.tiedToNext || n.legato).length,
+                    hairpins: 0
+                },
+                warnings: warningsList
             };
-            if (usedSyntheticFallback) {
-                canvas._scanDiagnostics.difficulties.push({
-                    level: 'high',
-                    code: 'low_contrast_score',
-                    page: pageNum,
-                    title: 'Dificultad severa de contraste o detección de cabezas de nota',
-                    detail: `En la página ${pageNum} se detectaron ${staffSystems.length} pentagramas pero ninguna cabeza de nota nítida.`
-                });
-            }
 
-            canvas._scannedNotes = detectedNotes;
-            canvas._scannedInstrument = instrumentKey;
+            if (detectedNotes.length > 0) {
+                canvas._scannedNotes = detectedNotes;
+                canvas._scannedInstrument = instrumentKey;
+            }
             this.notes = detectedNotes;
             return detectedNotes;
         }
@@ -1195,15 +1441,16 @@
                                 const p0 = pts[0], p1 = pts[1], p2 = pts[2];
                                 if (Math.abs(p0[0] - p2[0]) < 3.5 * scale && Math.abs(p0[1] - p2[1]) >= 2.0 * scale) {
                                     const hType = (p1[0] < (p0[0] + p2[0]) * 0.5) ? 'cresc' : 'dim';
-                                    result.hairpins.push({ type: hType, x0, x1, y0, y1, ym: (y0 + y1) * 0.5, w, h });
+                                    const ym = (y0 + y1) * 0.5;
+                                    result.hairpins.push({ type: hType, x0, x1, y0, y1, y: ym, ym, w, h });
                                 }
                             }
                         } else if (isStroke && pts.length === 2) {
                             if (w > canvasWidth * 0.25 && h < 3.0 * scale) {
                                 rawHorizLines.push({ x0, x1, y: (y0 + y1) * 0.5 });
-                            } else if (w >= 11 * scale && w <= 165 * scale && h < 3.2 * scale) {
+                            } else if (w >= 24 * scale && w <= 165 * scale && h < 2.2 * scale) {
                                 // Barra horizontal de silencio multicompás (H-bar sobre 3ª línea)
-                                rawMultiRestBars.push({ x0, x1, y: (y0 + y1) * 0.5, w, h });
+                                rawMultiRestBars.push({ x0, x1, xm: (x0 + x1) * 0.5, y: (y0 + y1) * 0.5, w, h });
                             } else if (w < 2.8 * scale && h >= 12 * scale && h <= 30 * scale) {
                                 rawVertLines.push({ x: (x0 + x1) * 0.5, y0, y1, h });
                             } else if (w >= 6.0 * scale && w <= 340 * scale && h >= 0.8 * scale && h <= 14.0 * scale) {
@@ -1213,9 +1460,6 @@
                             // Barras de corchea / semicorchea (Beams: paralelogramos rellenos)
                             if (w >= 2.5 * scale && w <= 240 * scale && h >= 1.1 * scale && h <= 10.5 * scale) {
                                 result.beams.push({ x0, x1, y0, y1, ym: (y0 + y1) * 0.5, w, h });
-                            }
-                            if (w >= 11 * scale && w <= 165 * scale && h <= 6.0 * scale) {
-                                rawMultiRestBars.push({ x0, x1, y: (y0 + y1) * 0.5, w, h });
                             }
                         }
                     }
@@ -1237,24 +1481,28 @@
                         const gapLeft = Math.abs(l1LeftY - l2LeftY);
                         const gapRight = Math.abs(l1RightY - l2RightY);
                         if (gapLeft < 2.2 * scale && gapRight >= 2.5 * scale) {
+                            const ym = (l1.ym + l2.ym) * 0.5;
                             result.hairpins.push({
                                 type: 'cresc',
                                 x0: Math.min(l1.x0, l2.x0),
                                 x1: Math.max(l1.x1, l2.x1),
                                 y0: Math.min(l1.y0, l2.y0),
                                 y1: Math.max(l1.y1, l2.y1),
-                                ym: (l1.ym + l2.ym) * 0.5,
+                                y: ym,
+                                ym: ym,
                                 w: Math.max(l1.w, l2.w),
                                 h: Math.max(gapLeft, gapRight)
                             });
                         } else if (gapRight < 2.2 * scale && gapLeft >= 2.5 * scale) {
+                            const ym = (l1.ym + l2.ym) * 0.5;
                             result.hairpins.push({
                                 type: 'dim',
                                 x0: Math.min(l1.x0, l2.x0),
                                 x1: Math.max(l1.x1, l2.x1),
                                 y0: Math.min(l1.y0, l2.y0),
                                 y1: Math.max(l1.y1, l2.y1),
-                                ym: (l1.ym + l2.ym) * 0.5,
+                                y: ym,
+                                ym: ym,
                                 w: Math.max(l1.w, l2.w),
                                 h: Math.max(gapLeft, gapRight)
                             });
@@ -1559,6 +1807,8 @@
                 });
             }
 
+            // Asegurar orden vertical estricto de pentagramas de arriba abajo
+            staffSystems.sort((a, b) => a.top - b.top);
             diagnostics.stats.staves = staffSystems.length;
 
             // Calcular tamaño de fuente modal de las notas principales de la página para distinguir mordentes / notas de adorno (que tienen tamaño reducido)
@@ -1582,8 +1832,13 @@
             staffSystems.forEach((staff, staffIdx) => {
                 const sp = staff.sp || (scale * 4.25);
                 const diatonicStepPx = sp / 2.0;
-                const rowTop = staff.top - 5.5 * sp;
-                const rowBottom = staff.bottom + 5.5 * sp;
+                // Fronteras verticales sin solapamiento entre pentagramas adyacentes para evitar que notas agudas o números de un pentagrama se capturen en el anterior/siguiente
+                const rowTop = staffIdx > 0
+                    ? Math.max(staff.top - 5.5 * sp, (staffSystems[staffIdx - 1].bottom + staff.top) * 0.5)
+                    : (staff.top - 5.5 * sp);
+                const rowBottom = (staffIdx + 1 < staffSystems.length)
+                    ? Math.min(staff.bottom + 5.5 * sp, (staff.bottom + staffSystems[staffIdx + 1].top) * 0.5)
+                    : (staff.bottom + 5.5 * sp);
 
                 const rowAllItems = rawItems.filter(it => it.canvasY >= rowTop && it.canvasY <= rowBottom);
                 rowAllItems.sort((a, b) => a.canvasX - b.canvasX);
@@ -1712,8 +1967,10 @@
                 // Construir eventos de Silencios Multicompás (H-bars con número encima/debajo)
                 const rawStaffEvents = [];
                 for (const mb of staffMultiRestBars) {
+                    const mbXm = (typeof mb.xm === 'number' && !isNaN(mb.xm)) ? mb.xm : (mb.x0 + mb.x1) * 0.5;
+
                     // Verificar que no haya notas ejecutables dentro de la barra horizontal
-                    const hasPlayableInside = notesInRow.some(n => !n.glyphInfo.isRest && n.canvasX >= mb.x0 - 0.3 * sp && n.canvasX <= mb.x1 + 0.3 * sp);
+                    const hasPlayableInside = notesInRow.some(n => !n.glyphInfo.isRest && n.canvasX >= mb.x0 - 0.8 * sp && n.canvasX <= mb.x1 + 0.8 * sp);
                     if (hasPlayableInside) continue;
 
                     // Buscar el número de compases centrado sobre la barra H-bar (ej. 8, 3, 9, 10, 6, 2)
@@ -1731,13 +1988,13 @@
                     const repeatMeasures = Math.max(1, numTok.value);
                     const totalRestBeats = repeatMeasures * pageBeatsPerMeasure;
                     let barIdx = 0;
-                    while (barIdx < staffBarlines.length && staffBarlines[barIdx] < mb.xm) barIdx++;
+                    while (barIdx < staffBarlines.length && staffBarlines[barIdx] < mbXm) barIdx++;
 
                     diagnostics.stats.multiRests++;
 
                     rawStaffEvents.push({
                         isMultiRestEvent: true,
-                        x: Math.round(mb.xm),
+                        x: Math.round(mbXm),
                         y: Math.round(staff.lines[2]),
                         w: Math.round(Math.max(sp * 3.0, mb.w)),
                         h: Math.round(sp * 2.4),
@@ -1987,8 +2244,8 @@
                     });
                 });
 
-                // Ordenar todos los eventos del pentagrama de izquierda a derecha
-                rawStaffEvents.sort((a, b) => a.x - b.x);
+                // Ordenar todos los eventos del pentagrama estrictamente de izquierda a derecha (secuencial)
+                rawStaffEvents.sort((a, b) => (a.x || 0) - (b.x || 0));
 
                 // Detectar signo de repetición de compás completo ('‘' code 8216 = 𝄎)
                 const repeatMeasureSigns = rowAllItems.filter(it => it.char === '‘' && it.canvasY >= staff.top - 1.5 * sp && it.canvasY <= staff.bottom + 1.5 * sp);
@@ -2007,7 +2264,7 @@
                         }
                     }
                 }
-                rawStaffEvents.sort((a, b) => a.x - b.x);
+                rawStaffEvents.sort((a, b) => (a.x || 0) - (b.x || 0));
 
                 // 4A. Separar Mordentes / Notas de adorno (isGraceNote) para adjuntarlos a la nota principal siguiente (ejecutándose dentro de su mismo tiempo)
                 const pendingGraceNotes = [];
@@ -2232,10 +2489,10 @@
                 }
 
                 // Aplicar reguladores vectoriales (< crescendo abriendo, > disminuyendo cerrando)
-                const staffHairpins = (vec.hairpins || []).filter(hp =>
-                    hp.y >= staff.top - 4.5 * sp &&
-                    hp.y <= staff.bottom + 5.8 * sp
-                );
+                const staffHairpins = (vec.hairpins || []).filter(hp => {
+                    const hy = (typeof hp.ym === 'number') ? hp.ym : hp.y;
+                    return hy >= staff.top - 4.5 * sp && hy <= staff.bottom + 5.8 * sp;
+                });
 
                 for (const hp of staffHairpins) {
                     const notesInHairpin = staffNotes.filter(n =>
@@ -2401,10 +2658,10 @@
             return { midi, name };
         }
 
-        // Detección de pentagramas mediante histograma de proyección horizontal
-        detectStaves(data, width, height, canvasOffsetTop = 0) {
+        // Detección de pentagramas mediante histograma de proyección horizontal con umbral adaptativo
+        detectStaves(data, width, height, canvasOffsetTop = 0, inkThreshold = 175) {
             const rowBlackPixels = new Int32Array(height);
-            const threshold = 175;
+            const threshold = inkThreshold || 175;
 
             for (let y = 0; y < height; y++) {
                 let blackCount = 0;
@@ -2418,7 +2675,7 @@
                 rowBlackPixels[y] = blackCount * 2;
             }
 
-            const minLineWidth = width * 0.22;
+            const minLineWidth = width * 0.19;
             const lineCandidates = [];
             for (let y = 5; y < height - 5; y++) {
                 if (rowBlackPixels[y] > minLineWidth &&
@@ -2437,7 +2694,7 @@
                     currentGroup.push(y);
                 } else {
                     const diff = y - currentGroup[currentGroup.length - 1];
-                    if (diff >= 4 && diff <= 35) {
+                    if (diff >= 2 && diff <= 42) {
                         currentGroup.push(y);
                         if (currentGroup.length === 5) {
                             const sp = (currentGroup[4] - currentGroup[0]) / 4;
@@ -2452,7 +2709,7 @@
                             });
                             currentGroup = [];
                         }
-                    } else if (diff > 35) {
+                    } else if (diff > 42) {
                         currentGroup = [y];
                     }
                 }
@@ -2468,17 +2725,18 @@
             const y1 = staff.lines[0];
             const y5 = staff.lines[4];
             const staffH = y5 - y1;
+            const barLumThreshold = Math.max(130, (staff.inkThreshold || 175) - 12);
 
             for (let x = staff.xStart + Math.floor(sp * 4); x < staff.xEnd - Math.floor(sp * 2); x++) {
                 let darkPixelsInColumn = 0;
                 for (let y = y1; y <= y5; y++) {
                     const idx = (y * width + x) * 4;
                     const lum = 0.299 * data[idx] + 0.587 * data[idx + 1] + 0.114 * data[idx + 2];
-                    if (lum < 150) darkPixelsInColumn++;
+                    if (lum < barLumThreshold) darkPixelsInColumn++;
                 }
 
                 // Si una columna atraviesa casi todas las líneas del pentagrama de forma continua
-                if (darkPixelsInColumn >= staffH * 0.85) {
+                if (darkPixelsInColumn >= staffH * 0.82) {
                     // Evitar duplicados adyacentes
                     if (barlines.length === 0 || (x - barlines[barlines.length - 1]) > sp * 3.5) {
                         barlines.push(x);
@@ -2496,8 +2754,9 @@
             const sp = staff.lineSpacing;
             const yTop = staff.yTop - sp * 2.8;
             const yBottom = staff.yBottom + sp * 2.8;
-            const noteRadius = Math.max(3, Math.round(sp * 0.46));
+            const noteRadius = Math.max(2, Math.round(sp * 0.46));
             const xStep = Math.max(2, Math.round(sp * 0.35));
+            const noteLumThreshold = Math.max(125, (staff.inkThreshold || 175) - 18);
 
             let lastX = -100;
 
@@ -2514,12 +2773,12 @@
                             if (px >= 0 && px < width && py >= 0 && py < height) {
                                 const idx = (py * width + px) * 4;
                                 const lum = 0.299 * data[idx] + 0.587 * data[idx + 1] + 0.114 * data[idx + 2];
-                                if (lum < 145) darkCount++;
+                                if (lum < noteLumThreshold) darkCount++;
                             }
                         }
                     }
 
-                    if (darkCount > (noteRadius * noteRadius * 1.35)) {
+                    if (darkCount > (noteRadius * noteRadius * 1.25)) {
                         if (candidateYs.length === 0 || (y - candidateYs[candidateYs.length - 1].y) >= Math.max(4, Math.round(sp * 0.75))) {
                             candidateYs.push({ y, darkCount });
                         } else if (darkCount > candidateYs[candidateYs.length - 1].darkCount) {
@@ -3376,9 +3635,157 @@
             this.currentContainer = containerElement;
             this.rawInstrumentName = (instrumentName || 'CLARINETE').toUpperCase();
             this.selectedInstrument = matchInstrumentProfile(instrumentName);
+            this._manualPositionSet = false;
+            this.synth.preloadSoundfont(this.selectedInstrument);
             this.createDOMCursor();
             this.renderDockUI();
             this.enableDragAndDrop();
+            this.enableManualCursorPositioning();
+        }
+
+        // Permite posicionar el cursor de lectura manualmente haciendo clic/toque en cualquier punto de la partitura o arrastrando el propio cursor
+        enableManualCursorPositioning() {
+            if (!this.currentContainer || this._manualCursorBound) return;
+            this._manualCursorBound = true;
+
+            let isDraggingCursor = false;
+            let pointerDownPos = null;
+
+            // 1. Arrastrar directamente el cursor ámbar a otra nota/pentagrama
+            if (this.cursorElement) {
+                this.cursorElement.addEventListener('pointerdown', (e) => {
+                    e.stopPropagation();
+                    isDraggingCursor = true;
+                    this.cursorElement.style.transition = 'none';
+                    this.cursorElement.style.cursor = 'grabbing';
+                    if (this.cursorElement.setPointerCapture) {
+                        try { this.cursorElement.setPointerCapture(e.pointerId); } catch (_) {}
+                    }
+                });
+
+                window.addEventListener('pointermove', (e) => {
+                    if (!isDraggingCursor || !this.currentContainer) return;
+                    const rect = this.currentContainer.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    this.cursorElement.style.left = `${Math.round(x - 14)}px`;
+                    this.cursorElement.style.top = `${Math.round(y - 18)}px`;
+                });
+
+                window.addEventListener('pointerup', (e) => {
+                    if (!isDraggingCursor) return;
+                    isDraggingCursor = false;
+                    if (this.cursorElement) {
+                        this.cursorElement.style.transition = 'top 0.12s ease-out, left 0.12s ease-out, width 0.12s ease-out, height 0.12s ease-out';
+                        this.cursorElement.style.cursor = 'grab';
+                    }
+                    this.seekToClientPoint(e.clientX, e.clientY, true);
+                });
+            }
+
+            // 2. Hacer clic o tocar en cualquier punto de la partitura (canvas o imagen) para situar el cursor ahí
+            this.currentContainer.addEventListener('pointerdown', (e) => {
+                if (e.target && e.target.closest && e.target.closest('#music-interpreter-dock, #music-interpreter-cursor')) return;
+                pointerDownPos = { x: e.clientX, y: e.clientY, time: Date.now() };
+            });
+
+            this.currentContainer.addEventListener('pointerup', (e) => {
+                if (!pointerDownPos) return;
+                if (e.target && e.target.closest && e.target.closest('#music-interpreter-dock, #music-interpreter-cursor')) {
+                    pointerDownPos = null;
+                    return;
+                }
+                const dx = Math.abs(e.clientX - pointerDownPos.x);
+                const dy = Math.abs(e.clientY - pointerDownPos.y);
+                const dt = Date.now() - pointerDownPos.time;
+                pointerDownPos = null;
+
+                // Solo tratar como clic/toque de posicionamiento si no ha sido un gesto largo de scroll
+                const dockEl = document.getElementById('music-interpreter-dock');
+                const isDockVisible = dockEl && dockEl.offsetParent !== null;
+                if (isDockVisible && dx < 14 && dy < 14 && dt < 650) {
+                    const tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : '';
+                    if (tag === 'canvas' || tag === 'img') {
+                        this.seekToClientPoint(e.clientX, e.clientY, true);
+                    }
+                }
+            });
+        }
+
+        // Busca la nota/silencio más cercano al punto (clientX, clientY) de la pantalla y posiciona el cursor de interpretación
+        seekToClientPoint(clientX, clientY, playPreviewIfPaused = true) {
+            if (!this.reader.notes || this.reader.notes.length === 0) {
+                this.scanCurrentScore();
+            }
+            const notes = this.reader.notes;
+            if (!notes || notes.length === 0) return -1;
+
+            let bestIdx = -1;
+            let bestScore = Infinity;
+
+            for (let i = 0; i < notes.length; i++) {
+                const n = notes[i];
+                const c = n.canvas || (this.currentContainer && this.currentContainer.querySelector('canvas:not(#music-interpreter-overlay)'));
+                if (!c) continue;
+
+                const rect = c.getBoundingClientRect();
+                if (rect.width === 0 || rect.height === 0) continue;
+
+                // Descartar páginas que están lejos verticalmente del clic
+                if (clientY < rect.top - 80 || clientY > rect.bottom + 80) continue;
+
+                const scaleX = rect.width / (c.width || rect.width);
+                const scaleY = rect.height / (c.height || rect.height);
+                const noteClientX = rect.left + n.x * scaleX;
+                const noteClientY = rect.top + n.y * scaleY;
+
+                const dy = Math.abs(clientY - noteClientY);
+                const dx = Math.abs(clientX - noteClientX);
+
+                // Priorizar fuertemente que sea el mismo pentagrama (distancia vertical Y) y luego la nota más cercana en X
+                const distScore = dy * 4.8 + dx;
+                if (distScore < bestScore) {
+                    bestScore = distScore;
+                    bestIdx = i;
+                }
+            }
+
+            if (bestIdx >= 0) {
+                this.seekToNoteIndex(bestIdx, playPreviewIfPaused);
+            }
+            return bestIdx;
+        }
+
+        seekToNoteIndex(targetIdx, playPreviewIfPaused = true) {
+            if (!this.reader.notes || targetIdx < 0 || targetIdx >= this.reader.notes.length) return;
+
+            this.currentIndex = targetIdx;
+            this._manualPositionSet = true;
+            const note = this.reader.notes[targetIdx];
+
+            this.positionCursor(note);
+            this.updateCurrentNoteUI(note);
+
+            const elem = document.getElementById('mi-current-note');
+            if (elem && !this.isPlaying) {
+                elem.innerText = `📍 Cursor situado en Compás ${note.measure || 1}: ${note.symbol || '♩'} ${note.name || 'Silencio'} (Pulsa Play para continuar desde aquí)`;
+            }
+
+            if (this.isPlaying) {
+                // Si está reproduciendo, saltar inmediatamente a esta posición y continuar secuencialmente desde ahí
+                clearTimeout(this.playbackTimer);
+                if (this.multiRestInterval) {
+                    clearInterval(this.multiRestInterval);
+                    this.multiRestInterval = null;
+                }
+                this.scheduleNextNote();
+            } else if (playPreviewIfPaused && !note.isRest) {
+                // Emitir breve referencia sonora de la nota donde se ha colocado el cursor
+                const voices = this.resolveColumnNotes(note);
+                for (const v of voices) {
+                    this.synth.playNote(v.pitch, 0.28, this.selectedInstrument, this.applyTransposition, false, 0.72);
+                }
+            }
         }
 
         // Resuelve qué notas de una columna deben sonar (1 según instrumento/voz o todas a la vez en el mismo tiempo)
@@ -3412,7 +3819,7 @@
             return [allVoices[0]];
         }
 
-        // Cursor DOM translúcido (NUNCA tapa la partitura ni crea fondos blancos)
+        // Cursor DOM translúcido e interactivo (permite arrastrarlo o hacer clic en la partitura; nunca tapa la partitura ni crea fondos blancos)
         createDOMCursor() {
             if (this.cursorElement) {
                 this.cursorElement.remove();
@@ -3421,7 +3828,9 @@
             const cursor = document.createElement('div');
             cursor.id = 'music-interpreter-cursor';
             cursor.style.position = 'absolute';
-            cursor.style.pointerEvents = 'none';
+            cursor.style.pointerEvents = 'auto';
+            cursor.style.cursor = 'grab';
+            cursor.style.touchAction = 'none';
             cursor.style.zIndex = '35';
             cursor.style.display = 'none';
             cursor.style.transition = 'top 0.12s ease-out, left 0.12s ease-out, width 0.12s ease-out, height 0.12s ease-out';
@@ -3429,6 +3838,7 @@
             cursor.style.backgroundColor = 'rgba(245, 158, 11, 0.22)';
             cursor.style.borderRadius = '6px';
             cursor.style.boxShadow = '0 0 16px rgba(245, 158, 11, 0.65)';
+            cursor.title = 'Arrastra este cursor o haz clic en cualquier nota de la partitura para colocar el inicio/continuación de lectura';
 
             cursor.innerHTML = `
                 <div id="music-cursor-badge" style="position: absolute; top: -20px; left: 50%; transform: translateX(-50%); background: #0f172a; color: #f59e0b; font-size: 11px; font-weight: bold; font-family: monospace; padding: 1px 6px; border-radius: 4px; border: 1px solid #f59e0b; white-space: nowrap; box-shadow: 0 2px 8px rgba(0,0,0,0.5);">
@@ -3447,6 +3857,10 @@
         // Escanear partitura actual en el visor y recopilar diagnósticos de dificultad de lectura
         scanCurrentScore(forceRescan = false) {
             if (!this.currentContainer) return [];
+            const prevActiveNote = (this.reader.notes && this.reader.notes[this.currentIndex])
+                ? this.reader.notes[this.currentIndex]
+                : null;
+
             const canvases = this.currentContainer.querySelectorAll('canvas:not(#music-interpreter-overlay)');
             let allNotes = [];
             let detectedScoreBpm = null;
@@ -3490,6 +3904,18 @@
                 const sliderBpm = document.getElementById('mi-slider-bpm');
                 if (inputBpm) inputBpm.value = detectedScoreBpm;
                 if (sliderBpm) sliderBpm.value = detectedScoreBpm;
+            }
+
+            // Conservar el índice de lectura actual cuando se terminan de renderizar páginas en segundo plano
+            if (prevActiveNote && (this.isPlaying || this.isPaused || this._manualPositionSet) && allNotes.length > 0) {
+                const matchedIdx = allNotes.findIndex(n =>
+                    n.pageNum === prevActiveNote.pageNum &&
+                    n.staffIndex === prevActiveNote.staffIndex &&
+                    Math.abs(n.x - prevActiveNote.x) <= 6
+                );
+                if (matchedIdx >= 0) {
+                    this.currentIndex = matchedIdx;
+                }
             }
 
             this.diagnosticsList = collectedDiagnostics;
@@ -3550,8 +3976,8 @@
                 return;
             }
 
-            // Si el usuario ha hecho scroll hacia una página/particella específica y pulsa Play desde el inicio, comenzar desde el primer pentagrama visible en pantalla
-            if (!this.isPaused && this.currentIndex === 0 && window.scrollY > window.innerHeight * 0.45) {
+            // Si el usuario NO ha colocado manualmente el cursor y ha hecho scroll hacia una página específica, comenzar desde el primer pentagrama visible en pantalla
+            if (!this.isPaused && !this._manualPositionSet && this.currentIndex === 0 && window.scrollY > window.innerHeight * 0.45) {
                 const scrollTargetY = window.scrollY;
                 const firstVisibleIdx = this.reader.notes.findIndex(n => {
                     const c = n.canvas;
@@ -3587,6 +4013,7 @@
             this.isPlaying = false;
             this.isPaused = false;
             this.currentIndex = 0;
+            this._manualPositionSet = false;
             clearTimeout(this.playbackTimer);
             if (this.multiRestInterval) {
                 clearInterval(this.multiRestInterval);
@@ -3846,12 +4273,18 @@
                     <!-- Fila Superior: Controles Principales -->
                     <div class="flex flex-wrap items-center justify-between gap-2.5">
                         
-                        <!-- Botones de Reproducción -->
-                        <div class="flex items-center gap-1.5 sm:gap-2">
-                            <button id="mi-btn-play" class="flex items-center justify-center w-11 h-11 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white shadow-lg shadow-indigo-500/30 transition transform active:scale-95" title="Reproducir partitura">
+                        <!-- Botones de Reproducción y Posicionamiento Manual del Cursor -->
+                        <div class="flex items-center gap-1 sm:gap-1.5">
+                            <button id="mi-btn-prev" class="flex items-center justify-center w-8 h-8 rounded-full bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white transition" title="Retroceder cursor a la nota anterior (también puedes hacer clic directo sobre cualquier nota de la partitura)">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M8.445 14.832A1 1 0 0010 14v-2.798l5.445 3.63A1 1 0 0017 14V6a1 1 0 00-1.555-.832L10 8.798V6a1 1 0 00-1.555-.832l-6 4a1 1 0 000 1.664l6 4z"/></svg>
+                            </button>
+                            <button id="mi-btn-play" class="flex items-center justify-center w-11 h-11 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white shadow-lg shadow-indigo-500/30 transition transform active:scale-95" title="Reproducir o continuar desde la posición actual del cursor">
                                 <svg class="w-5 h-5 ml-0.5" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/></svg>
                             </button>
-                            <button id="mi-btn-stop" class="flex items-center justify-center w-9 h-9 rounded-full bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white transition" title="Detener">
+                            <button id="mi-btn-next" class="flex items-center justify-center w-8 h-8 rounded-full bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white transition" title="Avanzar cursor a la nota siguiente (también puedes hacer clic directo sobre cualquier nota de la partitura)">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M4.555 5.168A1 1 0 003 6v8a1 1 0 001.555.832L10 11.202V14a1 1 0 001.555.832l6-4a1 1 0 000-1.664l-6-4A1 1 0 0010 6v2.798L4.555 5.168z"/></svg>
+                            </button>
+                            <button id="mi-btn-stop" class="flex items-center justify-center w-9 h-9 rounded-full bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white transition" title="Detener y volver al inicio">
                                 <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><rect x="4" y="4" width="12" height="12" rx="2"/></svg>
                             </button>
                             <button id="mi-btn-scan" class="flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white transition shadow-sm" title="Re-escanear y leer notas, figuras, acordes, mordentes y ligaduras de la partitura">
@@ -3860,15 +4293,19 @@
                             </button>
                         </div>
 
-                        <!-- Selector de Instrumento y Modo de Voces en Columna -->
+                        <!-- Selector de Instrumento, Motor de Sonido (Real vs MIDI) y Modo de Voces -->
                         <div class="flex flex-wrap items-center gap-1.5">
-                            <span class="text-xs text-indigo-300 font-medium hidden lg:inline">Sonido:</span>
-                            <select id="mi-select-inst" class="bg-gray-800 border border-gray-700 rounded-lg text-xs font-semibold text-white px-2 py-1.5 focus:ring-2 focus:ring-indigo-500 focus:outline-none max-w-[165px] sm:max-w-[200px]">
+                            <select id="mi-select-inst" class="bg-gray-800 border border-gray-700 rounded-lg text-xs font-semibold text-white px-2 py-1.5 focus:ring-2 focus:ring-indigo-500 focus:outline-none max-w-[155px] sm:max-w-[185px]" title="Instrumento de la banda">
                                 ${Object.keys(INSTRUMENT_PROFILES).map(k => `
                                     <option value="${k}" ${k === this.selectedInstrument ? 'selected' : ''}>
                                         ${INSTRUMENT_PROFILES[k].name} (${INSTRUMENT_PROFILES[k].family})
                                     </option>
                                 `).join('')}
+                            </select>
+
+                            <select id="mi-select-soundmode" class="bg-gray-800 border border-emerald-500/40 rounded-lg text-[11px] font-semibold text-emerald-300 px-2 py-1.5 focus:ring-2 focus:ring-emerald-500 focus:outline-none" title="Elegir entre Muestras de Instrumento Real (SoundFont HQ) o Sintetizador MIDI">
+                                <option value="real" ${this.synth.soundEngine === 'real' ? 'selected' : ''}>🎻 Sonido Real (Muestras HQ)</option>
+                                <option value="midi" ${this.synth.soundEngine === 'midi' ? 'selected' : ''}>🎹 Sonido MIDI (Sintetizador)</option>
                             </select>
 
                             <select id="mi-select-voicemode" class="bg-gray-800 border border-gray-700 rounded-lg text-[11px] font-medium text-indigo-200 px-2 py-1.5 focus:ring-2 focus:ring-indigo-500 focus:outline-none" title="Comportamiento cuando hay 2 o más notas en la misma columna (tiempo)">
@@ -3916,8 +4353,8 @@
                             <button id="mi-badge-diagnostics" class="hidden items-center gap-1 px-2 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 font-medium hover:bg-cyan-500/25 transition" title="Haz clic para ver detalles sobre la lectura de esta partitura">
                             </button>
                         </div>
-                        <div id="mi-current-note" class="font-mono text-amber-400 font-bold truncate max-w-[300px]">
-                            Partitura lista para reproducir (Experimental)
+                        <div id="mi-current-note" class="font-mono text-amber-400 font-bold truncate max-w-[380px]" title="Puedes hacer clic o tocar cualquier punto de la partitura para colocar el cursor de lectura donde quieras">
+                            💡 Toca cualquier nota de la partitura para situar el cursor o pulsa Play
                         </div>
                     </div>
 
@@ -3988,10 +4425,13 @@
         }
 
         bindDockEvents() {
+            const btnPrev = document.getElementById('mi-btn-prev');
             const btnPlay = document.getElementById('mi-btn-play');
+            const btnNext = document.getElementById('mi-btn-next');
             const btnStop = document.getElementById('mi-btn-stop');
             const btnScan = document.getElementById('mi-btn-scan');
             const selectInst = document.getElementById('mi-select-inst');
+            const selectSoundMode = document.getElementById('mi-select-soundmode');
             const selectVoiceMode = document.getElementById('mi-select-voicemode');
             const inputBpm = document.getElementById('mi-input-bpm');
             const sliderBpm = document.getElementById('mi-slider-bpm');
@@ -4009,6 +4449,22 @@
             const btnExportMidi = document.getElementById('mi-btn-export-midi');
             const btnDemo = document.getElementById('mi-btn-demo');
 
+            if (btnPrev) {
+                btnPrev.addEventListener('click', () => {
+                    if (!this.reader.notes || this.reader.notes.length === 0) this.scanCurrentScore();
+                    const prevIdx = Math.max(0, (this.isPlaying ? this.currentIndex - 2 : this.currentIndex - 1));
+                    this.seekToNoteIndex(prevIdx, true);
+                });
+            }
+
+            if (btnNext) {
+                btnNext.addEventListener('click', () => {
+                    if (!this.reader.notes || this.reader.notes.length === 0) this.scanCurrentScore();
+                    const nextIdx = Math.min((this.reader.notes.length || 1) - 1, (this.isPlaying ? this.currentIndex : this.currentIndex + 1));
+                    this.seekToNoteIndex(nextIdx, true);
+                });
+            }
+
             btnPlay.addEventListener('click', () => {
                 if (this.isPlaying) this.pause();
                 else this.play();
@@ -4023,8 +4479,21 @@
 
             selectInst.addEventListener('change', (e) => {
                 this.selectedInstrument = e.target.value;
+                if (this.synth.soundEngine === 'real') {
+                    this.synth.preloadSoundfont(this.selectedInstrument);
+                }
                 this.updateNotesBadge();
             });
+
+            if (selectSoundMode) {
+                selectSoundMode.addEventListener('change', (e) => {
+                    const mode = e.target.value;
+                    this.synth.setSoundEngine(mode);
+                    if (mode === 'real') {
+                        this.synth.preloadSoundfont(this.selectedInstrument);
+                    }
+                });
+            }
 
             if (selectVoiceMode) {
                 selectVoiceMode.addEventListener('change', (e) => {

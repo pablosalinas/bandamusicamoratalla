@@ -103,8 +103,15 @@
         <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 sm:h-8 sm:w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
     </a>
 
-    <!-- Zones -->
-    <div class="touch-zones">
+    <!-- Botón flotante para mostrar barra superior cuando está oculta -->
+    <button x-show="!showHud" @click="showHud = true"
+            class="fixed top-3 right-3 z-40 bg-gray-900/80 hover:bg-gray-800 text-gray-200 px-3 py-1.5 rounded-full text-xs font-medium border border-gray-700 shadow-lg backdrop-blur-md transition"
+            title="Mostrar controles superiores">
+        ☰ Controles
+    </button>
+
+    <!-- Zones (se desactivan automáticamente cuando el Intérprete está activo para permitir hacer clic directamente en cualquier nota/compás de la partitura) -->
+    <div class="touch-zones" :class="{ 'pointer-events-none': showInterpreter }">
         <div class="zone zone-left" @click="goPrev" @dblclick.prevent=""></div>
         <div class="zone zone-center" @click="toggleHud" @dblclick.prevent=""></div>
         <div class="zone zone-right" @click="goNext" @dblclick.prevent=""></div>
@@ -222,14 +229,19 @@
             pdfDoc.getPage(1).then(function(firstPage) {
                 const unscaledViewport = firstPage.getViewport({ scale: 1.0 });
                 const pixelRatio = window.devicePixelRatio || 1;
-                const scale = (window.innerWidth / unscaledViewport.width) * pixelRatio;
+                // Garantizar resolución mínima alta (>= 2.0x) para que partituras de baja resolución o en pantallas pequeñas se lean con máxima nitidez
+                const scale = Math.max(2.0, (window.innerWidth / unscaledViewport.width) * pixelRatio);
                 
                 // Pre-crear los canvas en orden exacto de página
                 const pageCanvases = {};
                 for (let p = 1; p <= pdf.numPages; p++) {
                     const c = document.createElement('canvas');
                     c.style.width = '100%';
+                    c.style.cursor = 'pointer';
+                    c.title = 'Haz clic en cualquier nota o compás para posicionar el cursor de interpretación aquí';
                     c.dataset.pageNum = p;
+                    c._isPdfCanvas = true;
+                    c._isRendered = false;
                     container.appendChild(c);
                     pageCanvases[p] = c;
                 }
@@ -288,9 +300,12 @@
                         canvas._opList = results[1];
                         canvas._viewport = viewport;
                         canvas._page = page;
+                        canvas._isRendered = true;
+                        delete canvas._scannedNotes;
                         if (onComplete) onComplete();
                     }).catch(function(e) {
                         console.warn('Extraction error page', num, e);
+                        canvas._isRendered = true;
                         if (onComplete) onComplete();
                     });
                 }).catch(function(e) {
